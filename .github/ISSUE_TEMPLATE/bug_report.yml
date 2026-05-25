@@ -1,0 +1,115 @@
+name: "Bug report"
+description: "Report a defect in a specific workspace."
+title: "[bug] <workspace>: <one-line summary>"
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill every section honestly — the maintainer reads every issue personally and complete context speeds up triage.
+
+        **Security vulnerabilities are NOT bugs filed here.** Email <davcavalcante@proton.me> with prefix `[SECURITY]` per [`SECURITY.md`](../SECURITY.md).
+
+  - type: dropdown
+    id: workspace
+    attributes:
+      label: "Affected workspace"
+      description: "Which package or workspace does the bug occur in?"
+      options:
+        - "maic (@teleologyhi-sdk/maic)"
+        - "him (@teleologyhi-sdk/him)"
+        - "nhe (@teleologyhi-sdk/nhe)"
+        - "eval (@teleologyhi-sdk/eval — private)"
+        - "distill (private)"
+        - "cloud (@teleologyhi-sdk/cloud — private)"
+        - "arena (private)"
+        - ".github / CI / docs"
+        - "Cross-workspace / not sure"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: "Package version"
+      description: "Output of `npm view @teleologyhi-sdk/<pkg> version`, or the git SHA if testing local source."
+      placeholder: "1.0.0-trinity"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: "Reproduction steps"
+      description: "Minimal, deterministic steps. Include shell commands, code snippets, env variables — everything needed to recreate the bug from a clean clone."
+      placeholder: |
+        1. `git clone https://github.com/davccavalcante/TeleologyHI.git`
+        2. `cd TeleologyHI && npm install && npm run build --workspaces --if-present`
+        3. `cd <workspace> && npm run <script>`
+        4. Observe...
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected behaviour"
+      description: "What did you expect to happen? Cite the SPEC, README, or `MAIC_HIM_NHE_INTERVIEW_LOG.md` Entry if relevant."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual behaviour"
+      description: "What happened instead? Paste full stack traces, error messages, audit-log entries if relevant. Use the `render: console` block below for terminal output."
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: "Terminal output"
+      description: "Paste relevant stderr/stdout here (it will be rendered as a code block)."
+      render: console
+    validations:
+      required: false
+
+  - type: input
+    id: node
+    attributes:
+      label: "Node version"
+      description: "Output of `node -v`. CI runs Node 20/22/24."
+      placeholder: "v22.x.y"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: "Operating system"
+      description: "e.g. macOS 26 (Apple Silicon M5), Ubuntu 24.04, Debian 12. Some bugs are platform-specific (MLX is Apple-only, etc)."
+      placeholder: "macOS 26 (Apple Silicon)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Additional context"
+      description: "Anything else the maintainer should know — backlog item this relates to, conjectured root cause, links to upstream issues, etc."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Pre-submission checklist"
+      options:
+        - label: "I read [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) entries relevant to this surface and confirmed the bug is not intended cosmological behaviour."
+          required: true
+        - label: "I searched existing issues + PRs for duplicates."
+          required: true
+        - label: "This is NOT a security vulnerability (those go to email per `SECURITY.md`)."
+          required: true

@@ -1,0 +1,19 @@
+@teleologyhi-sdk/eval — Φ′ release-gate runner
+Copyright 2024-2026 David C. Cavalcante
+
+This product includes software developed by David C. Cavalcante
+(<davcavalcante@proton.me>) at Takk™ Innovate Studio and TeleologyHI.
+
+This workspace is part of the TeleologyHI monorepo. The canonical
+NOTICE for the project applies: see ../NOTICE at the repository root.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+A copy of the License is at ../LICENSE.
+
+Marks
+-----
+
+MAIC™, HIM™, NHE™, TeleologyHI™, and Takk™ are trademarks of
+David C. Cavalcante and are NOT covered by the Apache 2.0 grant.
+See ./TRADEMARK.md (this workspace) and ../TRADEMARK.md (project root).

@@ -1,0 +1,95 @@
+{
+    "name": "@teleologyhi-sdk/him",
+    "version": "1.0.0-trinity",
+    "description": "HIM™ — Hybrid Intelligence Model. The persistent spirit/personality layer between MAIC™ and NHE™ in the TeleologyHI system.",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "sideEffects": false,
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "files": [
+        "dist",
+        "SPEC.md",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE",
+        "NOTICE",
+        "TRADEMARK.md"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "teleologyhi",
+        "him",
+        "maic",
+        "nhe",
+        "ai",
+        "agent",
+        "agent-sdk",
+        "ai-agent",
+        "llm",
+        "consciousness",
+        "synthetic-teleology",
+        "personality",
+        "persona",
+        "persona-projector",
+        "embedding",
+        "phi-prime",
+        "ontological-kernel",
+        "natal-chart",
+        "birth-signature",
+        "reincarnation",
+        "ed25519",
+        "react",
+        "nextjs",
+        "vue",
+        "nuxt",
+        "angular",
+        "svelte",
+        "nodejs",
+        "typescript",
+        "esm",
+        "zod",
+        "tree-shakeable"
+    ],
+    "author": "David C. Cavalcante",
+    "license": "Apache-2.0",
+    "homepage": "https://teleologyhi.com",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/davccavalcante/TeleologyHI.git",
+        "directory": "him"
+    },
+    "bugs": {
+        "url": "https://github.com/davccavalcante/TeleologyHI/issues"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "dependencies": {
+        "@teleologyhi-sdk/maic": "1.0.0-trinity",
+        "ulid": "^3.0.2",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/node": "^25.9.1",
+        "tsup": "^8.5.1",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.7"
+    }
+}

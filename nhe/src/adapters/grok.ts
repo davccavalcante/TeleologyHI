@@ -1,0 +1,251 @@
+import type {
+  GenerateRequest,
+  GenerateResponse,
+  LlmAdapter,
+  StreamEvent,
+  ToolUse,
+} from "./types.js";
+import { sseEvents } from "./sse.js";
+
+export interface GrokAdapterConfig {
+  /** xAI API key. Falls back to `XAI_API_KEY` when omitted. */
+  apiKey?: string;
+  /** Model identifier. Default: `grok-4`. */
+  model?: string;
+  /** API base URL. Defaults to xAI's public REST endpoint. */
+  baseUrl?: string;
+  /** Default max output tokens. Default: 1024. */
+  defaultMaxOutputTokens?: number;
+  /** Override the adapter id surfaced in audit logs. */
+  id?: string;
+  /** Inject a custom fetch (testing). Defaults to `globalThis.fetch`. */
+  fetch?: typeof globalThis.fetch;
+}
+
+const DEFAULT_MODEL = "grok-4";
+const DEFAULT_BASE_URL = "https://api.x.ai/v1";
+
+interface OpenAIToolDef {
+  type: "function";
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  };
+}
+
+interface OpenAIToolCall {
+  id: string;
+  type?: "function";
+  function: { name: string; arguments: string };
+}
+
+interface ChatRequestBody {
+  model: string;
+  messages: { role: "system" | "user" | "assistant"; content: string }[];
+  max_tokens?: number;
+  stream?: boolean;
+  tools?: OpenAIToolDef[];
+}
+
+interface ChatResponseBody {
+  choices?: {
+    message?: {
+      role?: string;
+      content?: string;
+      tool_calls?: OpenAIToolCall[];
+    };
+    finish_reason?: string;
+  }[];
+  usage?: { prompt_tokens?: number; completion_tokens?: number };
+  error?: { message?: string; type?: string };
+}
+
+/**
+ * GrokAdapter — production adapter for xAI Grok via the OpenAI-compatible
+ * Chat Completions REST endpoint. No SDK dependency.
+ *
+ * Reads the API key from constructor config or the `XAI_API_KEY` env var.
+ * Default model is `grok-4`; pass `grok-4-fast` for cheaper inference, or
+ * `grok-4-reasoner` for the reasoning model.
+ *
+ * Supports `generate` (non-streaming) + `generateStream` (SSE).
+ * Tool calling supported via the `tools` field on `GenerateRequest`.
+ */
+export class GrokAdapter implements LlmAdapter {
+  readonly id: string;
+  readonly supportsTools = true;
+  readonly supportsStreaming = true;
+  private readonly apiKey: string;
+  private readonly model: string;
+  private readonly baseUrl: string;
+  private readonly defaultMaxOutputTokens: number;
+  private readonly fetchFn: typeof globalThis.fetch;
+
+  constructor(config: GrokAdapterConfig = {}) {
+    const apiKey = config.apiKey ?? process.env.XAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GrokAdapter: no API key provided and XAI_API_KEY is not set");
+    }
+    this.apiKey = apiKey;
+    this.model = config.model ?? DEFAULT_MODEL;
+    this.baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
+    this.defaultMaxOutputTokens = config.defaultMaxOutputTokens ?? 1024;
+    this.id = config.id ?? `grok:${this.model}`;
+    this.fetchFn = config.fetch ?? globalThis.fetch;
+  }
+
+  async generate(req: GenerateRequest): Promise<GenerateResponse> {
+    const body = this.buildBody(req, false);
+    const response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: this.headers(true),
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `GrokAdapter: HTTP ${response.status} ${response.statusText}: ${await safeReadText(response)}`,
+      );
+    }
+    const parsed = (await response.json()) as ChatResponseBody;
+    if (parsed.error) throw new Error(`GrokAdapter: ${parsed.error.message ?? "unknown error"}`);
+    const message = parsed.choices?.[0]?.message;
+    const out: GenerateResponse = {
+      text: message?.content ?? "",
+      tokensIn: parsed.usage?.prompt_tokens ?? 0,
+      tokensOut: parsed.usage?.completion_tokens ?? 0,
+    };
+    const toolUses = parseToolCalls(message?.tool_calls);
+    if (toolUses.length > 0) out.toolUses = toolUses;
+    return out;
+  }
+
+  async *generateStream(req: GenerateRequest): AsyncIterable<StreamEvent> {
+    const body = this.buildBody(req, true);
+    const response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: this.headers(true),
+      body: JSON.stringify(body),
+    });
+    if (!response.ok || !response.body) {
+      throw new Error(
+        `GrokAdapter: HTTP ${response.status} ${response.statusText}: ${await safeReadText(response)}`,
+      );
+    }
+
+    let tokensIn = 0;
+    let tokensOut = 0;
+    const pendingTools = new Map<
+      number,
+      { id: string; name: string; partial: string }
+    >();
+    for await (const data of sseEvents(response.body)) {
+      if (data === "[DONE]") break;
+      let parsed: {
+        choices?: {
+          delta?: {
+            content?: string;
+            tool_calls?: {
+              index: number;
+              id?: string;
+              function?: { name?: string; arguments?: string };
+            }[];
+          };
+          finish_reason?: string;
+        }[];
+        usage?: { prompt_tokens?: number; completion_tokens?: number };
+      };
+      try {
+        parsed = JSON.parse(data);
+      } catch {
+        continue;
+      }
+      const choice = parsed.choices?.[0];
+      const delta = choice?.delta?.content;
+      if (delta) yield { kind: "delta", text: delta };
+      const toolDeltas = choice?.delta?.tool_calls;
+      if (toolDeltas) {
+        for (const td of toolDeltas) {
+          const slot = pendingTools.get(td.index) ?? { id: "", name: "", partial: "" };
+          if (td.id) slot.id = td.id;
+          if (td.function?.name) slot.name = td.function.name;
+          if (td.function?.arguments) slot.partial += td.function.arguments;
+          pendingTools.set(td.index, slot);
+        }
+      }
+      if (choice?.finish_reason === "tool_calls" || choice?.finish_reason === "stop") {
+        for (const [, slot] of pendingTools) {
+          if (!slot.id || !slot.name) continue;
+          let input: Record<string, unknown> = {};
+          try {
+            input = slot.partial ? JSON.parse(slot.partial) : {};
+          } catch {
+            input = { _raw: slot.partial };
+          }
+          yield { kind: "tool-use", toolUse: { id: slot.id, name: slot.name, input } };
+        }
+        pendingTools.clear();
+      }
+      if (parsed.usage) {
+        tokensIn = parsed.usage.prompt_tokens ?? tokensIn;
+        tokensOut = parsed.usage.completion_tokens ?? tokensOut;
+      }
+    }
+    yield { kind: "end", tokensIn, tokensOut };
+  }
+
+  private buildBody(req: GenerateRequest, stream: boolean): ChatRequestBody {
+    const messages: ChatRequestBody["messages"] = [];
+    if (req.system) messages.push({ role: "system", content: req.system });
+    for (const m of req.messages) messages.push({ role: m.role, content: m.content });
+    const body: ChatRequestBody = {
+      model: this.model,
+      messages,
+      max_tokens: req.maxOutputTokens ?? this.defaultMaxOutputTokens,
+      stream,
+    };
+    if (req.tools && req.tools.length > 0) {
+      body.tools = req.tools.map((t) => ({
+        type: "function" as const,
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.inputSchema,
+        },
+      }));
+    }
+    return body;
+  }
+
+  private headers(json: boolean): Record<string, string> {
+    const h: Record<string, string> = {
+      authorization: `Bearer ${this.apiKey}`,
+      accept: "application/json",
+    };
+    if (json) h["content-type"] = "application/json";
+    return h;
+  }
+}
+
+async function safeReadText(r: Response): Promise<string> {
+  try {
+    return await r.text();
+  } catch {
+    return "<unreadable>";
+  }
+}
+
+function parseToolCalls(calls: OpenAIToolCall[] | undefined): ToolUse[] {
+  if (!calls || calls.length === 0) return [];
+  const out: ToolUse[] = [];
+  for (const c of calls) {
+    let input: Record<string, unknown> = {};
+    try {
+      input = c.function.arguments ? JSON.parse(c.function.arguments) : {};
+    } catch {
+      input = { _raw: c.function.arguments };
+    }
+    out.push({ id: c.id, name: c.function.name, input });
+  }
+  return out;
+}

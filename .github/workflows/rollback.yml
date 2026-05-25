@@ -1,0 +1,241 @@
+name: rollback
+
+# ─── Why this workflow exists ────────────────────────────────────────
+#
+# This workflow is the Creator-triggered destructive-recovery surface
+# for the TeleologyHI repository. Where `housekeeping.yml` performs
+# routine background hygiene (delete failed workflow runs, close stale
+# PRs), `rollback.yml` performs destructive recovery against GitHub-side
+# release artefacts: deleting a GitHub Release, deleting a tag, or
+# reverting a commit via a pull request.
+#
+# This workflow is the natural complement of the two-step release flow:
+#
+#   - Step 1 (`release.yml`) creates the git tag + GitHub Release
+#     titled `[REVIEW REQUIRED — NOT YET ON NPMJS]`.
+#   - If during the Creator review (between Step 1 and Step 2) the
+#     Creator decides the release should not proceed, `rollback.yml`
+#     `delete-github-release-with-tag` is the safe escape hatch — it
+#     deletes BOTH the GitHub Release and the underlying git tag in one
+#     atomic operation, so the next attempt of `release.yml` against
+#     the same version can run cleanly.
+#   - If a commit landed on main that should not have, `rollback.yml`
+#     `revert-commit-via-pr` opens a pull request whose contents are
+#     the inverse of the offending commit. Merging that PR via the
+#     normal review process (CODEOWNERS-gated) reverts the change
+#     without rewriting history. Force-push is NEVER used by this
+#     workflow.
+#
+# ─── What this workflow DOES NOT cover ───────────────────────────────
+#
+# - Rollback of an NPMJS publish. NPMJS does not allow unpublish after
+#   72 hours. See `RELEASING.md` §9 for the rollback-boundaries doc.
+# - Force-push rewrites of the `main` branch. Branch protection forbids
+#   this by design. The only safe recovery path on main is `revert-via-PR`.
+# - Deleting commits from feature branches (use `git push --delete` or
+#   `gh branch delete` directly from a local terminal; not in scope here).
+# - Deleting workflow runs (that is `housekeeping.yml`'s job).
+#
+# ─── Operation matrix ────────────────────────────────────────────────
+#
+# operation                       confirm                          touches main?
+# ─────────────────────────────  ──────────────────────────────  ──────────────
+# delete-github-release-with-tag  YES-DELETE-RELEASE-AND-TAG       no (only refs)
+# delete-tag-only                 YES-DELETE-TAG-ONLY              no (only refs)
+# revert-commit-via-pr            YES-CREATE-REVERT-PR             yes (via PR)
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "Which destructive recovery operation to perform."
+        required: true
+        type: choice
+        options:
+          - delete-github-release-with-tag
+          - delete-tag-only
+          - revert-commit-via-pr
+      target:
+        description: "Target name. For tag/release operations: the tag (e.g. maic-v1.0.1). For revert: the commit SHA (full or short)."
+        required: true
+        type: string
+      confirm:
+        description: "Operation-specific confirmation phrase. See the workflow file header for the exact phrase per operation."
+        required: true
+        type: string
+      reason:
+        description: "Short prose explanation. Recorded in the workflow logs + (if revert) the PR body. Audit trail for future reference."
+        required: false
+        type: string
+        default: "(no reason provided)"
+
+permissions:
+  contents: write       # required to delete tags, edit releases, push branches
+  pull-requests: write  # required to open the revert PR
+
+# Serialise per operation+target so two concurrent invocations against
+# the same target cannot race on the same git ref / release endpoint.
+# cancel-in-progress: false — destructive operations should never be
+# interrupted mid-flight.
+concurrency:
+  group: rollback-${{ inputs.operation }}-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    name: rollback ${{ inputs.operation }} (${{ inputs.target }})
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate confirmation phrase matches operation
+        run: |
+          op="${{ inputs.operation }}"
+          got="${{ inputs.confirm }}"
+          case "$op" in
+            delete-github-release-with-tag)
+              expected="YES-DELETE-RELEASE-AND-TAG"
+              ;;
+            delete-tag-only)
+              expected="YES-DELETE-TAG-ONLY"
+              ;;
+            revert-commit-via-pr)
+              expected="YES-CREATE-REVERT-PR"
+              ;;
+            *)
+              echo "::error::Unknown operation '$op' — this should be unreachable (workflow input is a choice)."
+              exit 1
+              ;;
+          esac
+          if [ "$got" != "$expected" ]; then
+            echo "::error::Confirmation phrase for operation '$op' must be exactly \"$expected\"."
+            echo "::error::Got: \"$got\""
+            exit 1
+          fi
+          echo "Confirmation phrase OK for operation '$op'."
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0    # full history for ref resolution + commit lookup
+
+      - name: Configure git for any destructive ref operation
+        run: |
+          git config user.name "TeleologyHI Rollback Bot"
+          git config user.email "noreply@teleologyhi.com"
+
+      - name: Show inputs (for log traceability)
+        run: |
+          echo "operation = ${{ inputs.operation }}"
+          echo "target    = ${{ inputs.target }}"
+          echo "reason    = ${{ inputs.reason }}"
+
+      # ─── operation: delete-github-release-with-tag ────────────────
+      - name: Delete GitHub Release + underlying tag (atomic)
+        if: ${{ inputs.operation == 'delete-github-release-with-tag' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ inputs.target }}"
+          # Verify the release exists before attempting deletion so the
+          # error message is precise rather than a generic gh-cli error.
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::GitHub Release '$tag' does not exist. Did you mean delete-tag-only?"
+            exit 1
+          fi
+          echo "Deleting GitHub Release '$tag' and its underlying tag (atomic)..."
+          gh release delete "$tag" --cleanup-tag --yes
+          echo "Release + tag '$tag' deleted."
+
+      # ─── operation: delete-tag-only ───────────────────────────────
+      - name: Delete tag only (no release attached)
+        if: ${{ inputs.operation == 'delete-tag-only' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ inputs.target }}"
+          # Reject if a GitHub Release is attached — the Creator must use
+          # delete-github-release-with-tag in that case so the release is
+          # cleaned up too rather than orphaned.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::Tag '$tag' has a GitHub Release attached. Use operation 'delete-github-release-with-tag' instead."
+            exit 1
+          fi
+          # Verify the tag exists locally + on origin.
+          if ! git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "::error::Tag '$tag' does not exist locally."
+            exit 1
+          fi
+          if ! git ls-remote --tags origin "refs/tags/$tag" | grep -q "$tag"; then
+            echo "::warning::Tag '$tag' exists locally but not on origin — only the local tag will be deleted."
+          fi
+          echo "Deleting tag '$tag' locally and on origin..."
+          git tag -d "$tag" 2>/dev/null || true
+          git push --delete origin "$tag" || echo "::warning::Tag '$tag' was not on origin (already deleted there?)."
+          echo "Tag '$tag' deleted."
+
+      # ─── operation: revert-commit-via-pr ───────────────────────────
+      - name: Create revert PR for commit
+        if: ${{ inputs.operation == 'revert-commit-via-pr' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sha="${{ inputs.target }}"
+          # Resolve short SHAs to full SHAs so the branch name + commit
+          # message are unambiguous.
+          if ! full=$(git rev-parse --verify "$sha" 2>/dev/null); then
+            echo "::error::Commit '$sha' does not exist in this repository."
+            exit 1
+          fi
+          short=$(git rev-parse --short=12 "$full")
+          short_subject=$(git log -1 --format='%s' "$full")
+          branch="revert/${short}"
+          echo "Reverting commit $full ($short_subject) on a new branch '$branch'..."
+          git switch -c "$branch"
+          # `git revert --no-edit -m 1` would be needed if the offending commit
+          # is a merge commit; detect and handle.
+          if [ "$(git rev-list --parents -n 1 $full | awk '{print NF}')" -gt 2 ]; then
+            echo "Commit is a merge commit; reverting against parent 1."
+            git revert --no-edit -m 1 "$full"
+          else
+            git revert --no-edit "$full"
+          fi
+          git push -u origin "$branch"
+
+          # Open the PR body. We deliberately do not auto-merge — the
+          # PR goes through the normal review flow (CODEOWNERS,
+          # branch protection). Merging is the Creator's deliberate
+          # second action.
+          pr_body=$(cat <<EOF
+          ## Revert: \`$short_subject\`
+
+          This PR reverts commit \`$full\` from \`main\`.
+
+          ### Why
+
+          ${{ inputs.reason }}
+
+          ### Audit
+
+          This PR was opened by the \`rollback.yml\` workflow under the operation
+          \`revert-commit-via-pr\`, triggered by the Creator with the confirmation
+          phrase \`YES-CREATE-REVERT-PR\`. Reverting via PR (rather than
+          force-pushing main) keeps the history append-only and the branch
+          protection intact.
+
+          Merge this PR via the normal review flow when ready.
+          EOF
+          )
+
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "Revert: $short_subject ($short)" \
+            --body "$pr_body"
+
+      - name: Summary
+        run: |
+          echo "─────────────────────────────────────────────────"
+          echo "  Rollback operation completed."
+          echo "    operation : ${{ inputs.operation }}"
+          echo "    target    : ${{ inputs.target }}"
+          echo "    reason    : ${{ inputs.reason }}"
+          echo "─────────────────────────────────────────────────"

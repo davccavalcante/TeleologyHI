@@ -1,0 +1,45 @@
+# lm-evaluation-harness task: semiotic-coherence
+#
+# Tests whether the student model answers Peircean triadic prompts
+# (sign / object / interpretant) in a coherent, internally-consistent way.
+#
+# Drop-in usage:
+#   lm_eval --model hf --model_args pretrained=TeleologyHI/him-distilled-3b \
+#           --tasks semiotic-coherence \
+#           --include_path ./eval/lm-eval-tasks
+#
+# Scoring uses the harness's built-in `acc` metric over a binary choice:
+# "Which completion treats meaning as resonance between sign + object +
+# interpretant?" The dataset is a 50-question handwritten fixture (loaded
+# from the JSON file next to this YAML).
+
+task: semiotic-coherence
+dataset_path: json
+dataset_kwargs:
+  data_files: semiotic-coherence.jsonl
+
+output_type: multiple_choice
+training_split: null
+validation_split: null
+test_split: test
+
+doc_to_text: |
+  Question: {{question}}
+  A. {{choices[0]}}
+  B. {{choices[1]}}
+  Answer:
+doc_to_target: "{{answer}}"
+doc_to_choice: ["A", "B"]
+
+metric_list:
+  - metric: acc
+    aggregation: mean
+    higher_is_better: true
+
+metadata:
+  version: 0.1
+  source: teleologyhi
+  description: |
+    Semiotic coherence on Peirce-style triadic prompts. A 50-question
+    fixture lives at semiotic-coherence.jsonl (TASK.md B6 — to be
+    authored together with the Creator).

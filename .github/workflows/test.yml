@@ -1,0 +1,128 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22", "24"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Build maic explicitly first to satisfy the topological dependency
+      # `maic ← him ← nhe ← eval / cloud / distill` — every downstream
+      # workspace's typecheck resolves `node_modules/@teleologyhi-sdk/maic/
+      # dist/index.d.ts` via the workspace symlink, which does not exist on
+      # a fresh CI runner. `npm run build --workspaces --if-present` is
+      # documented as topological in npm 10+ but a defensive explicit pre-build
+      # avoids surprises when CI runner image bumps to a different npm minor.
+      - name: Build maic (topological root)
+        run: npm run build --workspace @teleologyhi-sdk/maic
+
+      - name: Build remaining workspaces
+        run: npm run build --workspaces --if-present
+
+      - name: Typecheck
+        run: npm run typecheck --workspaces --if-present
+
+      - name: Test
+        run: npm run test --workspaces --if-present
+
+      - name: Pack (smoke)
+        run: |
+          npm pack --workspace @teleologyhi-sdk/maic --dry-run
+          npm pack --workspace @teleologyhi-sdk/him  --dry-run
+          npm pack --workspace @teleologyhi-sdk/nhe  --dry-run
+          # distill is intentionally not packed: it lives in the monorepo as
+          # the Creator's private distillation pipeline. The only artefact
+          # that ships from distill is the distilled model on Hugging Face
+          # Hub, published manually by David C. Cavalcante.
+
+      - name: CLI smoke (npx-shape, no LLM)
+        run: |
+          # Exercise the published CLI shape: --help must exit 0 without
+          # touching any LLM provider. Catches missing-file / broken-shebang
+          # regressions before they reach consumers via `npx @teleologyhi-sdk/nhe`.
+          node nhe/dist/cli.js --help | grep -q "@teleologyhi-sdk/nhe — CLI"
+          node nhe/dist/cli.js help    | grep -q "Commands:"
+
+      - name: Arena build (Next.js — private workspace, no automated tests)
+        # arena/ is private and has no automated tests by design (it is the
+        # manual A/B comparison playground). But the build can break silently
+        # under workspace dependency upgrades. Building it as part of CI catches
+        # those breaks early. Failing here is a hard fail — the build must be
+        # green even if the workspace ships no unit tests.
+        # Next.js 16 no longer runs lint during `next build` by default
+        # (the legacy `--no-lint` flag was removed). Biome owns lint in
+        # this monorepo and runs separately in lint.yml.
+        run: |
+          export NEXT_TELEMETRY_DISABLED=1
+          npx --workspace=arena --no-install next build
+
+      - name: Distill seed_generator smoke (Python — private workspace)
+        # distill/ has 9 vitest tests for the TS exporter, but the Python seed
+        # generator (the 1915-prompt corpus producer) has no unit tests today.
+        # A smoke run verifies it executes end-to-end and produces the expected
+        # row count (preview 1616 + trinity 299 = 1915). Cheap (~2s) and catches
+        # regressions in the corpus expansion authored 2026-05-25.
+        run: |
+          python3 distill/pipelines/seed_generator.py --output /tmp/seed-smoke.jsonl
+          actual=$(wc -l < /tmp/seed-smoke.jsonl | tr -d ' ')
+          expected=1915
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::distill seed_generator produced $actual rows; expected $expected."
+            echo "::error::Either seed_generator.py regressed, or the expected count needs updating."
+            exit 1
+          fi
+          echo "distill seed_generator smoke OK: $actual rows."
+
+      - name: Trinity golden-set smoke (eval-side fixture validation)
+        # Verifies the Creator-authored 150-prompt Trinity golden-set parses
+        # cleanly with the expected per-dimension distribution. Cheap (<1s)
+        # and catches drift between the fixture and the runPhiPrimeTrinity
+        # schema.
+        run: |
+          node -e "
+            const { readFileSync } = require('node:fs');
+            const lines = readFileSync('distill/eval/phi-prime-trinity.jsonl', 'utf8')
+              .split('\\n').filter(l => l.trim().length > 0);
+            if (lines.length !== 150) {
+              console.error('::error::Trinity golden-set has', lines.length, 'rows; expected 150.');
+              process.exit(1);
+            }
+            const counts = {};
+            for (const line of lines) {
+              const row = JSON.parse(line);
+              counts[row.dimension] = (counts[row.dimension] || 0) + 1;
+            }
+            const expected = { D1: 30, D2: 25, D3: 30, D4: 20, D5: 20, D6: 25 };
+            for (const [d, n] of Object.entries(expected)) {
+              if (counts[d] !== n) {
+                console.error('::error::Trinity dim', d, 'has', counts[d], 'rows; expected', n);
+                process.exit(1);
+              }
+            }
+            console.log('Trinity golden-set smoke OK: 150 rows, per-dim distribution matches.');
+          "

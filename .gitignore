@@ -1,0 +1,33 @@
+node_modules
+**/dist
+**/coverage
+.DS_Store
+*.log
+.env
+.env.local
+
+# Per-package runtime state
+**/maic-store/
+**/nhe-store/
+**/teleologyhi-store/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*~
+
+# Build artifacts
+*.tgz
+
+# Claude Code agent harness — worktrees + transient session state
+.claude/
+
+# Creator-internal documents (not published to GitHub).
+# These files remain in the working tree locally for the Creator's use
+# but are excluded from the public repository, following the same
+# discipline as research labs that keep their roadmaps and internal
+# decisions private even when the code is open source.
+/TASK.md
+/PROPOSED_DECISIONS.md
+/MAIC_HIM_NHE_RESEARCH_DOSSIER.md

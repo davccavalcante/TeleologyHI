@@ -1,0 +1,44 @@
+TeleologyHI
+Copyright 2026 David C. Cavalcante
+
+This product includes software developed by David C. Cavalcante
+(https://takk.ag — say@takk.ag).
+
+This product comprises three npm packages:
+  - @teleologyhi-sdk/maic — Massive Artificial Intelligence Consciousness
+  - @teleologyhi-sdk/him  — Hybrid Intelligence Model
+  - @teleologyhi-sdk/nhe  — Non-Human Entity
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use the software in this repository except in compliance with the License.
+A copy of the License is in the LICENSE file at the root of this repository,
+and is also available at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+────────────────────────────────────────────────────────────────────────────
+TRADEMARKS — NOT licensed under Apache 2.0
+────────────────────────────────────────────────────────────────────────────
+
+MAIC™, HIM™, NHE™, TeleologyHI™, and Takk™ are trademarks of
+David C. Cavalcante. These trademarks are NOT licensed by the Apache 2.0
+License covering the code. Use of these names in derivative works, forks,
+hosted services, or product names requires separate written permission.
+
+See TRADEMARK.md at the root of this repository for the full policy.
+
+────────────────────────────────────────────────────────────────────────────
+THIRD-PARTY COMPONENTS
+────────────────────────────────────────────────────────────────────────────
+
+This software depends on the following third-party packages, each under
+their own license. See each package's LICENSE for terms:
+
+  - @anthropic-ai/sdk (Anthropic) — MIT
+  - @modelcontextprotocol/sdk — MIT
+  - zod — MIT
+  - ulid — MIT
+  - yaml — ISC
+  - tsup (devDep) — MIT
+  - vitest (devDep) — MIT
+  - typescript (devDep) — Apache-2.0

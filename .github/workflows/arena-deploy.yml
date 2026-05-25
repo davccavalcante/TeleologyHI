@@ -1,0 +1,162 @@
+name: arena-deploy
+
+# ─── Status: SCAFFOLD ────────────────────────────────────────────────
+#
+# This workflow is a non-executable placeholder. It documents the
+# contract for the future arena deploy to the Creator's Debian 12 VPS
+# (the same machine that hosts `teleologyhi.com` and will host the
+# `cloud/` RemoteMaic server). The workflow's `enabled` job exits 1
+# until the Creator confirms the necessary secrets have been configured
+# in the GitHub repository.
+#
+# Required secrets (must be added before this workflow becomes
+# executable; documented here so the Creator has a checklist):
+#
+#   ARENA_DEPLOY_SSH_KEY          private key for the deploy user on
+#                                 the Debian 12 host (read-only on the
+#                                 GitHub side via secrets)
+#   ARENA_DEPLOY_SSH_HOST         host name (e.g., teleologyhi.com)
+#   ARENA_DEPLOY_SSH_USER         deploy user (NOT root)
+#   ARENA_DEPLOY_PATH             absolute path on the host where the
+#                                 build is rsynced (e.g.,
+#                                 /var/www/teleologyhi.com/arena)
+#   ARENA_GEMINI_API_KEY          Gemini API key for the deployed arena
+#                                 (governance pathway runs against real
+#                                 Gemini per the smoke test on
+#                                 2026-05-24)
+#   ARENA_RESTART_COMMAND         the command the deploy user can run
+#                                 with sudo (e.g.,
+#                                 "sudo systemctl restart arena.service")
+#
+# Once configured: remove the `disabled` job and uncomment the deploy
+# steps. The Creator triggers the workflow manually via:
+#
+#   gh workflow run arena-deploy.yml \
+#     -f environment=production \
+#     -f confirm=YES-DEPLOY-ARENA-TO-PRODUCTION
+#
+# The Creator's binding rule: this workflow NEVER runs on push to main.
+# Deploys are always Creator-triggered, individual, atomic.
+#
+# ─── Architecture (per RELEASING.md §5.3) ────────────────────────────
+#
+# arena is a Next.js 16 server-rendered app. The deploy plan:
+#
+#   1. Build the Next.js production bundle on the Ubuntu runner.
+#   2. rsync the build output to ARENA_DEPLOY_PATH on the host.
+#   3. systemctl restart the arena service.
+#   4. Smoke-test the deployed endpoint with a single GET /healthz.
+#
+# Out of scope for this workflow: provisioning the host, configuring
+# nginx, issuing TLS certificates. Those are one-time bare-metal setups
+# documented in (future) `arena/DEPLOY.md`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment target environment."
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+      confirm:
+        description: 'Type exactly: "YES-DEPLOY-ARENA-TO-PRODUCTION"'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arena-deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  disabled:
+    # ─── REMOVE THIS JOB WHEN SECRETS ARE CONFIGURED ─────────────────
+    # Until the Creator confirms the required secrets exist on the
+    # GitHub repository, this workflow MUST fail loudly. A silently
+    # successful no-op deploy is worse than a clear refusal.
+    name: refuse (not yet wired)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse and explain
+        run: |
+          echo "::error::arena-deploy.yml is a scaffold and is not yet executable."
+          echo "::error::Required repository secrets:"
+          echo "::error::  - ARENA_DEPLOY_SSH_KEY"
+          echo "::error::  - ARENA_DEPLOY_SSH_HOST"
+          echo "::error::  - ARENA_DEPLOY_SSH_USER"
+          echo "::error::  - ARENA_DEPLOY_PATH"
+          echo "::error::  - ARENA_GEMINI_API_KEY"
+          echo "::error::  - ARENA_RESTART_COMMAND"
+          echo "::error::Once configured (see the in-file comments), remove this 'disabled' job and the 'deploy' job will take over."
+          exit 1
+
+  # ─── Real deploy job — TURN ON BY UNCOMMENTING ───────────────────────
+  # deploy:
+  #   name: deploy arena to ${{ inputs.environment }}
+  #   runs-on: ubuntu-latest
+  #   if: ${{ inputs.confirm == 'YES-DEPLOY-ARENA-TO-PRODUCTION' }}
+  #   steps:
+  #     - uses: actions/checkout@v6
+  #
+  #     - name: Set up Node 22
+  #       uses: actions/setup-node@v6
+  #       with:
+  #         node-version: "22"
+  #         cache: npm
+  #
+  #     - name: Install dependencies
+  #       run: npm ci
+  #
+  #     - name: Build maic (topological root)
+  #       run: npm run build --workspace @teleologyhi-sdk/maic
+  #
+  #     - name: Build remaining workspaces (arena consumes him + nhe)
+  #       run: npm run build --workspaces --if-present
+  #
+  #     - name: Build arena (Next.js production bundle)
+  #       env:
+  #         GEMINI_API_KEY: ${{ secrets.ARENA_GEMINI_API_KEY }}
+  #       run: npm run build --workspace arena
+  #
+  #     - name: Set up SSH agent
+  #       uses: webfactory/ssh-agent@v0.9.0
+  #       with:
+  #         ssh-private-key: ${{ secrets.ARENA_DEPLOY_SSH_KEY }}
+  #
+  #     - name: Add host to known_hosts
+  #       run: |
+  #         mkdir -p ~/.ssh
+  #         ssh-keyscan -H "${{ secrets.ARENA_DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts
+  #
+  #     - name: Rsync build to host
+  #       run: |
+  #         rsync -avz --delete \
+  #           --exclude=".env*" \
+  #           arena/.next/ \
+  #           "${{ secrets.ARENA_DEPLOY_SSH_USER }}@${{ secrets.ARENA_DEPLOY_SSH_HOST }}:${{ secrets.ARENA_DEPLOY_PATH }}/.next/"
+  #         rsync -avz \
+  #           arena/package.json arena/next.config.ts \
+  #           "${{ secrets.ARENA_DEPLOY_SSH_USER }}@${{ secrets.ARENA_DEPLOY_SSH_HOST }}:${{ secrets.ARENA_DEPLOY_PATH }}/"
+  #
+  #     - name: Restart arena service on host
+  #       run: |
+  #         ssh "${{ secrets.ARENA_DEPLOY_SSH_USER }}@${{ secrets.ARENA_DEPLOY_SSH_HOST }}" \
+  #           "${{ secrets.ARENA_RESTART_COMMAND }}"
+  #
+  #     - name: Smoke test deployed arena
+  #       run: |
+  #         for attempt in 1 2 3 4 5; do
+  #           if curl -fsS "https://teleologyhi.com/arena/healthz" >/dev/null 2>&1; then
+  #             echo "Smoke test passed (attempt $attempt)."
+  #             exit 0
+  #           fi
+  #           echo "Smoke test attempt $attempt failed; retrying in 6s..."
+  #           sleep 6
+  #         done
+  #         echo "::error::arena did not respond to /healthz after deploy."
+  #         exit 1

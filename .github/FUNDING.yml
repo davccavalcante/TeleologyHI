@@ -1,0 +1,21 @@
+# Optional sponsorship channels for the TeleologyHI project.
+#
+# GitHub renders the "Sponsor" button on the repository page from the
+# entries below. All entries are commented out by default — uncomment
+# and fill in the matching usernames when channels are provisioned.
+#
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+# for the full schema.
+
+# github: davccavalcante                   # GitHub Sponsors profile (when active)
+# patreon: davccavalcante                  # Patreon username
+# open_collective: teleologyhi             # Open Collective project slug
+# ko_fi: davccavalcante                    # Ko-fi username
+# tidelift: npm/@teleologyhi-sdk%2Fmaic    # Tidelift platform-name/package
+# liberapay: davccavalcante                # Liberapay username
+# issuehunt: davccavalcante                # IssueHunt username
+# community_bridge: teleologyhi            # Community Bridge project
+# polar: davccavalcante                    # Polar.sh username
+# buy_me_a_coffee: davccavalcante          # Buy Me a Coffee username
+# thanks_dev: davccavalcante               # thanks.dev username
+# custom: ["https://teleologyhi.com/sponsor", "https://takk.ag/"]

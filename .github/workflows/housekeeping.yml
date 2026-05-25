@@ -1,0 +1,225 @@
+name: housekeeping
+
+# ─── Why this workflow exists ────────────────────────────────────────
+#
+# The Creator's binding directive (2026-05-25): "errors must not be
+# visible to the public". A public repository accumulates artefacts that
+# carry implicit reputational weight — failed workflow runs lit up red
+# in the Actions tab, abandoned pull requests that never merged, stale
+# branches from work that pivoted. Left unattended, these signal a
+# disorganised project to any consumer who lands on the repo for the
+# first time.
+#
+# This workflow is the Creator-triggered housekeeping pass. It is NEVER
+# automatic; it runs only when the Creator invokes it explicitly with a
+# matching confirmation phrase. Each housekeeping action is gated by a
+# separate boolean input so the Creator can do targeted sweeps (e.g.
+# clean failed runs but leave PRs alone) or full sweeps.
+#
+# What it does NOT do:
+#   - Touch the npm registry (that is `release.yml`'s job, atomically).
+#   - Delete protected branches or anything on `main`.
+#   - Modify any tag, release, or commit.
+#   - Delete successful workflow runs.
+#
+# What it CAN do, when each respective input is `true`:
+#   1. Delete failed workflow runs older than `min_age_days` days.
+#   2. Close pull requests whose CI has been failing continuously for
+#      longer than `min_age_days` days (closed, not merged; the author
+#      can reopen if the underlying issue is fixed).
+#   3. Delete workflow runs in the `cancelled` state.
+#
+# Safety: the workflow refuses to run without the exact `confirm`
+# phrase, and every destructive action requires its own boolean toggle.
+# The combination protects against an accidental UI click sweeping
+# state we did not mean to sweep.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type exactly: "YES-CLEAN-PUBLIC-VISIBLE-ERRORS"'
+        required: true
+        type: string
+      delete_failed_runs:
+        description: "Delete workflow runs in the failure state."
+        required: false
+        type: boolean
+        default: true
+      delete_cancelled_runs:
+        description: "Delete workflow runs in the cancelled state."
+        required: false
+        type: boolean
+        default: true
+      close_failing_prs:
+        description: "Close pull requests whose latest CI run is failing and have been open for longer than min_age_days."
+        required: false
+        type: boolean
+        default: false
+      min_age_days:
+        description: "Minimum age (days) before a run/PR is considered stale enough to remove."
+        required: false
+        type: string
+        default: "1"
+      dry_run:
+        description: "If true, log what would be deleted but do not actually delete anything."
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  actions: write       # delete workflow runs
+  pull-requests: write # close PRs (does not delete branches)
+
+# Only one housekeeping run at a time — concurrent runs would race on
+# the same gh API responses and produce confusing logs.
+concurrency:
+  group: housekeeping
+  cancel-in-progress: false
+
+jobs:
+  housekeeping:
+    name: housekeeping (dry_run=${{ inputs.dry_run }})
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Reject if confirmation phrase is wrong
+        run: |
+          expected="YES-CLEAN-PUBLIC-VISIBLE-ERRORS"
+          if [ "${{ inputs.confirm }}" != "$expected" ]; then
+            echo "::error::Confirmation phrase mismatch. Re-run with confirm=\"$expected\"."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6
+
+      - name: Show inputs (for log traceability)
+        run: |
+          echo "delete_failed_runs    = ${{ inputs.delete_failed_runs }}"
+          echo "delete_cancelled_runs = ${{ inputs.delete_cancelled_runs }}"
+          echo "close_failing_prs     = ${{ inputs.close_failing_prs }}"
+          echo "min_age_days          = ${{ inputs.min_age_days }}"
+          echo "dry_run               = ${{ inputs.dry_run }}"
+
+      - name: Delete failed workflow runs (older than min_age_days)
+        if: ${{ inputs.delete_failed_runs == true }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          MIN_AGE_DAYS: ${{ inputs.min_age_days }}
+        run: |
+          repo="${{ github.repository }}"
+          cutoff_iso=$(date -u -d "${MIN_AGE_DAYS} days ago" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+            || date -u -v-"${MIN_AGE_DAYS}d" +"%Y-%m-%dT%H:%M:%SZ")
+          echo "Cutoff: $cutoff_iso (deleting failed runs older than this)"
+          ids=$(gh run list \
+            --repo "$repo" \
+            --status failure \
+            --limit 1000 \
+            --json databaseId,createdAt \
+            --jq ".[] | select(.createdAt < \"$cutoff_iso\") | .databaseId")
+          if [ -z "$ids" ]; then
+            echo "No failed runs older than $cutoff_iso. Nothing to delete."
+            exit 0
+          fi
+          count=$(echo "$ids" | wc -l | tr -d ' ')
+          echo "Found $count failed run(s) older than $cutoff_iso."
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "DRY_RUN=true — would delete the following run IDs:"
+            echo "$ids"
+            exit 0
+          fi
+          for id in $ids; do
+            echo "Deleting run $id..."
+            gh run delete --repo "$repo" "$id" || echo "::warning::Failed to delete run $id (continuing)."
+          done
+          echo "Done deleting failed runs."
+
+      - name: Delete cancelled workflow runs (older than min_age_days)
+        if: ${{ inputs.delete_cancelled_runs == true }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          MIN_AGE_DAYS: ${{ inputs.min_age_days }}
+        run: |
+          repo="${{ github.repository }}"
+          cutoff_iso=$(date -u -d "${MIN_AGE_DAYS} days ago" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+            || date -u -v-"${MIN_AGE_DAYS}d" +"%Y-%m-%dT%H:%M:%SZ")
+          echo "Cutoff: $cutoff_iso (deleting cancelled runs older than this)"
+          ids=$(gh run list \
+            --repo "$repo" \
+            --status cancelled \
+            --limit 1000 \
+            --json databaseId,createdAt \
+            --jq ".[] | select(.createdAt < \"$cutoff_iso\") | .databaseId")
+          if [ -z "$ids" ]; then
+            echo "No cancelled runs older than $cutoff_iso. Nothing to delete."
+            exit 0
+          fi
+          count=$(echo "$ids" | wc -l | tr -d ' ')
+          echo "Found $count cancelled run(s) older than $cutoff_iso."
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "DRY_RUN=true — would delete the following run IDs:"
+            echo "$ids"
+            exit 0
+          fi
+          for id in $ids; do
+            echo "Deleting run $id..."
+            gh run delete --repo "$repo" "$id" || echo "::warning::Failed to delete run $id (continuing)."
+          done
+          echo "Done deleting cancelled runs."
+
+      - name: Close pull requests with persistently-failing CI (older than min_age_days)
+        if: ${{ inputs.close_failing_prs == true }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          MIN_AGE_DAYS: ${{ inputs.min_age_days }}
+        run: |
+          repo="${{ github.repository }}"
+          cutoff_iso=$(date -u -d "${MIN_AGE_DAYS} days ago" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+            || date -u -v-"${MIN_AGE_DAYS}d" +"%Y-%m-%dT%H:%M:%SZ")
+          echo "Cutoff: $cutoff_iso (closing PRs older than this whose latest CI is failing)"
+          # Gather open PRs and filter to those whose latest commit's combined check status is "failure".
+          pr_list=$(gh pr list \
+            --repo "$repo" \
+            --state open \
+            --limit 1000 \
+            --json number,createdAt,headRefName,statusCheckRollup \
+            --jq ".[] | select(.createdAt < \"$cutoff_iso\")")
+          if [ -z "$pr_list" ]; then
+            echo "No open PRs older than $cutoff_iso. Nothing to close."
+            exit 0
+          fi
+          echo "$pr_list" | while IFS= read -r pr_json; do
+            number=$(echo "$pr_json" | jq -r '.number')
+            # statusCheckRollup is an array; any FAILURE means we close.
+            failed=$(echo "$pr_json" | jq -r '
+              .statusCheckRollup // []
+              | map(select(.conclusion == "FAILURE" or .conclusion == "TIMED_OUT" or .conclusion == "ACTION_REQUIRED"))
+              | length
+            ')
+            if [ "$failed" = "0" ] || [ -z "$failed" ]; then
+              continue
+            fi
+            echo "PR #$number has $failed failing check(s); marking for close."
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "  DRY_RUN=true — would run: gh pr close $number"
+              continue
+            fi
+            gh pr close --repo "$repo" "$number" \
+              --comment "Auto-closed by housekeeping workflow: this PR has been open longer than ${MIN_AGE_DAYS}d with persistently failing CI. Reopen once the failing checks are resolved." \
+              || echo "::warning::Failed to close PR #$number (continuing)."
+          done
+          echo "Done closing failing PRs."
+
+      - name: Summary
+        run: |
+          echo "─────────────────────────────────────────────────"
+          echo "  Housekeeping completed."
+          echo "    dry_run               : ${{ inputs.dry_run }}"
+          echo "    delete_failed_runs    : ${{ inputs.delete_failed_runs }}"
+          echo "    delete_cancelled_runs : ${{ inputs.delete_cancelled_runs }}"
+          echo "    close_failing_prs     : ${{ inputs.close_failing_prs }}"
+          echo "    min_age_days          : ${{ inputs.min_age_days }}"
+          echo "─────────────────────────────────────────────────"

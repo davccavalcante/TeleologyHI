@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Security vulnerability"
+    url: "mailto:davcavalcante@proton.me?subject=%5BSECURITY%5D%20"
+    about: "Do NOT open a public issue for security vulnerabilities. Email davcavalcante@proton.me (preferred) or say@takk.ag with prefix [SECURITY]. See SECURITY.md for the disclosure flow."
+  - name: "Trademark / licensing inquiry"
+    url: "mailto:davcavalcante@proton.me?subject=Trademark%20inquiry"
+    about: "Forks, derivative products, or commercial use of MAIC™ / HIM™ / NHE™ / TeleologyHI™ / Takk™ require a separate written licence. Email the rights holder directly — see TRADEMARK.md."
+  - name: "General discussion / questions"
+    url: "https://github.com/davccavalcante/TeleologyHI/discussions"
+    about: "For design conversations, usage questions, or anything that is not a bug report or feature request, use GitHub Discussions."
+  - name: "Read the cosmology first"
+    url: "https://github.com/davccavalcante/TeleologyHI/blob/main/MAIC_HIM_NHE_INTERVIEW_LOG.md"
+    about: "Before opening an issue about the system's semantics (HIM, NHE, MAIC, axioms, sleep cycles), read MAIC_HIM_NHE_INTERVIEW_LOG.md. Many questions are already answered there."

@@ -1,0 +1,65 @@
+name: dist-tag
+
+# Manual helper to promote an already-published @teleologyhi-sdk/<pkg>@<version>
+# to a different dist-tag (commonly: a trinity-channel version → `latest`).
+#
+# Usage:
+#   gh workflow run dist-tag.yml \
+#     -f pkg=maic \
+#     -f version=1.0.0-trinity \
+#     -f dist_tag=latest
+#
+# Publishing itself happens automatically in `publish.yml` when a `<pkg>-v*`
+# tag is pushed. This workflow only re-points an existing version to another
+# dist-tag; it does not publish anything new.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pkg:
+        description: "Package short name (maic | him | nhe)"
+        required: true
+        type: choice
+        options:
+          - maic
+          - him
+          - nhe
+      version:
+        description: "Already-published semver (e.g. 1.0.0-trinity, 1.0.1)"
+        required: true
+        type: string
+      dist_tag:
+        description: "Target dist-tag (latest, trinity, alpha, beta, rc)"
+        required: true
+        default: "latest"
+        type: string
+
+jobs:
+  promote:
+    name: promote @teleologyhi-sdk/${{ inputs.pkg }}@${{ inputs.version }} → ${{ inputs.dist_tag }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org/"
+          scope: "@teleologyhi-sdk"
+
+      - name: Verify the version exists on the registry
+        run: |
+          if ! npm view "@teleologyhi-sdk/${{ inputs.pkg }}@${{ inputs.version }}" version >/dev/null 2>&1; then
+            echo "::error::@teleologyhi-sdk/${{ inputs.pkg }}@${{ inputs.version }} is not published on npm."
+            exit 1
+          fi
+
+      - name: Promote dist-tag
+        run: npm dist-tag add "@teleologyhi-sdk/${{ inputs.pkg }}@${{ inputs.version }}" "${{ inputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify
+        run: npm view "@teleologyhi-sdk/${{ inputs.pkg }}" dist-tags

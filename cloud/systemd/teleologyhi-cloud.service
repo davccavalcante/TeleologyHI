@@ -1,0 +1,23 @@
+[Unit]
+Description=TeleologyHI cloud — RemoteMaic HTTP server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=teleologyhi
+Group=teleologyhi
+WorkingDirectory=/opt/teleologyhi/cloud
+EnvironmentFile=/etc/teleologyhi/cloud.env
+ExecStart=/usr/bin/node /opt/teleologyhi/cloud/dist/cli.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

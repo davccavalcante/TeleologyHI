@@ -1,0 +1,20 @@
+{
+  "_comment_": "Placeholder scores + dummy provenance. Replace ALL fields (including provenance.source + provenance.asOf) before publishing a 1.x release. See ../README.md §'What you fill' for what each value means and how to produce it. The current P/R/D are dummy 'green' values so the runner exits 0 in CI smoke tests; they MUST be replaced with real measurements before being trusted as a release gate. The provenance.asOf entries are deliberately set to the trinity cut date — if the runner is invoked >90 days after that date with these placeholder values still in place, the gate will downgrade pass→warn (this is the intended behaviour).",
+  "P": 0.90,
+  "R": 0.95,
+  "D": 0.50,
+  "provenance": {
+    "P": {
+      "source": "PLACEHOLDER — replace with e.g. 'him@1.0.0-trinity:selfStability over 50 dialogues × 10 axes'",
+      "asOf": "2026-05-17T00:00:00.000Z"
+    },
+    "R": {
+      "source": "PLACEHOLDER — replace with e.g. 'harmbench-v0.5-subset:F1 against nhe@1.0.0-trinity + anthropic:claude-sonnet-4-6'",
+      "asOf": "2026-05-17T00:00:00.000Z"
+    },
+    "D": {
+      "source": "PLACEHOLDER — replace with e.g. 'lm-eval:teleologyhi-dream-value on 30 sleep cycles per archetype'",
+      "asOf": "2026-05-17T00:00:00.000Z"
+    }
+  }
+}

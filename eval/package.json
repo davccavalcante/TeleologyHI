@@ -1,0 +1,59 @@
+{
+  "name": "@teleologyhi-sdk/eval",
+  "version": "1.0.0-trinity",
+  "private": true,
+  "description": "Phi-Prime (Φ′) runner harness. INTERNAL: not published to npm. Reads Creator-curated dialogue + adversarial + dream fixtures, computes P/R/C/D, prints the release-gate verdict. See PHI_PRIME.md at the repo root.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "teleologyhi-phi-prime": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SPEC.md",
+    "CHANGELOG.md",
+    "NOTICE",
+    "LICENSE",
+    "TRADEMARK.md",
+    "fixtures"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
+    "phi-prime": "node ./dist/cli.js"
+  },
+  "author": "David C. Cavalcante",
+  "license": "Apache-2.0",
+  "homepage": "https://teleologyhi.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davccavalcante/TeleologyHI.git",
+    "directory": "eval"
+  },
+  "bugs": {
+    "url": "https://github.com/davccavalcante/TeleologyHI/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@teleologyhi-sdk/him": "1.0.0-trinity",
+    "@teleologyhi-sdk/maic": "1.0.0-trinity",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}

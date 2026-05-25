@@ -1,0 +1,28 @@
+{
+    "name": "teleologyhi",
+    "version": "1.0.0-trinity",
+    "private": true,
+    "description": "TeleologyHI monorepo: @teleologyhi-sdk/maic, @teleologyhi-sdk/him, @teleologyhi-sdk/nhe.",
+    "workspaces": [
+        "maic",
+        "him",
+        "nhe",
+        "distill",
+        "eval",
+        "cloud",
+        "arena"
+    ],
+    "scripts": {
+        "build": "npm run build --workspaces --if-present",
+        "test": "npm run test --workspaces --if-present",
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "lint": "biome lint .",
+        "lint:fix": "biome lint --write .",
+        "format": "biome format --write ."
+    },
+    "author": "David C. Cavalcante",
+    "license": "Apache-2.0",
+    "devDependencies": {
+        "@biomejs/biome": "^2.4.15"
+    }
+}

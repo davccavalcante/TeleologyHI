@@ -1,0 +1,28 @@
+node_modules
+dist
+coverage
+.DS_Store
+*.log
+.env
+.env.local
+distill-store/
+
+# Python pipeline artefacts (don't commit corpora or model weights)
+output/
+pipelines/data/
+pipelines/output/
+pipelines/.venv/
+pipelines/__pycache__/
+**/*.pyc
+
+# Model artefacts
+*.safetensors
+*.gguf
+*.onnx
+
+# MLflow tracking artefacts (opt-in via TELEOLOGYHI_MLFLOW=1; backend defaults to
+# `file:./mlruns`. Remote backends — S3/GCS/Azure/Postgres — should set
+# MLFLOW_TRACKING_URI and MLFLOW_ARTIFACT_LOCATION env vars instead, so nothing
+# lands in the working tree. The local paths below are runtime-only.)
+mlruns/
+mlartifacts/

@@ -1,0 +1,98 @@
+name: "Feature request"
+description: "Propose a new public surface, behaviour, or capability."
+title: "[feat] <workspace>: <one-line summary>"
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for proposing a feature. Substantive proposals (new public exports, new audit event kinds, new wire-contract endpoints, storage-layout changes) require maintainer discussion BEFORE implementation — please file this issue first and wait for triage before opening a PR.
+
+        Read [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) and the affected workspace's `SPEC.md` before submitting. Many proposed features either already exist under a different name or are deliberately out of scope per the cosmology.
+
+  - type: dropdown
+    id: workspace
+    attributes:
+      label: "Target workspace"
+      description: "Which workspace should the feature live in?"
+      options:
+        - "maic (@teleologyhi-sdk/maic)"
+        - "him (@teleologyhi-sdk/him)"
+        - "nhe (@teleologyhi-sdk/nhe)"
+        - "eval (@teleologyhi-sdk/eval — private)"
+        - "distill (private)"
+        - "cloud (@teleologyhi-sdk/cloud — private)"
+        - "arena (private)"
+        - ".github / CI / tooling"
+        - "Cross-workspace / new workspace"
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Motivation"
+      description: "What problem does this feature solve? Who has the problem (operator, integrator, end-user, Creator)? Why is the current surface insufficient?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposed surface"
+      description: "What would the public API look like? Include type signatures, wire-contract JSON, file-layout changes — whatever is concrete enough to review."
+      render: typescript
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives considered"
+      description: "Other shapes you considered and rejected (and why). 'I did not think of any' is not acceptable for non-trivial features."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: semver
+    attributes:
+      label: "SemVer impact"
+      description: "Per [`RELEASING.md`](../RELEASING.md) §8.2."
+      options:
+        - "Patch — bug fix / internal refactor"
+        - "Minor — new optional surface, no breakage"
+        - "Major — breaking change (renaming, removal, storage-layout change, wire-contract change)"
+        - "No published-package impact (private workspace)"
+    validations:
+      required: true
+
+  - type: input
+    id: task_ref
+    attributes:
+      label: "Backlog cross-reference"
+      description: "If this proposal advances or closes a backlog item, name the ID(s). Use 'N/A — new initiative' if it is novel."
+      placeholder: "D-N9, F4, etc."
+    validations:
+      required: true
+
+  - type: textarea
+    id: cosmology
+    attributes:
+      label: "Cosmology consistency"
+      description: "How does the proposal map to MAIC (governance) / HIM (spirit) / NHE (body) per `MAIC_HIM_NHE_INTERVIEW_LOG.md` Entry 15 + 19? If it bends the cosmology, explain why and which Entry sanctions the bend."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Pre-submission checklist"
+      options:
+        - label: "I read [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) and the affected workspace's `SPEC.md`."
+          required: true
+        - label: "I searched existing issues + PRs for duplicates and prior art."
+          required: true
+        - label: "I understand substantive features need maintainer discussion before a PR opens (per `CONTRIBUTING.md` §5.3)."
+          required: true
+        - label: "I will use a signed CLA (not DCO sign-off) for the PR if this feature ships with > 200 LOC of new code OR touches the cryptographic / governance core."
+          required: true

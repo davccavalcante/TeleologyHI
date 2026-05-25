@@ -1,0 +1,33 @@
+# TeleologyHI distillation pipeline — Python dependencies.
+#
+# Apple Silicon (M1+) friendly. Ranges chosen to track 2026-Q2 releases that
+# still work on macOS 26 / Python 3.13. Re-validate `corpus_prep.py` and
+# `train_mlx.py` if you bump major versions.
+
+# Synthetic data generation + dataset shaping
+distilabel>=1.4,<2.0
+datasets>=3.0,<4.0
+
+# Apple Silicon native LLM training + inference
+mlx>=0.20,<1.0
+mlx-lm>=0.20.1,<0.32
+
+# Hugging Face Hub for model download + upload
+huggingface_hub>=0.26,<1.0
+transformers>=4.46,<5.0
+tokenizers>=0.20,<1.0
+safetensors>=0.4,<1.0
+
+# Eval (lm-evaluation-harness pinned via git; Inspect AI from PyPI)
+lm-eval[api]>=0.4.5,<1.0
+inspect-ai>=0.3.50,<1.0
+
+# LLMOps / MLOps tracking (opt-in via TELEOLOGYHI_MLFLOW=1; see pipelines/mlflow_tracking.py
+# and serving/mlflow.md). Apache 2.0 license; tracks the full Trinity training run:
+# parameters, metrics, artifacts, dataset SHA, prompt SHA, model lineage, eval scorecard.
+mlflow>=2.18,<3.0
+
+# Misc utilities
+PyYAML>=6.0,<7.0
+tqdm>=4.66,<5.0
+typer>=0.13,<1.0

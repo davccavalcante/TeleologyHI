@@ -1,0 +1,70 @@
+{
+    "name": "@teleologyhi-sdk/distill",
+    "version": "1.0.0-trinity",
+    "private": true,
+    "description": "Distillation pipeline for TeleologyHI — exports MAIC/NHE audit + dream + memory + refusal corpora to JSONL formats consumable by DistillKit / Torchtune / Distilabel / MLX-LM. INTERNAL: not published to npm; the only distilled artefact ships from David C. Cavalcante's runs to Hugging Face Hub.",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "files": [
+        "dist",
+        "SPEC.md",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE",
+        "NOTICE",
+        "pipelines",
+        "serving",
+        "eval",
+        "scripts"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json"
+    },
+    "keywords": [
+        "teleologyhi",
+        "distill",
+        "distillation",
+        "knowledge-distillation",
+        "llm",
+        "fine-tuning",
+        "mlx",
+        "torchtune",
+        "distilabel"
+    ],
+    "author": "David C. Cavalcante",
+    "license": "Apache-2.0",
+    "homepage": "https://teleologyhi.com",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/davccavalcante/TeleologyHI.git",
+        "directory": "distill"
+    },
+    "bugs": {
+        "url": "https://github.com/davccavalcante/TeleologyHI/issues"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "dependencies": {
+        "yaml": "^2.9.0",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/node": "^25.9.1",
+        "tsup": "^8.5.1",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.7"
+    }
+}

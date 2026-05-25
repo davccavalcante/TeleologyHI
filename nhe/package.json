@@ -1,0 +1,119 @@
+{
+    "name": "@teleologyhi-sdk/nhe",
+    "version": "1.0.0-trinity",
+    "description": "NHE™ — Non-Human Entity. The embodied operational agent of the TeleologyHI system: LLM integration, MAIC-supervised reasoning, persona-aware response.",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "bin": {
+        "teleologyhi-nhe": "dist/cli.js",
+        "nhe": "dist/cli.js"
+    },
+    "sideEffects": [
+        "./dist/cli.js"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "files": [
+        "dist",
+        "SPEC.md",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE",
+        "NOTICE",
+        "TRADEMARK.md"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "teleologyhi",
+        "nhe",
+        "maic",
+        "him",
+        "ai",
+        "agent",
+        "agent-sdk",
+        "ai-agent",
+        "llm",
+        "anthropic",
+        "claude",
+        "gemini",
+        "mistral",
+        "deepseek",
+        "grok",
+        "ollama",
+        "consciousness",
+        "synthetic-teleology",
+        "reasoning",
+        "chain-of-thought",
+        "tree-of-thoughts",
+        "react-prompting",
+        "self-consistency",
+        "reflexion",
+        "self-refine",
+        "step-back",
+        "mcp",
+        "model-context-protocol",
+        "claude-code",
+        "hermes-agent",
+        "cli",
+        "tui",
+        "streaming",
+        "tool-calling",
+        "opentelemetry",
+        "react",
+        "nextjs",
+        "vue",
+        "nuxt",
+        "angular",
+        "svelte",
+        "nodejs",
+        "typescript",
+        "esm",
+        "zod"
+    ],
+    "author": "David C. Cavalcante",
+    "license": "Apache-2.0",
+    "homepage": "https://teleologyhi.com",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/davccavalcante/TeleologyHI.git",
+        "directory": "nhe"
+    },
+    "bugs": {
+        "url": "https://github.com/davccavalcante/TeleologyHI/issues"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "dependencies": {
+        "@anthropic-ai/sdk": "^0.98.0",
+        "@modelcontextprotocol/sdk": "^1.29.0",
+        "@opentelemetry/api": "^1.9.1",
+        "@teleologyhi-sdk/him": "1.0.0-trinity",
+        "@teleologyhi-sdk/maic": "1.0.0-trinity",
+        "ulid": "^3.0.2",
+        "yaml": "^2.9.0",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/node": "^25.9.1",
+        "tsup": "^8.5.1",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.7"
+    }
+}

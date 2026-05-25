@@ -1,0 +1,60 @@
+{
+  "name": "@teleologyhi-sdk/cloud",
+  "version": "1.0.0-trinity",
+  "private": true,
+  "description": "HTTP server that satisfies the @teleologyhi-sdk/maic RemoteMaic wire contract. INTERNAL: not published to npm. The Creator hosts a single canonical instance (e.g. teleologyhi.com on Hostinger); third parties run their own deployments or use LocalMaic.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "teleologyhi-cloud": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SPEC.md",
+    "CHANGELOG.md",
+    "NOTICE",
+    "LICENSE",
+    "TRADEMARK.md",
+    "Dockerfile",
+    "docker-compose.yml",
+    "systemd"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
+    "start": "node ./dist/cli.js"
+  },
+  "author": "David C. Cavalcante",
+  "license": "Apache-2.0",
+  "homepage": "https://teleologyhi.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davccavalcante/TeleologyHI.git",
+    "directory": "cloud"
+  },
+  "bugs": {
+    "url": "https://github.com/davccavalcante/TeleologyHI/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@teleologyhi-sdk/maic": "1.0.0-trinity",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}

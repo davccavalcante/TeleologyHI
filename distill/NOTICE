@@ -1,0 +1,22 @@
+@teleologyhi-sdk/distill — Distillation pipeline for TeleologyHI
+Copyright 2026 David C. Cavalcante
+
+This product includes software developed by David C. Cavalcante
+(https://takk.ag — say@takk.ag).
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this software except in compliance with the License. A copy is in the
+LICENSE file accompanying this package, and also at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+MAIC™, HIM™, NHE™, TeleologyHI™, and Takk™ are trademarks of David C.
+Cavalcante. The trademarks are NOT licensed under Apache 2.0. See the
+TRADEMARK.md file in the upstream repository:
+
+    https://github.com/Takk8IS/TeleologyHI/blob/main/TRADEMARK.md
+
+The Python pipelines under ./pipelines and ./eval reference third-party
+projects (Distilabel, MLX, Torchtune, lm-evaluation-harness, Inspect AI,
+Hugging Face Transformers). Each retains its own license — see the
+upstream projects.

@@ -1,0 +1,27 @@
+# Docker Compose Specification — the top-level `version:` field was
+# deprecated by Docker Compose v2 and is intentionally omitted here.
+# Modern docker-compose (>= v2.0) infers the schema from the file content.
+
+services:
+  cloud:
+    build:
+      context: ..
+      dockerfile: cloud/Dockerfile
+    image: teleologyhi/cloud:latest
+    container_name: teleologyhi-cloud
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      TELEOLOGYHI_STORE_DIR: /data/maic
+      TELEOLOGYHI_CREATOR_PUBLIC_KEY: ${TELEOLOGYHI_CREATOR_PUBLIC_KEY}
+      TELEOLOGYHI_TOKENS: ${TELEOLOGYHI_TOKENS}
+      PORT: "8787"
+      HOST: "0.0.0.0"
+    volumes:
+      - ./data:/data/maic
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8787/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

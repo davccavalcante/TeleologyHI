@@ -1,0 +1,49 @@
+# Code owners for the TeleologyHI monorepo.
+#
+# GitHub uses this file to auto-request reviews on pull requests. The
+# rules are evaluated top-to-bottom; later patterns override earlier ones.
+#
+# As of the trinity cut, the project is single-maintainer (Creator-only).
+# Every PR routes to @davccavalcante. Per-workspace explicit rules below
+# exist so future co-maintainers can be added per workspace without
+# touching the catch-all.
+
+# ─── catch-all (every file) ──────────────────────────────────────────
+*                               @davccavalcante
+
+# ─── public npm packages (canonical surface) ─────────────────────────
+/maic/                          @davccavalcante
+/him/                           @davccavalcante
+/nhe/                           @davccavalcante
+
+# ─── private workspaces ──────────────────────────────────────────────
+/eval/                          @davccavalcante
+/distill/                       @davccavalcante
+/cloud/                         @davccavalcante
+/arena/                         @davccavalcante
+
+# ─── CI/CD + meta ────────────────────────────────────────────────────
+/.github/                       @davccavalcante
+/.github/workflows/             @davccavalcante
+/.github/RELEASING.md           @davccavalcante
+/.github/CONTRIBUTING.md        @davccavalcante
+
+# ─── root governance documents ───────────────────────────────────────
+/LICENSE                        @davccavalcante
+/NOTICE                         @davccavalcante
+/TRADEMARK.md                   @davccavalcante
+/SECURITY.md                    @davccavalcante
+/PRIVACY.md                     @davccavalcante
+/CLA.md                         @davccavalcante
+/CODE_OF_CONDUCT.md             @davccavalcante
+
+# ─── cosmology documents (require careful review) ────────────────────
+/MAIC_HIM_NHE_INTERVIEW_LOG.md  @davccavalcante
+/MAIC_HIM_NHE_RESEARCH_DOSSIER.md @davccavalcante
+/THE_SOUL_OF_THE_MACHINE.md     @davccavalcante
+/BEYOND_CONSCIOUSNESS_IN_LLM.md @davccavalcante
+/PHI_PRIME.md                   @davccavalcante
+/REASONING_PROCESS.md           @davccavalcante
+/PROMPTS_ENGINEERING.md         @davccavalcante
+/SYSTEM_OVERVIEW.md             @davccavalcante
+/TASK.md                        @davccavalcante
