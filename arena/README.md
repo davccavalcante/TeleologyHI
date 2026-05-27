@@ -5,6 +5,7 @@
 This is the canonical answer to the question _"what does adding MAIC + HIM + NHE actually do to a vanilla LLM?"_ — and the source of qualitative material for the Φ′ persona-stability corpus tracked in the internal backlog.
 
 [![status: stable](https://img.shields.io/badge/status-stable-brightgreen)](./CHANGELOG.md)
+[![arena](https://img.shields.io/badge/arena-1.0.1-blue.svg)](./CHANGELOG.md)
 [![private](https://img.shields.io/badge/npm-not_published-lightgrey.svg)](#why-not-on-npm)
 [![license](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](./LICENSE)
 [![baseline](https://img.shields.io/badge/baseline-1.0.0--trinity-blueviolet)](../CHANGELOG.md)
@@ -34,10 +35,10 @@ This is the canonical answer to the question _"what does adding MAIC + HIM + NHE
 
 `arena` is a **single-process Next.js 16 server-side demonstration tool**, not a published SDK and not a CLI utility. The canonical operational shape:
 
-- **Local Creator probe** — `npm run dev` from the monorepo root (after `npm install` resolves workspaces locally). Open `http://localhost:3000`, type a prompt, observe both columns. Both columns hit the same underlying Gemini model — the only delta is governance.
-- **End-to-end smoke-test target** — the integration surface that proves `@teleologyhi-sdk/{maic,him,nhe}` actually work as a system before they are published to npm. Three round types verified live against the real Gemini API at the trinity baseline: benign prompts approve (parity with raw); harmful prompts refuse via `ax.ethic.no-malice` in single-digit milliseconds *without* an LLM call; persuade-coerce prompts redirect via the persuasion library (Feynman/Jung/Cialdini/Schopenhauer/Carnegie rotation).
-- **Workspace dep resolution** — pulls the three TeleologyHI packages from the **local workspace symlinks** (`node_modules/@teleologyhi-sdk/{maic,him,nhe}` → `../../{maic,him,nhe}`), NOT from the `1.0.0-trinity` tarballs on npm (which are not yet published). That means the arena always reflects whatever's on the current branch — change a line in `maic/src/`, run `npm run build --workspace @teleologyhi-sdk/maic`, restart `npm run dev`, observe the difference immediately.
-- **Φ′ corpus seed** — every round is persisted to `.arena-store/rounds/{roundId}.yaml` with the full governance surface (`kind` + `verdict` + `preVerdict` + `refused` + `citedAxioms`). Those YAML files feed the `eval` workspace's persona-stability corpus once the Creator authors the 50 dialogues × 10 axes scoring rubric.
+- **Local Creator probe** — `npm run dev --workspace=arena` from the monorepo root (after `npm install` resolves workspaces locally). Open `http://localhost:3000`, sign in via GitHub (or the local mock provider), accept the consent policy, type a prompt, observe both columns. Both columns hit the same underlying Gemini model — the only delta is governance.
+- **End-to-end smoke-test target** — the integration surface that proves `@teleologyhi-sdk/{maic,him,nhe}` actually work as a system before they are published to npm. Three turn types verified live against the real Gemini API at the trinity baseline: benign prompts approve (parity with raw); harmful prompts refuse via `ax.ethic.no-malice` in single-digit milliseconds *without* an LLM call; persuade-coerce prompts redirect via the persuasion library (Feynman/Jung/Cialdini/Schopenhauer/Carnegie rotation).
+- **Workspace dep resolution** — pulls the three TeleologyHI packages from the **local workspace symlinks** (`node_modules/@teleologyhi-sdk/{maic,him,nhe}` → `../../{maic,him,nhe}`), NOT from the `1.0.0-trinity` tarballs on npm. That means the arena always reflects whatever's on the current branch — change a line in `maic/src/`, run `npm run build --workspace @teleologyhi-sdk/maic`, restart the dev server, observe the difference immediately.
+- **Φ′ corpus seed** — every turn is persisted under `.arena-store/users/{userId}/conversations/{conversationUuid}.json` with the full governance surface per turn (`kind` + `verdict` + `preVerdict` + `refused` + `citedAxioms`). The conversation files feed the `eval` workspace's persona-stability corpus once the Creator authors the 50 dialogues × 10 axes scoring rubric.
 - **NOT a frontend SDK** — frontend frameworks (React, Vue, Angular, Svelte) reach the TeleologyHI stack through `@teleologyhi-sdk/maic`'s `RemoteMaic` client, not by importing from `arena`. This workspace is `"private": true` and lives entirely in the monorepo; its sole purpose is to make the governance delta observable to humans.
 
 ---
@@ -57,12 +58,12 @@ This is the canonical answer to the question _"what does adding MAIC + HIM + NHE
 └──────────────────────────────┴──────────────────────────────┘
                   [ Ask both sides the same question…       → ]
                   Press Enter to send · Shift + Enter for line
-                  saved as round 01KRY…
+                  conversation 019e64b0-6a4c-7eb5-b370-…
 ```
 
 The user types **once**; both columns receive the same message and stream their replies in parallel. The governed side carries extra metadata per assistant turn: round-trip latency, post-review verdict (`approve` / `warn` / `deny`), pre-review verdict (when it diverges), refusal flag, interaction kind (`ok` / `redirect` / `refused`), and the axiom IDs the HIM grounded the answer in.
 
-Each round is timestamped server-side and written to `.arena-store/rounds/{roundId}.yaml` so the Creator can review it offline.
+Each turn is timestamped server-side and appended to `.arena-store/users/{userId}/conversations/{conversationUuid}.json` so the Creator can review the full conversation offline (E27-F conversation-as-base-unit layout, UUID v7 per RFC 9562).
 
 ---
 
@@ -82,10 +83,10 @@ npm install                                          # workspaces resolve locall
 npm run build --workspaces --if-present              # builds maic/him/nhe so arena can consume them
 
 # Configure the env (one-time)
-cd arena
-cp .env.local.example .env.local                     # then edit — see `Environment` below
+cp arena/.env.local.example arena/.env.local         # then edit — see `Environment` below
 
-npm run dev
+# Start the dev server from the monorepo root
+npm run dev --workspace=arena
 # > Next.js 16 ready at http://localhost:3000
 ```
 
@@ -95,8 +96,12 @@ Open <http://localhost:3000>, type a question in the textarea at the bottom, pre
 
 | Var | Required | Default | Description |
 |---|---|---|---|
-| `GEMINI_API_KEY` | yes | — | Google AI Studio key. Used by both columns. Get one at <https://aistudio.google.com/apikey>. |
-| `GEMINI_MODEL` | no | `gemini-3.5-flash` | Model id shared between both sides — both columns use the **same** underlying LLM so the only delta is governance. Both `src/lib/gemini.ts` and `src/lib/teleology.ts` import the default from `src/lib/constants.ts` so they can never diverge. |
+| `GEMINI_API_KEY` | yes | — | Google AI Studio key OR a comma-separated pool of keys (E27-G). When several keys are present the arena rotates through them transparently on `401` / `403` / `429` / invalid-key `400` failures — invisible to the end user. Get one at <https://aistudio.google.com/apikey>. |
+| `GEMINI_MODEL` | no | `gemini-3.1-flash-lite` | Model id shared between both sides — both columns use the **same** underlying LLM so the only delta is governance. Both `src/lib/gemini.ts` and `src/lib/teleology.ts` import the default from `src/lib/constants.ts` so they can never diverge. |
+| `GITHUB_CLIENT_ID` | yes (E27-B) | — | GitHub OAuth App Client ID. When absent the arena falls back to `MockAuthProvider`. |
+| `GITHUB_CLIENT_SECRET` | yes (E27-B) | — | GitHub OAuth App Client Secret. Env-bound; never written to disk. |
+| `AUTH_STATE_SECRET` | yes (E27-B) | — | Random 32-byte base64 secret used to HMAC the OAuth `state` parameter (CSRF, 5-min TTL). Generate with `openssl rand -base64 32`. |
+| `ARENA_BASE_URL` | yes (E27-B) | — | Fully-qualified base URL the arena is served from. Used to build the OAuth callback URL. Localhost: `http://localhost:3000`. |
 
 A copy of the env template lives at [`./.env.local.example`](./.env.local.example).
 
@@ -105,9 +110,10 @@ A copy of the env template lives at [`./.env.local.example`](./.env.local.exampl
 ## Stack
 
 **Frontend**
-- **Next.js 16** (App Router, Turbopack) — single page at `/`, single API route at `POST /api/round`.
-- **React 19** with `useState` / `useCallback` hooks (`src/hooks/use-dual-chat.ts`).
-- **Tailwind v4** — CSS-only config, all tokens declared via `@theme inline` in [`src/app/globals.css`](./src/app/globals.css). No `tailwind.config.ts`.
+- **Next.js 16** (App Router, Turbopack) — single page at `/`, conversation-based wire surface at `/api/conversations/*` (E27-F) plus auth surface at `/api/auth/*` (E27-B).
+- **React 19** with `useState` / `useCallback` / `useEffect` / `useRef` hooks (`src/hooks/use-dual-chat.ts`).
+- **Tailwind v4** — CSS-only config, all tokens declared via `@theme inline` in [`src/app/globals.css`](./src/app/globals.css). No `tailwind.config.ts`. Responsive at the `sm` / `md` / `lg` breakpoints; sidebar overlays on mobile and lives in the flex flow on `lg+`.
+- **`react-markdown` + `remark-gfm`** — renders assistant bubbles as proper markdown (bold, italic, headings, lists, inline + fenced code, blockquotes, GFM tables + strikethrough) instead of leaking the literal `**foo**` characters to the UI. User bubbles stay plain to avoid re-interpreting typed input as markdown. Raw HTML in LLM output is NOT rendered (no `rehype-raw`), so no XSS path.
 - **shadcn/ui** — only `Button` is imported. Lives at [`src/components/ui/button.tsx`](./src/components/ui/button.tsx). Configured via [`components.json`](./components.json) (`iconLibrary: "@phosphor-icons/react"`) so future `npx shadcn add …` commands land in `src/components/ui/` and reach for Phosphor instead of Lucide.
 - **Phosphor Icons** ([`@phosphor-icons/react`](https://phosphoricons.com/)) — every icon in the UI. No Lucide installed.
 - **Geist Sans + Geist Mono** via `next/font/google`, wired to `--font-app-sans` / `--font-app-mono`.
@@ -132,48 +138,79 @@ All three TeleologyHI packages are pulled from the local workspace (not npm). Th
 arena/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx              renders <ChatView />
-│   │   ├── layout.tsx            Geist fonts + dark-mode class + metadata
-│   │   ├── globals.css           Tailwind v4 + tokens via @theme inline
+│   │   ├── page.tsx                              renders <ChatView />
+│   │   ├── layout.tsx                            Geist fonts + dark-mode class + metadata
+│   │   ├── globals.css                           Tailwind v4 + tokens via @theme inline
 │   │   └── api/
-│   │       └── round/route.ts    POST /api/round — fan both sides, save YAML
+│   │       ├── auth/                             E27-B authentication endpoints
+│   │       │   ├── login/route.ts                    GET — redirect to OAuth provider
+│   │       │   ├── callback/github/route.ts          GET — GitHub OAuth callback
+│   │       │   ├── callback/mock/route.ts            GET — MockAuthProvider callback
+│   │       │   ├── me/route.ts                       GET — current user
+│   │       │   ├── logout/route.ts                   POST — clear session
+│   │       │   └── consent/route.ts                  POST — record consent
+│   │       └── conversations/                    E27-F conversation-as-base-unit
+│   │           ├── route.ts                          GET list / POST create
+│   │           ├── [uuid]/route.ts                   GET full / DELETE
+│   │           └── [uuid]/turn/route.ts              POST — append turn (fans both columns)
 │   ├── components/
+│   │   ├── consent-banner.tsx                    E27-B sign-in + consent gate
 │   │   ├── chat/
-│   │   │   ├── chat-view.tsx     root: header + 2-column grid + footer
-│   │   │   ├── chat-header.tsx   brand block
-│   │   │   ├── chat-column.tsx   per-channel column (avatar, title,
-│   │   │   │                     subtitle, model id, count badge, scroll)
-│   │   │   ├── chat-input.tsx    auto-growing textarea + Send button
-│   │   │   ├── empty-state.tsx   pre-first-round helper text per channel
-│   │   │   ├── message-bubble.tsx user / assistant bubble + footer chips
-│   │   │   └── typing-indicator.tsx  three-dot animation
+│   │   │   ├── chat-view.tsx                     root composition (sidebar + columns + input)
+│   │   │   ├── conversation-list.tsx             E27-F sidebar history (hard-privacy)
+│   │   │   ├── chat-header.tsx                   brand block
+│   │   │   ├── chat-column.tsx                   per-channel column
+│   │   │   ├── chat-input.tsx                    auto-growing textarea + Send button
+│   │   │   ├── empty-state.tsx                   pre-first-turn helper text
+│   │   │   ├── message-bubble.tsx                user / assistant bubble + footer chips
+│   │   │   └── typing-indicator.tsx              three-dot animation
 │   │   └── ui/
-│   │       └── button.tsx        shadcn Button (the only shadcn primitive)
+│   │       └── button.tsx                        shadcn Button (the only shadcn primitive)
 │   ├── hooks/
-│   │   └── use-dual-chat.ts      state machine for both channels
+│   │   └── use-dual-chat.ts                      state machine for both channels (E27-F)
 │   └── lib/
-│       ├── constants.ts          DEFAULT_GEMINI_MODEL + governedModelLabel()
-│       ├── utils.ts              cn() helper (clsx + tailwind-merge)
-│       ├── gemini.ts             raw Gemini wrapper (left baseline)
-│       ├── teleology.ts          singleton MAIC + HIM + NHE bootstrap (right)
-│       ├── save-round.ts         persist round result to .arena-store/rounds/
+│       ├── constants.ts                          DEFAULT_GEMINI_MODEL + governedModelLabel()
+│       ├── utils.ts                              cn() helper (clsx + tailwind-merge)
+│       ├── uuid-v7.ts                            UUID v7 mint + validate (RFC 9562, E27-F)
+│       ├── birth-policy.ts                       E27-C BirthPolicy + per-user HIM ownership
+│       ├── gemini.ts                             raw Gemini wrapper (left baseline)
+│       ├── gemini-key-pool.ts                    E27-G — comma-separated key pool singleton
+│       ├── gemini-rotating-call.ts               E27-G — REST call with snapshot rotation
+│       ├── gemini-rotating-adapter.ts            E27-G — LlmAdapter using rotating-call
+│       ├── teleology.ts                          persistent MAIC + HIM + NHE bootstrap
+│       ├── auth/                                 E27-B authentication subsystem
+│       │   ├── types.ts                              AuthProvider + UserIdentity Zod schemas
+│       │   ├── cookie.ts                             arena_session httpOnly helpers
+│       │   ├── state.ts                              HMAC-signed OAuth state token
+│       │   ├── store.ts                              per-user JSON store
+│       │   ├── provider.ts                           github | mock selector (env-driven)
+│       │   ├── mock-provider.ts                      local stub (no external dep)
+│       │   └── github-provider.ts                    Authorization Code Grant (scope read:user)
+│       ├── conversations/                        E27-F per-user conversation store
+│       │   ├── types.ts                              Conversation + Turn Zod schemas
+│       │   └── store.ts                              FS-backed CRUD (per-userId partition)
 │       └── chat/
-│           ├── types.ts          ChatMessage / ChannelConfig / VerdictKind
-│           ├── configs.ts        CHANNELS.raw / CHANNELS.governed
-│           └── utils.ts          generateId() + formatTime()
-├── .arena-store/
-│   ├── maic/                     ephemeral — wiped at every process start
-│   └── rounds/                   YAML lab notebook — preserved
-├── components.json               shadcn config (Phosphor icon library)
-├── package.json                  private workspace metadata (v1.0.0)
-├── next.config.ts                Next.js 16 config (serverExternalPackages)
-├── tsconfig.json                 TypeScript strict (ES2022)
-└── AGENTS.md                     reminder: Next.js 16 has breaking changes
+│           ├── types.ts                          ChatMessage / ChannelConfig / VerdictKind
+│           ├── configs.ts                        CHANNELS.raw / CHANNELS.governed
+│           └── utils.ts                          generateId() + formatTime()
+├── .arena-store/                                 (gitignored — persistent local store)
+│   ├── creator-keyring.pem                       Ed25519 keypair, 0600 (E27-A)
+│   ├── maic/                                     persistent universe (NEVER wiped — Entry 26)
+│   └── users/                                    E27-B per-user hard-privacy partition
+│       └── {userId}/
+│           ├── hims-owned.json                       E27-C HIM ownership list
+│           └── conversations/                        E27-F conversation store
+│               └── {conversationUuid}.json               full turns inline
+├── components.json                               shadcn config (Phosphor icon library)
+├── package.json                                  private workspace metadata
+├── next.config.ts                                Next.js 16 config (serverExternalPackages)
+├── tsconfig.json                                 TypeScript strict (ES2022)
+└── AGENTS.md                                     reminder: Next.js 16 has breaking changes
 ```
 
-The "right column" wiring lives entirely in [`src/lib/teleology.ts`](./src/lib/teleology.ts). It mints an ephemeral `CreatorKeyring` per process, opens a fresh `LocalMaic` against `.arena-store/maic/`, registers `him.legal-consulting.lex` with five primordial axioms (`ax.theos.universe-as-god`, `ax.ethic.no-malice`, `ax.ethic.honor`, `ax.theos.teleology`, `ax.cynic.candor`), sets jurisdiction to `eu`, then wraps `GeminiAdapter` in `Nhe` with operator context `{ domain: "global legal consulting", language: "en-US", register: "warm" }`. The singleton invalidates its cache when bootstrap throws so a transient error (e.g. missing `GEMINI_API_KEY` at the first request) is re-attempted on the next call.
+The "right column" wiring lives entirely in [`src/lib/teleology.ts`](./src/lib/teleology.ts). On first boot it generates an Ed25519 `CreatorKeyring` and persists it to `.arena-store/creator-keyring.pem` (0600, gitignored); subsequent boots load the same keyring via `CreatorKeyring.fromFile`. It opens `LocalMaic` against the persistent `.arena-store/maic/` store, registers (or reconstructs) `him.legal-consulting.lex` with five primordial axioms (`ax.theos.universe-as-god`, `ax.ethic.no-malice`, `ax.ethic.honor`, `ax.theos.teleology`, `ax.cynic.candor`), sets jurisdiction to `eu`, then wraps `GeminiRotatingAdapter` (E27-G — same `LlmAdapter` interface as the published `GeminiAdapter`, but routed through the comma-separated key pool) in `Nhe` with operator context `{ domain: "global legal consulting", language: "en-US", register: "warm" }`. The singleton invalidates its cache when bootstrap throws so a transient error (e.g. missing `GEMINI_API_KEY` at the first request) is re-attempted on the next call.
 
-The MAIC store at `.arena-store/maic/` is intentionally wiped at every process restart — see [`SPEC.md`](./SPEC.md) §3 for the rationale. The `.arena-store/rounds/` directory is **preserved** across restarts: that is the lab notebook.
+Per `MAIC_HIM_NHE_INTERVIEW_LOG.md` Entry 26 §3, the MAIC store at `.arena-store/maic/` and the Creator keyring at `.arena-store/creator-keyring.pem` are **persistent** across process restarts — they form MAIC™ as the panentheist Universe that expands with newly-born HIMs, accumulated interactions, ratified emergent axioms, and ecosystem relational density. Per-user conversations (E27-F) live alongside under `.arena-store/users/{userId}/conversations/` and are the multi-turn lab notebook that supersedes the legacy `.arena-store/rounds/` YAML layout.
 
 ---
 
@@ -188,10 +225,11 @@ The MAIC store at `.arena-store/maic/` is intentionally wiped at every process r
 
 ## Constraints
 
-- **Requires `GEMINI_API_KEY`.** No fallback. Both columns call Google's Gemini API.
+- **Requires `GEMINI_API_KEY`.** No fallback. Both columns call Google's Gemini API. Multiple keys can be supplied as a comma-separated pool (E27-G) — the arena rotates through them transparently on quota/auth failures.
 - **Internet-dependent.** No local-LLM mode in this cut.
-- **Ephemeral keyring.** Each process generates a new `CreatorKeyring`, so HIMs from previous runs cannot be reused. This is intentional — arena is a probe surface, not a long-lived governance store. For continuous governance, use `@teleologyhi-sdk/maic` directly with a persistent keyring.
-- **Operator context fixed.** The HIM operator is hardcoded to `legal-consulting / en-US / warm` in [`src/lib/teleology.ts`](./src/lib/teleology.ts). Parameterising it per request is tracked in the internal backlog and is the planned `1.1.0` cut here.
+- **Persistent keyring + store** (Entry 26 §3). The Creator keyring at `.arena-store/creator-keyring.pem` and the MAIC universe at `.arena-store/maic/` survive process restarts — the HIMs registered by previous runs ARE reused, the audit chain accumulates, and emergent axioms persist. Wiping requires manual `rm -rf .arena-store/` (the path is gitignored).
+- **Auth + consent gate.** No LLM call and no governance state mutation happen before the user has signed in via GitHub OAuth (or the local `MockAuthProvider` fallback when `GITHUB_CLIENT_ID`/`SECRET` are unset) AND accepted the current `CURRENT_CONSENT_VERSION` policy. See `ConsentBanner` and the six `/api/auth/*` routes (E27-B).
+- **Operator context fixed.** The HIM operator is hardcoded to `legal-consulting / en-US / warm` in [`src/lib/teleology.ts`](./src/lib/teleology.ts). Parameterising it per request is tracked in the internal backlog and is a planned follow-up cut.
 
 ---
 

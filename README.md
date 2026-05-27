@@ -64,7 +64,7 @@ Three are published to npm (`@teleologyhi-sdk/maic`, `@teleologyhi-sdk/him`, `@t
 | [`distill/`](./distill/README.md) | *(private — Hugging Face Hub: canonical [`Trinity`](https://huggingface.co/TeleologyHI/Trinity) scaffolded · preview [`him-distilled-3b`](https://huggingface.co/TeleologyHI/him-distilled-3b) LIVE)* | 9 | Distillation pipeline. **Trinity scaffolded** (canonical artefact at `1.0.0-trinity`, MLflow LLMOps surface ready, first Trinity-tagged training run is the next operational step). **Preview cut LIVE** at HF Hub (Apache 2.0, public, 6.18 GB) — preserved as historical record. Not on npm — see [`distill/README.md`](./distill/README.md) §"Why not on npm". |
 | [`eval/`](./eval/README.md) | *(private — internal)* | 6 | Φ′ release-gate runner: reads Creator-curated P/R/D, computes C live, prints pass/warn/block. |
 | [`cloud/`](./cloud/README.md) | *(private — Creator-hosted)* | 9 | HTTP server fronting the `RemoteMaic` wire contract; read-public, write-Creator-only; Hostinger runbook included. |
-| [`arena/`](./arena/README.md) | *(private — internal)* | n/a | Comparison harness: split-pane chatbot UI running raw Gemini vs. Gemini under MAIC+HIM+NHE governance (Next.js + Tailwind + `@google/genai`). EU lawful-character profile active on the right side. |
+| [`arena/`](./arena/README.md) | *(private — internal)* | n/a | Comparison harness: dual-column chatbot UI running raw Gemini vs. Gemini under MAIC+HIM+NHE governance. Next.js 16 + Tailwind v4 + REST-direct Gemini (E27-G key rotation pool, snapshot-per-call race-free) + GitHub OAuth + consent gate (E27-B) + per-user conversation store with UUID v7 (E27-F) + persistent Creator keyring (E27-A, Entry 26 §3). EU lawful-character profile active on the right side. |
 
 > Public publishing of the three npm packages is tracked in the internal backlog §C. The distilled model artefact is published manually to Hugging Face Hub by David C. Cavalcante.
 
@@ -77,7 +77,7 @@ git clone https://github.com/davccavalcante/TeleologyHI.git
 cd TeleologyHI
 npm install                # npm workspaces hoists everything
 npm run build              # builds all 7 workspaces (maic, him, nhe, distill, eval, cloud, arena)
-npm run test               # 660 tests across maic + him + nhe + distill + eval + cloud (arena: no unit tests, integration only)
+npm run test               # 749 tests across maic + him + nhe + distill + eval + cloud (arena: no unit tests, integration only)
 ```
 
 End-to-end usage:

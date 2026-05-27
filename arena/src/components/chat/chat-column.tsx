@@ -14,7 +14,7 @@ type ChatColumnProps = {
   isThinking: boolean;
   /**
    * Underlying LLM model id reported by the API. Surfaces the technical
-   * detail (e.g. `gemini-3.5-flash`) below the subtitle so
+   * detail (e.g. `gemini-3.1-flash-lite`) below the subtitle so
    * both laypeople and engineers can see which model produced the reply.
    * Null until the first round completes.
    */
@@ -59,22 +59,23 @@ export function ChatColumn({
       aria-label={config.title}
       className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card"
     >
-      <header className="flex items-start justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3">
-        <div className="flex min-w-0 items-start gap-3">
+      <header className="flex items-start justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
+        <div className="flex min-w-0 items-start gap-2 sm:gap-3">
           <div
             aria-hidden="true"
             className={cn(
-              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+              "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9",
               headerAccent,
             )}
           >
-            <Icon size={18} weight="bold" />
+            <Icon size={16} weight="bold" className="sm:hidden" />
+            <Icon size={18} weight="bold" className="hidden sm:block" />
           </div>
           <div className="flex min-w-0 flex-col gap-0.5">
             <h2 className="truncate text-sm font-semibold leading-tight text-foreground">
               {config.title}
             </h2>
-            <p className="text-xs leading-snug text-muted-foreground">
+            <p className="hidden text-xs leading-snug text-muted-foreground sm:block">
               {config.subtitle}
             </p>
             <p
@@ -90,7 +91,7 @@ export function ChatColumn({
         </div>
         <span
           className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide tabular-nums",
+            "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide tabular-nums sm:px-2.5 sm:py-1",
             badgeAccent,
           )}
           aria-label={`${messages.length} messages`}
@@ -103,7 +104,7 @@ export function ChatColumn({
         {messages.length === 0 && !isThinking ? (
           <EmptyState variant={config.id} title={config.title} />
         ) : (
-          <ul className="flex flex-col gap-4 p-4">
+          <ul className="flex flex-col gap-3 p-3 sm:gap-4 sm:p-4">
             {messages.map((message) => (
               <MessageBubble
                 key={message.id}

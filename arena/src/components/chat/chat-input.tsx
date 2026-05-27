@@ -10,11 +10,25 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 
+/**
+ * Audit fix F6: the prop was previously `lastRoundId`, a leftover from
+ * the pre-E27-F round-based model. The arena is now conversation-based,
+ * so the identifier the input echoes is the conversation UUID v7. The
+ * old label "saved as round <ULID>" surfaced a UUID under a "round"
+ * caption, which was both technically and conceptually wrong.
+ *
+ * Audit fix (UX hygiene): the previous cut also accepted an `error`
+ * prop that was intentionally ignored inside the component (Creator
+ * directive: "não pode printar no output mensagem de erro"). Keeping
+ * an ignored prop on the type signature invited consumers to wire up
+ * error plumbing that would silently disappear. The current cut
+ * removes the prop entirely so failure handling stays where it
+ * belongs — in the hook and the route layer.
+ */
 type ChatInputProps = {
   onSubmit: (value: string) => boolean;
   disabled?: boolean;
-  error?: string | null;
-  lastRoundId?: string | null;
+  activeConversationUuid?: string | null;
 };
 
 const MIN_HEIGHT = 48;
@@ -23,8 +37,7 @@ const MAX_HEIGHT = 160;
 export function ChatInput({
   onSubmit,
   disabled,
-  error,
-  lastRoundId,
+  activeConversationUuid,
 }: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -83,7 +96,11 @@ export function ChatInput({
           placeholder="Ask both sides the same question…"
           rows={1}
           style={{ minHeight: MIN_HEIGHT, maxHeight: MAX_HEIGHT }}
-          className="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          /* `text-base` (16px) on small screens prevents iOS Safari from
+             auto-zooming the page when the input receives focus; `sm:text-sm`
+             switches back to the compact 14px on tablets and up where the
+             zoom heuristic does not apply. */
+          className="flex-1 resize-none rounded-xl border border-input bg-background px-3 py-3 text-base leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:px-4 sm:text-sm"
         />
         <Button
           type="submit"
@@ -96,15 +113,16 @@ export function ChatInput({
           <span className="hidden sm:inline">Send</span>
         </Button>
       </div>
-      <p className="px-1 text-[11px] text-muted-foreground" aria-live="polite">
-        {error ? (
-          <span className="text-destructive" role="alert">
-            Error: {error}
-          </span>
-        ) : lastRoundId ? (
+      <p
+        className="hidden truncate px-1 text-[11px] text-muted-foreground sm:block"
+        aria-live="polite"
+      >
+        {activeConversationUuid ? (
           <>
-            Press Enter to send · Shift + Enter for a new line — saved as round{" "}
-            <code className="font-mono text-foreground">{lastRoundId}</code>
+            Press Enter to send · Shift + Enter for a new line — conversation{" "}
+            <code className="font-mono text-foreground">
+              {activeConversationUuid}
+            </code>
           </>
         ) : (
           "Press Enter to send · Shift + Enter for a new line."
