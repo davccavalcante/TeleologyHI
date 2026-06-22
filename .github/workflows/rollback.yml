@@ -113,7 +113,7 @@ jobs:
           fi
           echo "Confirmation phrase OK for operation '$op'."
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0    # full history for ref resolution + commit lookup
 
