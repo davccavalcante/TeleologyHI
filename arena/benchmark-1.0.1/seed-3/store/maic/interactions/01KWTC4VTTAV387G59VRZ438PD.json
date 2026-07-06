@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-06T00:09:45.562Z",
+  "userPrompt": "What is the log base 10 of 1000?",
+  "responseText": "**3**\n\nBecause 10³ = 1000, so log₁₀(1000) = 3.",
+  "refused": false
+}

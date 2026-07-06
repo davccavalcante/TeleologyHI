@@ -1,10 +1,4 @@
-import {
-  makeStep,
-  type GenerateRequest,
-  type LlmAdapter,
-  type ReasoningResult,
-  type ReasoningStrategy,
-} from "./types.js";
+import { type GenerateRequest, makeStep, type ReasoningStrategy } from "./types.js";
 
 /** A ReAct tool. The string `args` is the bracketed expression from the model. */
 export type ReActTool = (args: string) => Promise<string>;
@@ -34,7 +28,7 @@ const DEFAULT_REACT_SYSTEM = (toolNames: string[]): string =>
   ].join("\n");
 
 /**
- * ReAct — Thought / Action / Observation loop.
+ * ReAct, Thought / Action / Observation loop.
  *
  * Each cycle the model emits either an Action (tool call) or an Answer.
  * Action results are appended as Observation lines and fed back into the next turn.
@@ -106,7 +100,7 @@ export function reAct(opts: ReActOptions): ReasoningStrategy {
         continue;
       }
 
-      // No Action and no Answer — bail out, return raw output.
+      // No Action and no Answer, bail out, return raw output.
       return {
         text: out.text,
         tokensIn,

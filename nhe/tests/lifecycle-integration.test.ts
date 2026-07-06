@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreatorKeyring, LocalMaic, type NheLifecycleRequest } from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder, HimHandle } from "@teleologyhi-sdk/him";
-import { Nhe } from "../src/nhe";
+import { CreatorKeyring, LocalMaic, type NheLifecycleRequest } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { Nhe } from "../src/nhe";
 
 async function bootstrap(nheId: string) {
   const storeDir = await mkdtemp(join(tmpdir(), "nhe-lifecycle-"));
@@ -25,7 +25,7 @@ async function bootstrap(nheId: string) {
   return { maic, kr, nhe, adapter };
 }
 
-describe("NHE — lifecycle gate (Entry 5)", () => {
+describe("NHE, lifecycle gate (Entry 5)", () => {
   it("active NHE produces kind=ok with lifecycleStatus=active", async () => {
     const { nhe } = await bootstrap("nhe-active");
     const out = await nhe.respond({ userPrompt: "say hi" });

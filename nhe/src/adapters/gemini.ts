@@ -1,10 +1,5 @@
 import { sseEvents } from "./sse.js";
-import type {
-  GenerateRequest,
-  GenerateResponse,
-  LlmAdapter,
-  StreamEvent,
-} from "./types.js";
+import type { GenerateRequest, GenerateResponse, LlmAdapter, StreamEvent } from "./types.js";
 
 export interface GeminiAdapterConfig {
   /** Gemini API key. Falls back to `GEMINI_API_KEY` when omitted. */
@@ -43,7 +38,7 @@ interface GeminiResponseBody {
 }
 
 /**
- * GeminiAdapter — production adapter for Google's Gemini models via the
+ * GeminiAdapter, production adapter for Google's Gemini models via the
  * Generative Language REST API. No SDK dependency.
  *
  * Reads the API key from constructor config or the `GEMINI_API_KEY` env var.
@@ -65,9 +60,7 @@ export class GeminiAdapter implements LlmAdapter {
   constructor(config: GeminiAdapterConfig = {}) {
     const apiKey = config.apiKey ?? process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        "GeminiAdapter: no API key provided and GEMINI_API_KEY is not set",
-      );
+      throw new Error("GeminiAdapter: no API key provided and GEMINI_API_KEY is not set");
     }
     this.apiKey = apiKey;
     this.model = config.model ?? DEFAULT_MODEL;
@@ -105,9 +98,7 @@ export class GeminiAdapter implements LlmAdapter {
 
     if (!response.ok) {
       const errText = await safeReadText(response);
-      throw new Error(
-        `GeminiAdapter: HTTP ${response.status} ${response.statusText}: ${errText}`,
-      );
+      throw new Error(`GeminiAdapter: HTTP ${response.status} ${response.statusText}: ${errText}`);
     }
 
     const parsed = (await response.json()) as GeminiResponseBody;
@@ -161,7 +152,9 @@ export class GeminiAdapter implements LlmAdapter {
     let tokensIn = 0;
     let tokensOut = 0;
     for await (const data of sseEvents(response.body)) {
-      if (data === "[DONE]") break;
+      // Gemini's streamGenerateContent closes the HTTP body to end the stream;
+      // it does not emit an OpenAI-style "[DONE]" sentinel, so the loop
+      // terminates on stream close and reaches the `end` event below.
       let parsed: GeminiResponseBody;
       try {
         parsed = JSON.parse(data);

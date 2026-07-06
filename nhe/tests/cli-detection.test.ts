@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { detectAdapter, isAdapterName, ADAPTER_NAME_LIST } from "../src/cli/adapter-detection";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ADAPTER_NAME_LIST, detectAdapter, isAdapterName } from "../src/cli/adapter-detection";
 
 const ENV_KEYS = [
   "ANTHROPIC_API_KEY",
@@ -134,7 +134,7 @@ describe("detectAdapter", () => {
 
   it("falls back to Ollama when all five API keys are absent and Ollama is alive", async () => {
     clearAllAdapterEnv();
-    const fetch = vi.fn(async () => ({ ok: true } as unknown as Response));
+    const fetch = vi.fn(async () => ({ ok: true }) as unknown as Response);
     const r = await detectAdapter({ fetch: fetch as unknown as typeof globalThis.fetch });
     expect(r.source).toBe("ollama");
   });

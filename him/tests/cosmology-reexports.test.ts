@@ -1,28 +1,29 @@
 /**
  * Sanity check that `@teleologyhi-sdk/maic` cosmology types are
- * re-exported from `@teleologyhi-sdk/him` (J-H1 + J-H2 — Entries 18, 19).
+ * re-exported from `@teleologyhi-sdk/him` (J-H1 + J-H2, Entries 18, 19).
  *
  * The semantics of each type are owned by `@teleologyhi-sdk/maic` and tested
  * there. This file only verifies that downstream consumers can import
  * them from `@teleologyhi-sdk/him` directly without reaching into maic.
  */
-import { describe, expect, it } from "vitest";
+
 import { CreatorKeyring } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
+import type {
+  BirthSignatureWithIdentity,
+  OntologicalKernel,
+  SignedBirthSignature,
+} from "../src/index.js";
 import {
   Affect,
   IdentityLayer,
   META_AXIOM_ID,
   NatalChart,
-  SIGNED_BIRTH_FIELDS,
-  WakeAffectBias,
   projectOntologicalKernel,
+  SIGNED_BIRTH_FIELDS,
   signBirthSignature,
   verifyBirthSignature,
-} from "../src/index.js";
-import type {
-  BirthSignatureWithIdentity,
-  OntologicalKernel,
-  SignedBirthSignature,
+  WakeAffectBias,
 } from "../src/index.js";
 
 describe("cosmology re-exports from @teleologyhi-sdk/maic (J-H1 + J-H2)", () => {
@@ -47,9 +48,10 @@ describe("cosmology re-exports from @teleologyhi-sdk/maic (J-H1 + J-H2)", () => 
   });
 
   it("re-exports NatalChart", () => {
-    expect(
-      NatalChart.parse({ sun: "virgo", ascendant: "capricorn" }),
-    ).toEqual({ sun: "virgo", ascendant: "capricorn" });
+    expect(NatalChart.parse({ sun: "virgo", ascendant: "capricorn" })).toEqual({
+      sun: "virgo",
+      ascendant: "capricorn",
+    });
   });
 
   it("re-exports SIGNED_BIRTH_FIELDS as the frozen tuple", () => {

@@ -1,19 +1,14 @@
-import type {
-  BehaviorReport,
-  DreamInductionTicket,
-  MaicVerdict,
-  NheStatus,
-} from "../types.js";
+import type { BehaviorReport, DreamInductionTicket, MaicVerdict, NheStatus } from "../types.js";
 
 /**
- * `MaicClient` — the minimal MAIC surface that NHE actually calls during
+ * `MaicClient`, the minimal MAIC surface that NHE actually calls during
  * `respond` / `sleep`. Both `LocalMaic` (in-process) and `RemoteMaic`
  * (HTTP) satisfy this interface, so an NHE can be wired against either
  * without code changes.
  *
  * Operators who write to MAIC (mint axioms, register HIMs, ratify
  * proposals, etc.) keep using `LocalMaic` because writes require the
- * Creator's Ed25519 private key — and that key never travels over the
+ * Creator's Ed25519 private key, and that key never travels over the
  * network. `RemoteMaic` is therefore a **read + behavior-review** client
  * suitable for serverless / edge NHE deployments where the Creator's
  * canonical MAIC instance is hosted elsewhere.

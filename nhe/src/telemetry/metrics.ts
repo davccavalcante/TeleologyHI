@@ -1,4 +1,5 @@
 import { metrics } from "@opentelemetry/api";
+import { NHE_VERSION } from "../version.js";
 
 /**
  * OpenTelemetry-native metrics for the NHE pipeline (TASK.md H3).
@@ -7,18 +8,18 @@ import { metrics } from "@opentelemetry/api";
  * `MeterProvider` is registered by the consumer, every call is a no-op.
  * Consumers who want Prometheus scrape-target semantics install
  * `@opentelemetry/sdk-metrics` + `@opentelemetry/exporter-prometheus`
- * and expose the resulting `/metrics` endpoint from their app — NHE's
+ * and expose the resulting `/metrics` endpoint from their app, NHE's
  * counters/histograms appear automatically with no additional wiring.
  *
  * Exposed instruments:
- *   - `nhe.respond.count` — counter, labels { kind, adapter, lifecycle }
- *   - `nhe.respond.refused` — counter, labels { reason, adapter }
- *   - `nhe.tokens` — histogram of total token usage per respond, labels { direction, adapter }
- *   - `nhe.sleep.cycles` — counter of completed sleep cycles
- *   - `nhe.sleep.dreams` — counter of dreams produced (classification label)
+ *   - `nhe.respond.count`, counter, labels { kind, adapter, lifecycle }
+ *   - `nhe.respond.refused`, counter, labels { reason, adapter }
+ *   - `nhe.tokens`, histogram of total token usage per respond, labels { direction, adapter }
+ *   - `nhe.sleep.cycles`, counter of completed sleep cycles
+ *   - `nhe.sleep.dreams`, counter of dreams produced (classification label)
  */
 const METER_NAME = "@teleologyhi-sdk/nhe";
-const METER_VERSION = "1.0.0-trinity";
+const METER_VERSION = NHE_VERSION;
 
 const meter = metrics.getMeter(METER_NAME, METER_VERSION);
 

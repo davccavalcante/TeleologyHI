@@ -2,7 +2,7 @@
  * Smoke tests for the OpenTelemetry-native telemetry surface (TASK.md H2 + H3).
  *
  * With no `MeterProvider` / `TracerProvider` registered the `@opentelemetry/api`
- * default is a no-op — so every instrument call must run without throwing and
+ * default is a no-op, so every instrument call must run without throwing and
  * `withSpan` must invoke its inner function + propagate the return value (or
  * the thrown error) faithfully. That contract is what consumers rely on when
  * they install NHE in a process that has not (yet) wired an exporter.
@@ -19,7 +19,7 @@ import {
   withSpan,
 } from "../src/index.js";
 
-describe("telemetry — no-op contract", () => {
+describe("telemetry, no-op contract", () => {
   it("exports every documented instrument as a callable", () => {
     expect(typeof respondCount.add).toBe("function");
     expect(typeof respondRefusedCount.add).toBe("function");
@@ -50,7 +50,9 @@ describe("telemetry — no-op contract", () => {
   });
 
   it("direct counter / histogram calls do not throw", () => {
-    expect(() => respondCount.add(1, { kind: "ok", adapter: "mock", lifecycle: "alive" })).not.toThrow();
+    expect(() =>
+      respondCount.add(1, { kind: "ok", adapter: "mock", lifecycle: "alive" }),
+    ).not.toThrow();
     expect(() => respondRefusedCount.add(1, { reason: "pre", adapter: "mock" })).not.toThrow();
     expect(() => tokensHistogram.record(123, { direction: "in", adapter: "mock" })).not.toThrow();
     expect(() => sleepCyclesCount.add(1)).not.toThrow();
@@ -58,7 +60,7 @@ describe("telemetry — no-op contract", () => {
   });
 });
 
-describe("telemetry — tracer + withSpan", () => {
+describe("telemetry, tracer + withSpan", () => {
   it("`getTracer` returns an object with the OpenTelemetry tracer shape", () => {
     const t = getTracer();
     expect(t).toBeDefined();
@@ -82,11 +84,11 @@ describe("telemetry — tracer + withSpan", () => {
   });
 
   it("`withSpan` accepts optional attributes without throwing", async () => {
-    const out = await withSpan(
-      "test.attrs",
-      async () => "ok",
-      { "test.kind": "smoke", "test.count": 1, "test.flag": true },
-    );
+    const out = await withSpan("test.attrs", async () => "ok", {
+      "test.kind": "smoke",
+      "test.count": 1,
+      "test.flag": true,
+    });
     expect(out).toBe("ok");
   });
 });

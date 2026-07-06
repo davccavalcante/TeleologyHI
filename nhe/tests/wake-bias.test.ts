@@ -1,14 +1,11 @@
 /**
  * Tests for applyAffectBias / affectRefusalDensity / decayAffectBias
- * (J-N11 — Entries 20 + 22).
+ * (J-N11, Entries 20 + 22).
  */
-import { describe, expect, it } from "vitest";
+
 import type { WakeAffectBias } from "@teleologyhi-sdk/maic";
-import {
-  affectRefusalDensity,
-  applyAffectBias,
-  decayAffectBias,
-} from "../src/index.js";
+import { describe, expect, it } from "vitest";
+import { affectRefusalDensity, applyAffectBias, decayAffectBias } from "../src/index.js";
 
 function bias(over: Partial<WakeAffectBias> = {}): WakeAffectBias {
   return {

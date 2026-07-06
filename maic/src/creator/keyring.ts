@@ -1,9 +1,9 @@
 import {
-  generateKeyPairSync,
-  sign as cryptoSign,
-  verify as cryptoVerify,
   createPrivateKey,
   createPublicKey,
+  sign as cryptoSign,
+  verify as cryptoVerify,
+  generateKeyPairSync,
   type KeyObject,
 } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
@@ -11,7 +11,7 @@ import { canonicalJSON } from "../axioms/signing.js";
 import type { CreatorSignature } from "../types.js";
 
 /**
- * CreatorKeyring — Ed25519 keypair for the Creator (David C. Cavalcante).
+ * CreatorKeyring, Ed25519 keypair for the Creator (David C. Cavalcante).
  *
  * Only the holder of the private key may mutate MAIC axioms or terminate entities.
  * Verification is open: any party with the Creator's public key can verify a signature.
@@ -91,22 +91,16 @@ export class CreatorKeyring {
   }
 
   /** Verify a signature against a specific public key (base64url). */
-  static verifyWith(
-    publicKeyB64u: string,
-    payload: unknown,
-    sig: CreatorSignature,
-  ): boolean {
+  static verifyWith(publicKeyB64u: string, payload: unknown, sig: CreatorSignature): boolean {
     if (sig.algorithm !== "ed25519") return false;
     if (sig.publicKey !== publicKeyB64u) return false;
     const message = canonicalJSON({ payload, nonce: sig.nonce });
-    let value: Buffer;
     try {
-      value = base64UrlToBuf(sig.value);
-    } catch {
-      return false;
-    }
-    const pubKey = base64UrlToPublicKey(publicKeyB64u);
-    try {
+      // Decode the signature value and the pinned public key inside the guard:
+      // a malformed key or value must yield `false`, never a thrown DER-parse
+      // error that would crash every mutation path.
+      const value = base64UrlToBuf(sig.value);
+      const pubKey = base64UrlToPublicKey(publicKeyB64u);
       return cryptoVerify(null, Buffer.from(message), pubKey, value);
     } catch {
       return false;

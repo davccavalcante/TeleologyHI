@@ -1,7 +1,7 @@
 /**
  * Tests for the cosmology types (Entries 16-25 of MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
- * These are pure zod-schema tests — no I/O, no side effects.
+ * These are pure zod-schema tests, no I/O, no side effects.
  * They lock the shape of the types so downstream consumers (@teleologyhi-sdk/him,
  * @teleologyhi-sdk/nhe) can rely on them.
  */
@@ -45,7 +45,7 @@ describe("Affect (Entries 22 + 24)", () => {
     expect(() => Affect.parse("")).toThrow();
   });
 
-  it("includes `reunion` — the ninth affect for limbo return (Entry 24)", () => {
+  it("includes `reunion`, the ninth affect for limbo return (Entry 24)", () => {
     expect(Affect.parse("reunion")).toBe("reunion");
   });
 });
@@ -90,12 +90,8 @@ describe("NatalChart (Entry 19)", () => {
       sun: "virgo" as const,
       ascendant: "capricorn" as const,
       moon: "scorpio" as const,
-      positions: [
-        { planet: "sun" as const, sign: "virgo" as const, house: 10, degree: 15.5 },
-      ],
-      aspects: [
-        { from: "sun" as const, to: "moon" as const, aspect: "trine" as const },
-      ],
+      positions: [{ planet: "sun" as const, sign: "virgo" as const, house: 10, degree: 15.5 }],
+      aspects: [{ from: "sun" as const, to: "moon" as const, aspect: "trine" as const }],
     };
     expect(NatalChart.parse(full)).toEqual(full);
   });

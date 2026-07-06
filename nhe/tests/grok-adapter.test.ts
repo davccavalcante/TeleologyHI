@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { GrokAdapter } from "../src/adapters/grok";
 
 function makeMockFetch(body: unknown, status = 200): typeof globalThis.fetch {
@@ -122,9 +122,7 @@ describe("GrokAdapter", () => {
       messages: [{ role: "user", content: "weather?" }],
       tools: [{ name: "lookup", description: "", inputSchema: {} }],
     });
-    expect(r.toolUses).toEqual([
-      { id: "call_1", name: "lookup", input: { q: "weather" } },
-    ]);
+    expect(r.toolUses).toEqual([{ id: "call_1", name: "lookup", input: { q: "weather" } }]);
   });
 
   it("omits tools field when none provided", async () => {
@@ -158,13 +156,16 @@ describe("GrokAdapter", () => {
         controller.close();
       },
     });
-    const fetchFn = vi.fn(async () => ({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      body: stream,
-      text: async () => "",
-    } as unknown as Response));
+    const fetchFn = vi.fn(
+      async () =>
+        ({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          body: stream,
+          text: async () => "",
+        }) as unknown as Response,
+    );
     const a = new GrokAdapter({ apiKey: "k", fetch: fetchFn });
     const events = [];
     for await (const ev of a.generateStream!({

@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { dreamRecordFromYaml, dreamRecordToYaml, sleepYamlFilename } from "../src/sleep/yaml";
+import { describe, expect, it } from "vitest";
 import type { DreamRecord } from "../src/sleep/types";
+import { dreamRecordFromYaml, dreamRecordToYaml, sleepYamlFilename } from "../src/sleep/yaml";
 
 const record: DreamRecord = {
   version: 1,
@@ -72,7 +72,12 @@ describe("sleep YAML round-trip", () => {
   });
 
   it("validates: rejects invalid phase names", () => {
-    const bad: any = { ...record, phases: [{ ...record.phases[0], phase: "ZZZ" }] };
+    // Intentionally malformed (invalid phase) to exercise the validator; cast
+    // through unknown rather than `any` to keep the strict-typing gate clean.
+    const bad = {
+      ...record,
+      phases: [{ ...record.phases[0], phase: "ZZZ" }],
+    } as unknown as typeof record;
     expect(() => dreamRecordToYaml(bad)).toThrow();
   });
 

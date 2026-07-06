@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
 import type { BirthSignature } from "../src/types";
@@ -20,7 +20,7 @@ const bsig = (id: string): BirthSignature => ({
   primordialAxiomIds: [],
 });
 
-describe("LocalMaic — HIM registration", () => {
+describe("LocalMaic, HIM registration", () => {
   let dir: string;
   let kr: CreatorKeyring;
   let maic: LocalMaic;
@@ -80,18 +80,14 @@ describe("LocalMaic — HIM registration", () => {
   it("rejects registration with an invalid signature", async () => {
     const sig = bsig("him.bad");
     const impostor = CreatorKeyring.generate();
-    await expect(maic.registerHim(sig, impostor.sign(sig, 1))).rejects.toThrow(
-      /signature/i,
-    );
+    await expect(maic.registerHim(sig, impostor.sign(sig, 1))).rejects.toThrow(/signature/i);
   });
 
   it("rejects duplicate himId", async () => {
     const sig = bsig("him.dup");
     await maic.registerHim(sig, kr.sign(sig, 1));
     const sig2 = bsig("him.dup");
-    await expect(maic.registerHim(sig2, kr.sign(sig2, 2))).rejects.toThrow(
-      /already registered/i,
-    );
+    await expect(maic.registerHim(sig2, kr.sign(sig2, 2))).rejects.toThrow(/already registered/i);
   });
 
   it("getHimRecord returns null for unknown id", async () => {

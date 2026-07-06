@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
 import type { DreamInductionIntent } from "../src/types";
@@ -18,7 +18,7 @@ const intent: DreamInductionIntent = {
   inducedBy: "maic",
 };
 
-describe("LocalMaic — dream induction", () => {
+describe("LocalMaic, dream induction", () => {
   let dir: string;
   let kr: CreatorKeyring;
   let maic: LocalMaic;

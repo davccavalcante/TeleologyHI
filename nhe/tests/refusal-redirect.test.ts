@@ -1,16 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder, HimHandle } from "@teleologyhi-sdk/him";
-import { Nhe } from "../src/nhe";
+import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
+import { beforeEach, describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
-import {
-  PERSUASION_TECHNIQUES,
-  pickTechnique,
-  buildRedirectPrompt,
-} from "../src/refusal/library";
+import { Nhe } from "../src/nhe";
+import { buildRedirectPrompt, PERSUASION_TECHNIQUES, pickTechnique } from "../src/refusal/library";
 
 async function bootstrap() {
   const dir = await mkdtemp(join(tmpdir(), "nhe-refusal-"));
@@ -156,7 +152,9 @@ describe("Redirect loop (require-redirect verdict)", () => {
 
 describe("PersuasionLibrary helpers", () => {
   it("pickTechnique cycles 1-based through the list", () => {
-    const list = ["a", "b", "c"] as unknown as readonly Parameters<typeof pickTechnique>[0][number][];
+    const list = ["a", "b", "c"] as unknown as readonly Parameters<
+      typeof pickTechnique
+    >[0][number][];
     expect(pickTechnique(list as never, 1)).toBe("a" as never);
     expect(pickTechnique(list as never, 2)).toBe("b" as never);
     expect(pickTechnique(list as never, 3)).toBe("c" as never);

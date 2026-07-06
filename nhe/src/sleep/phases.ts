@@ -14,7 +14,7 @@ export function interactionsToFragments(items: readonly InteractionRecord[]): st
 
 /**
  * One-sentence summary the LLM is asked to produce per NREM phase. Distinct
- * from `Dream` (which is REM narrative) — these are compressions of the day's
+ * from `Dream` (which is REM narrative), these are compressions of the day's
  * substrate that REM then weaves dreams around.
  */
 export type NremPhase = "N2" | "N3" | "N4";
@@ -184,11 +184,7 @@ export async function generateRemDreams(
     messages: [{ role: "user", content: user }],
     maxOutputTokens: 1024,
   });
-  const dreams = parseRemOutput(
-    out.text,
-    !!induction,
-    induction?.inducedBy ?? null,
-  );
+  const dreams = parseRemOutput(out.text, !!induction, induction?.inducedBy ?? null);
   return { dreams, tokensIn: out.tokensIn, tokensOut: out.tokensOut };
 }
 

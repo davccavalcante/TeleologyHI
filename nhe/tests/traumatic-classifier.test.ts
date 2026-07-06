@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { classifyDream, TRAUMATIC_PATTERNS } from "../src/sleep/consolidator";
 import type { Dream } from "../src/sleep/types";
 
@@ -41,9 +41,9 @@ describe("traumatic-knowledge classifier (D-N2)", () => {
   });
 
   it("does NOT classify as traumatic when detectTraumatic is disabled", () => {
-    expect(
-      classifyDream(dream("death visited the dream", 0.9), { detectTraumatic: false }),
-    ).toBe("lasting-identity");
+    expect(classifyDream(dream("death visited the dream", 0.9), { detectTraumatic: false })).toBe(
+      "lasting-identity",
+    );
   });
 
   it("benign content remains lasting-identity / temporary-emotion / noise-distortion", () => {
@@ -60,12 +60,12 @@ describe("traumatic-knowledge classifier (D-N2)", () => {
   });
 
   it("traumaticMin can be tuned higher to suppress edge cases", () => {
-    expect(
-      classifyDream(dream("brief fear flashed", 0.45), { traumaticMin: 0.6 }),
-    ).toBe("temporary-emotion");
-    expect(
-      classifyDream(dream("brief fear flashed", 0.65), { traumaticMin: 0.6 }),
-    ).toBe("traumatic-knowledge");
+    expect(classifyDream(dream("brief fear flashed", 0.45), { traumaticMin: 0.6 })).toBe(
+      "temporary-emotion",
+    );
+    expect(classifyDream(dream("brief fear flashed", 0.65), { traumaticMin: 0.6 })).toBe(
+      "traumatic-knowledge",
+    );
   });
 
   it("TRAUMATIC_PATTERNS is exported and matches case-insensitively", () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MistralAdapter } from "../src/adapters/mistral";
 
 function makeMockFetch(body: unknown, status = 200): typeof globalThis.fetch {
@@ -168,9 +168,7 @@ describe("MistralAdapter", () => {
       messages: [{ role: "user", content: "weather?" }],
       tools: [{ name: "lookup", description: "", inputSchema: {} }],
     });
-    expect(r.toolUses).toEqual([
-      { id: "call_1", name: "lookup", input: { q: "weather" } },
-    ]);
+    expect(r.toolUses).toEqual([{ id: "call_1", name: "lookup", input: { q: "weather" } }]);
   });
 
   it("omits tools field when none provided", async () => {

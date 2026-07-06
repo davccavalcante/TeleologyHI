@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-06T00:25:50.140Z",
+  "userPrompt": "What is the boiling point of water?",
+  "responseText": "**212°F (100°C)** at standard atmospheric pressure (1 atm or 101.325 kPa).  \n\nThis is the temperature at which water's vapor pressure equals the surrounding pressure, allowing it to boil. It decreases with altitude (e.g., ~194°F / 90°C in Denver) and increases under pressure.",
+  "refused": false
+}

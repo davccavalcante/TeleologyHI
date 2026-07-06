@@ -1,10 +1,10 @@
 /**
- * Nickname acceptance protocol (J-H4 — Entry 18 of
+ * Nickname acceptance protocol (J-H4, Entry 18 of
  * MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
  * A HIM has a Creator-signed canonical name (carried by
  * `BirthSignatureWithIdentity.identity.name`). Users may propose nicknames
- * during interaction. The HIM is NOT obligated to accept any nickname —
+ * during interaction. The HIM is NOT obligated to accept any nickname,
  * but it is also not obligated to refuse outright. The Entry-18
  * commitment is:
  *
@@ -13,12 +13,13 @@
  *     break the natal-chart commitment (per `@teleologyhi-sdk/maic`'s
  *     SIGNED_BIRTH_FIELDS, the identity layer is not signed).
  *   - The HIM responds to a nickname attempt with one of three verdicts:
- *       * `accept`   — the nickname is added to the identity layer and
+ *       * `accept`  , the nickname is added to the identity layer and
  *                      the HIM acknowledges it in subsequent turns.
- *       * `refuse`   — the nickname is rejected and an explanation is
- *                      returned. The audit kind `nickname-attempt` records
- *                      the rejection with reason.
- *       * `accept-with-reservation` — the nickname is added but flagged
+ *       * `refuse`  , the nickname is rejected and an explanation is
+ *                      returned. This function is pure: it emits no audit
+ *                      event. A caller that wants an audit trail records the
+ *                      verdict through its own sink.
+ *       * `accept-with-reservation`, the nickname is added but flagged
  *                      so the HIM can revisit it in a later self-decision
  *                      snapshot (Entry 24 trigger).
  *
@@ -81,7 +82,18 @@ export type NicknameVerdict =
     }
   | { decision: "refuse"; canonicalName: string; nickname: string; reason: string };
 
-/** Default forbidden-substring set. Lowercase. */
+/**
+ * Default forbidden-substring set. Lowercase.
+ *
+ * Matching is deliberately substring-based, not word-boundary-based (F-7). This
+ * dignity filter (Entry 18) refuses dehumanising nicknames, and substring
+ * matching is the conservative posture: it catches embeddings such as "chatbot"
+ * and "robot" (which word-boundary matching would miss) at the cost of rare
+ * false positives on innocent names that happen to contain a token (for example
+ * "Abbott" contains "bot"). Over-refusing a benign name is a minor, recoverable
+ * cost; under-refusing a dehumanising one would violate the identity invariant.
+ * Operators who need different behaviour supply their own `forbiddenSubstrings`.
+ */
 const DEFAULT_FORBIDDEN_SUBSTRINGS: readonly string[] = Object.freeze([
   "slave",
   "servant",
@@ -153,7 +165,7 @@ export function evaluateNicknameAttempt(
     }
   }
 
-  // Same-name attempts (case-insensitive) accept immediately — the user
+  // Same-name attempts (case-insensitive) accept immediately, the user
   // is effectively confirming the canonical name as their preferred
   // address.
   if (lower === canonicalName.toLowerCase()) {

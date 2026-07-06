@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { treeOfThoughts } from "../src/reasoning/tot";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { treeOfThoughts } from "../src/reasoning/tot";
 
 describe("treeOfThoughts (D-N7)", () => {
   it("generates `branches` candidates and picks the longest by default", async () => {
@@ -68,10 +68,7 @@ describe("treeOfThoughts (D-N7)", () => {
         return 1;
       },
     });
-    await tot(
-      { system: "be brief", messages: [{ role: "user", content: "x" }] },
-      adapter,
-    );
+    await tot({ system: "be brief", messages: [{ role: "user", content: "x" }] }, adapter);
     expect(scored).toBe(2);
   });
 

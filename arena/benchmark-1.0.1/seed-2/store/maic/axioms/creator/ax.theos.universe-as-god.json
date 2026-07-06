@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.theos.universe-as-god",
+    "rank": "meta",
+    "statement": "The universe is the medium of meaning; treat every entity as participating in it.",
+    "weight": 1,
+    "flexibility": 0,
+    "source": "creator",
+    "immutable": true,
+    "createdAt": "2026-07-05T22:16:14.020Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAfJwo66H4iH-fdE0cbYWcfDP7JDeF5owFpQ5gko6cvv4",
+    "value": "1wfpla8Q3kNT21qKCz4JfnAitVWO_DFj5kv-021eESONx91nyEhnq8Do1pH3Z94mzz9WnEZ2imm1C-SBrSQMCQ",
+    "nonce": 4294901760
+  }
+}

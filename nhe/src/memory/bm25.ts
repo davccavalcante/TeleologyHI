@@ -1,5 +1,5 @@
 /**
- * BM25 — Okapi BM25 ranking, dependency-free (D-N3 step 1).
+ * BM25, Okapi BM25 ranking, dependency-free (D-N3 step 1).
  *
  * The previous `recallFromTemporalLobe` used a raw keyword count. That ranked
  * documents by how often a query token appeared, with no normalisation for
@@ -16,7 +16,7 @@
  * a laptop. For larger corpora the embedder hook (see ./recall.ts) plugs in
  * a sentence-transformer + an ANN index.
  *
- * Defaults: k1=1.5, b=0.75 — the canonical Okapi values used by Elasticsearch
+ * Defaults: k1=1.5, b=0.75, the canonical Okapi values used by Elasticsearch
  * and Lucene. Override for domain-specific tuning.
  */
 
@@ -57,16 +57,12 @@ export function bm25<T extends Bm25Document>(
   // Pre-tokenise each document and cache its length + term-frequency map.
   const docTokens = docs.map((d) => tokenise(d.text));
   const docLengths = docTokens.map((t) => t.length);
-  const avgDl =
-    docLengths.reduce((s, l) => s + l, 0) / Math.max(1, docLengths.length);
+  const avgDl = docLengths.reduce((s, l) => s + l, 0) / Math.max(1, docLengths.length);
 
   // For each query term, compute IDF and accumulate scores per document.
   const scores = new Array<number>(docs.length).fill(0);
   for (const term of new Set(tokens)) {
-    const df = docTokens.reduce(
-      (n, terms) => n + (terms.includes(term) ? 1 : 0),
-      0,
-    );
+    const df = docTokens.reduce((n, terms) => n + (terms.includes(term) ? 1 : 0), 0);
     if (df === 0) continue;
     const idf = Math.log(1 + (docs.length - df + 0.5) / (df + 0.5));
     for (let i = 0; i < docs.length; i++) {

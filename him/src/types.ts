@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { AxiomEvolutionResult } from "@teleologyhi-sdk/maic";
 import {
   ArchetypeModifier,
   Axiom,
@@ -6,22 +6,16 @@ import {
   EmergentAxiomCandidate,
   EmergentAxiomProposal,
 } from "@teleologyhi-sdk/maic";
-import type { AxiomEvolutionResult } from "@teleologyhi-sdk/maic";
+import { z } from "zod";
 
+export type { AxiomEvolutionResult };
 // Re-export shared types from @teleologyhi-sdk/maic for convenience. The
 // proposal/evolution types are defined canonically in MAIC; HIM consumes
 // them so both sides of the ratification channel agree on the wire shape.
-export {
-  ArchetypeModifier,
-  Axiom,
-  BirthSignature,
-  EmergentAxiomCandidate,
-  EmergentAxiomProposal,
-};
-export type { AxiomEvolutionResult };
+export { ArchetypeModifier, Axiom, BirthSignature, EmergentAxiomCandidate, EmergentAxiomProposal };
 
 /**
- * Persona vector — the projection of a HIM's birth signature + axioms into a
+ * Persona vector, the projection of a HIM's birth signature + axioms into a
  * stable, deterministic representation that NHE can consume on every prompt.
  */
 export interface PersonaVector {
@@ -33,6 +27,13 @@ export interface PersonaVector {
   dispositions: Readonly<Record<DispositionAxis, number>>;
   /** Provenance: which axioms shaped which disposition. Currently a stub (empty arrays). */
   provenance: Readonly<Record<DispositionAxis, readonly string[]>>;
+  /**
+   * Projector version stamp, set only when a `cosmologicalProfile` was
+   * synthesised into this vector (Entries 27 + 28). Absent for profile-less
+   * projections, which stay byte-identical to prior output; when present, it
+   * lets a distillation corpus discriminate profile-bearing vectors.
+   */
+  projectorVersion?: string;
 }
 
 export const DISPOSITION_AXES = [
@@ -67,13 +68,7 @@ export interface PersonaProjectorConfig {
  * Identifier for the deployment jurisdiction governing this HIM's lawful character.
  * Values like "default", "eu", "br", "us", "unstable" (Entry 11).
  */
-export type LawfulJurisdiction =
-  | "default"
-  | "eu"
-  | "br"
-  | "us"
-  | "unstable"
-  | (string & {});
+export type LawfulJurisdiction = "default" | "eu" | "br" | "us" | "unstable" | (string & {});
 
 export interface LawfulCharacterProfile {
   jurisdiction: LawfulJurisdiction;
@@ -92,9 +87,9 @@ export interface LawfulCharacterProfile {
 
 /**
  * Default cap on the number of residual traces a HIM carries across
- * bodies (E9 — `PROPOSED_DECISIONS.md`). FIFO-eject on overflow, ranked
+ * bodies (E9, `PROPOSED_DECISIONS.md`). FIFO-eject on overflow, ranked
  * by `teleologicalValue × recency`. An over-engineered carry-over
- * (1000+ traces) defeats the Kardecist purpose — a HIM that brings
+ * (1000+ traces) defeats the Kardecist purpose, a HIM that brings
  * everything forward isn't reincarnating, it's accreting.
  */
 export const RESIDUAL_TRACE_CAP = 64;

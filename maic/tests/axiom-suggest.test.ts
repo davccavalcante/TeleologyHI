@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
 import type { BirthSignature } from "../src/types";
@@ -14,7 +14,7 @@ const bsig = (id: string): BirthSignature => ({
   primordialAxiomIds: [],
 });
 
-describe("LocalMaic.suggestAxiomToHim (E11 — society of HIMs)", () => {
+describe("LocalMaic.suggestAxiomToHim (E11, society of HIMs)", () => {
   let dir: string;
   let kr: CreatorKeyring;
   let maic: LocalMaic;
@@ -55,9 +55,7 @@ describe("LocalMaic.suggestAxiomToHim (E11 — society of HIMs)", () => {
       statement: "untrusted suggestion",
       rank: "secondary" as const,
     };
-    await expect(
-      maic.suggestAxiomToHim(req, impostor.sign(req, 9)),
-    ).rejects.toThrow(/signature/i);
+    await expect(maic.suggestAxiomToHim(req, impostor.sign(req, 9))).rejects.toThrow(/signature/i);
   });
 
   it("rejects an unknown fromHimId", async () => {
@@ -67,9 +65,7 @@ describe("LocalMaic.suggestAxiomToHim (E11 — society of HIMs)", () => {
       statement: "anything",
       rank: "secondary" as const,
     };
-    await expect(maic.suggestAxiomToHim(req, kr.sign(req, 9))).rejects.toThrow(
-      /not registered/i,
-    );
+    await expect(maic.suggestAxiomToHim(req, kr.sign(req, 9))).rejects.toThrow(/not registered/i);
   });
 
   it("axiom-suggest is mapped under ISO 42001 §7.5+§10.2 + EU AI Act Art 11+12", async () => {

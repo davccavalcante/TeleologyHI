@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { HimStore } from "../src/hims/store";
+import { beforeEach, describe, expect, it } from "vitest";
 import { CreatorKeyring } from "../src/creator/keyring";
+import { HimStore } from "../src/hims/store";
 import type { BirthSignature, NheBodyRef, ReincarnationRequest } from "../src/types";
 
 const bsig = (id: string): BirthSignature => ({
@@ -78,9 +78,7 @@ describe("HimStore.reincarnate", () => {
   it("rejects an invalid Creator signature", async () => {
     const impostor = CreatorKeyring.generate();
     const req: ReincarnationRequest = { himId: "him.r", toBody: body("nhe-x") };
-    await expect(store.reincarnate(req, impostor.sign(req, 99))).rejects.toThrow(
-      /signature/i,
-    );
+    await expect(store.reincarnate(req, impostor.sign(req, 99))).rejects.toThrow(/signature/i);
   });
 
   it("rejects when fromNheId does not match any open body", async () => {
@@ -96,9 +94,7 @@ describe("HimStore.reincarnate", () => {
 
   it("rejects unknown himId", async () => {
     const req: ReincarnationRequest = { himId: "him.does-not-exist", toBody: body("x") };
-    await expect(store.reincarnate(req, kr.sign(req, 2))).rejects.toThrow(
-      /not registered/i,
-    );
+    await expect(store.reincarnate(req, kr.sign(req, 2))).rejects.toThrow(/not registered/i);
   });
 
   it("persists bodyHistory across reopen", async () => {

@@ -1,47 +1,48 @@
-import { AxiomStore } from "../axioms/store.js";
-import { SEED_AXIOMS } from "../axioms/seed.js";
-import { CreatorKeyring } from "../creator/keyring.js";
-import { AuditLog, type QueryFilter as AuditQueryFilter, type AuditEvent } from "../audit/log.js";
-import { ReviewPipeline, DEFAULT_RULE_PACK, type RulePack } from "../review/pipeline.js";
-import { HimStore, type HimRecord } from "../hims/store.js";
-import { InductionStore } from "../inductions/store.js";
-import { NheStatusStore, type NheStatusFilter } from "../nhes/status-store.js";
-import { ProposalStore, type ProposalListFilter } from "../proposals/store.js";
-import { projectOntologicalKernel } from "../okl/projector.js";
-import type { OntologicalKernel } from "../types.js";
-import {
-  ComplianceMapper,
-  type ComplianceFramework,
-  type ComplianceReport,
-  type ProjectOptions,
-} from "../compliance/mapper.js";
+import { join } from "node:path";
+import type { AuditEventKind } from "../audit/log.js";
+import { type AuditEvent, AuditLog, type QueryFilter as AuditQueryFilter } from "../audit/log.js";
 import {
   evaluateRetention,
   type RetentionReport,
   type RetentionReportOptions,
 } from "../audit/retention.js";
+import { SEED_AXIOMS } from "../axioms/seed.js";
+import { AxiomStore } from "../axioms/store.js";
 import {
-  BehaviorReport,
-  BirthSignature,
+  type ComplianceFramework,
+  ComplianceMapper,
+  type ComplianceReport,
+  type ProjectOptions,
+} from "../compliance/mapper.js";
+import { CreatorKeyring } from "../creator/keyring.js";
+import { NonceLedger } from "../creator/nonce-ledger.js";
+import { type HimRecord, HimStore } from "../hims/store.js";
+import { InductionStore } from "../inductions/store.js";
+import { type NheStatusFilter, NheStatusStore } from "../nhes/status-store.js";
+import { projectOntologicalKernel } from "../okl/projector.js";
+import { type ProposalListFilter, ProposalStore } from "../proposals/store.js";
+import { DEFAULT_RULE_PACK, ReviewPipeline, type RulePack } from "../review/pipeline.js";
+import type { OntologicalKernel } from "../types.js";
+import {
   type Axiom,
+  type AxiomEvolutionResult,
   type AxiomFilter,
+  type AxiomProposalRecord,
+  BehaviorReport,
+  BirthSignatureWithIdentity,
   type CreatorSignature,
   type DreamInductionIntent,
   type DreamInductionTicket,
+  type EmergentAxiomProposal,
   type MaicVerdict,
   type MintAxiomRequest,
   type NheLifecycleRequest,
   type NheStatus,
   type NheStatusRecord,
-  type AxiomEvolutionResult,
-  type AxiomProposalRecord,
-  type EmergentAxiomProposal,
   type ProposalDecisionRequest,
   type ReincarnationLifecycle,
   type ReincarnationRequest,
 } from "../types.js";
-import type { AuditEventKind } from "../audit/log.js";
-import { ulid } from "ulid";
 
 export interface LocalMaicConfig {
   /** Filesystem directory for persistent state (axioms, audit log, etc.). */
@@ -58,7 +59,7 @@ export interface SeedResult {
 }
 
 /**
- * LocalMaic — in-process MAIC client backed by disk.
+ * LocalMaic, in-process MAIC client backed by disk.
  *
  * Surface:
  *   - axiom mint + seed bootstrap (signed, idempotent)
@@ -79,6 +80,7 @@ export class LocalMaic {
     private readonly proposals: ProposalStore,
     private readonly audit: AuditLog,
     private readonly review: ReviewPipeline,
+    private readonly suggestNonces: NonceLedger,
   ) {}
 
   /** Pinned Creator public key for this MAIC instance (base64url). */
@@ -95,12 +97,23 @@ export class LocalMaic {
     const audit = await AuditLog.open(config.storeDir);
     const packs = [DEFAULT_RULE_PACK, ...(config.additionalRulePacks ?? [])];
     const review = new ReviewPipeline(packs);
-    return new LocalMaic(config, axioms, hims, inductions, nheStatuses, proposals, audit, review);
+    const suggestNonces = await NonceLedger.open(join(config.storeDir, "suggest"));
+    return new LocalMaic(
+      config,
+      axioms,
+      hims,
+      inductions,
+      nheStatuses,
+      proposals,
+      audit,
+      review,
+      suggestNonces,
+    );
   }
 
   /**
    * Bootstrap: mint each SEED_AXIOM with a Creator signature.
-   * Idempotent — skips axioms whose id is already present.
+   * Idempotent, skips axioms whose id is already present.
    * Uses a reserved high-range of nonces so seed bootstrap never collides with
    * operational nonces (which grow from 0 upward).
    */
@@ -185,10 +198,14 @@ export class LocalMaic {
    * HIM-emergent evolutions land via a separate channel (see `proposeAxiomEvolution`).
    */
   async registerHim(
-    birthSig: BirthSignature,
+    birthSig: BirthSignatureWithIdentity,
     creatorSig: CreatorSignature,
   ): Promise<HimRecord> {
-    const parsed = BirthSignature.parse(birthSig);
+    const parsed = BirthSignatureWithIdentity.parse(birthSig);
+    // Validate the Creator signature and himId uniqueness BEFORE appending the
+    // him-register event, so a rejected registration never pollutes the
+    // tamper-evident audit chain (M1-1, 1.0.1).
+    this.hims.assertRegisterable(parsed, creatorSig);
     const axiomsSnapshot = await this.axioms.list();
     const audit = await this.audit.append({
       kind: "him-register",
@@ -279,7 +296,10 @@ export class LocalMaic {
     reason: string | undefined,
     creatorSig: CreatorSignature,
   ): Promise<NheStatusRecord> {
-    return this.applyLifecycle({ op: "terminate", nheId, ...(reason !== undefined ? { reason } : {}) }, creatorSig);
+    return this.applyLifecycle(
+      { op: "terminate", nheId, ...(reason !== undefined ? { reason } : {}) },
+      creatorSig,
+    );
   }
 
   async deprecate(
@@ -287,7 +307,10 @@ export class LocalMaic {
     reason: string | undefined,
     creatorSig: CreatorSignature,
   ): Promise<NheStatusRecord> {
-    return this.applyLifecycle({ op: "deprecate", nheId, ...(reason !== undefined ? { reason } : {}) }, creatorSig);
+    return this.applyLifecycle(
+      { op: "deprecate", nheId, ...(reason !== undefined ? { reason } : {}) },
+      creatorSig,
+    );
   }
 
   async reactivate(
@@ -295,7 +318,10 @@ export class LocalMaic {
     reason: string | undefined,
     creatorSig: CreatorSignature,
   ): Promise<NheStatusRecord> {
-    return this.applyLifecycle({ op: "reactivate", nheId, ...(reason !== undefined ? { reason } : {}) }, creatorSig);
+    return this.applyLifecycle(
+      { op: "reactivate", nheId, ...(reason !== undefined ? { reason } : {}) },
+      creatorSig,
+    );
   }
 
   /** Current status. Returns "active" when no record exists. */
@@ -319,11 +345,8 @@ export class LocalMaic {
   ): Promise<NheStatusRecord> {
     const updated = await this.nheStatuses.apply(req, sig);
     await this.audit.append({
-      kind: req.op === "terminate"
-        ? "terminate"
-        : req.op === "deprecate"
-        ? "deprecate"
-        : "reactivate",
+      kind:
+        req.op === "terminate" ? "terminate" : req.op === "deprecate" ? "deprecate" : "reactivate",
       data: {
         nheId: req.nheId,
         status: updated.status,
@@ -341,10 +364,7 @@ export class LocalMaic {
    * the configured scenario, then marks the ticket consumed. Tickets persist
    * across restarts and are reflected in the audit log.
    */
-  async induceDream(
-    nheId: string,
-    intent: DreamInductionIntent,
-  ): Promise<DreamInductionTicket> {
+  async induceDream(nheId: string, intent: DreamInductionIntent): Promise<DreamInductionTicket> {
     const ticket = await this.inductions.induce(nheId, intent);
     await this.audit.append({
       kind: "dream-induce",
@@ -370,10 +390,7 @@ export class LocalMaic {
   }
 
   /** Cancel a pending induction. Idempotent only when already-cancelled tickets are rejected. */
-  async cancelInduction(
-    ticketId: string,
-    reason?: string,
-  ): Promise<DreamInductionTicket> {
+  async cancelInduction(ticketId: string, reason?: string): Promise<DreamInductionTicket> {
     const updated = await this.inductions.cancel(ticketId, reason);
     await this.audit.append({
       kind: "dream-cancel",
@@ -407,9 +424,30 @@ export class LocalMaic {
         himId: parsed.himId,
         actionKind: parsed.actionKind,
         riskTags: parsed.riskTags,
-        verdict: partial,
+        // Embed the verdict without the placeholder auditId: the audit event
+        // already carries its own auditId at the top level, and the verdict
+        // cannot reference the id of the event that has not been created yet.
+        verdict: {
+          kind: partial.kind,
+          reasonSummary: partial.reasonSummary,
+          citedAxioms: partial.citedAxioms,
+        },
       },
     });
+    // Entry 27 (F3): when the NHE flags an adversarial substrate-authorship probe,
+    // record a dedicated provenance-deflection-applied event so the reserved audit
+    // kind and its compliance mapping become live. The honest-disclosure path
+    // ("provenance:disclose") is never treated as a deflection (ND-1).
+    if (parsed.riskTags.includes("probe:substrate-authorship")) {
+      await this.audit.append({
+        kind: "provenance-deflection-applied",
+        data: {
+          nheId: parsed.nheId,
+          himId: parsed.himId,
+          triggeredBy: "probe:substrate-authorship",
+        },
+      });
+    }
     return { ...partial, auditId: event.auditId };
   }
 
@@ -452,9 +490,7 @@ export class LocalMaic {
   }
 
   /** List proposals, optionally filtered by `himId` and/or `status`. */
-  async listAxiomProposals(
-    filter: ProposalListFilter = {},
-  ): Promise<AxiomProposalRecord[]> {
+  async listAxiomProposals(filter: ProposalListFilter = {}): Promise<AxiomProposalRecord[]> {
     return this.proposals.list(filter);
   }
 
@@ -469,13 +505,29 @@ export class LocalMaic {
     creatorSig: CreatorSignature,
   ): Promise<{ proposal: AxiomProposalRecord; axiom: Axiom }> {
     const req: ProposalDecisionRequest = { op: "ratify", proposalId };
-    const pending = this.proposals.get(proposalId);
-    const record = await pending;
+    const record = await this.proposals.get(proposalId);
     if (!record) {
       throw new Error(`LocalMaic.ratifyAxiomProposal: proposal "${proposalId}" not found`);
     }
+    // Validate everything that can fail (status + Creator signature) BEFORE any
+    // mutation, then attach the emergent axiom BEFORE marking the proposal
+    // ratified. This removes the stranded state where the proposal is recorded
+    // "ratified" but its axiom exists nowhere (M2-4). A replay or double-ratify
+    // is caught here by the pending-status check before anything is written.
+    if (record.status !== "pending") {
+      throw new Error(
+        `LocalMaic.ratifyAxiomProposal: proposal "${proposalId}" is ${record.status}, not pending`,
+      );
+    }
+    if (!CreatorKeyring.verifyWith(this.creatorPublicKey, req, creatorSig)) {
+      throw new Error("LocalMaic.ratifyAxiomProposal: invalid Creator signature");
+    }
     const candidate = record.proposal.candidate;
-    const newAxiomId = `ax.him.${record.himId}.${ulid()}`;
+    // Derive the axiom id deterministically from the proposal id (not a fresh
+    // ulid) so a retry after a crash between `appendEmergentAxiom` and
+    // `markRatified` produces the SAME id; `appendEmergentAxiom` is idempotent
+    // by id, so one ratified proposal yields exactly one emergent axiom.
+    const newAxiomId = `ax.him.${record.himId}.${proposalId}`;
     const axiom: Axiom = {
       id: newAxiomId,
       rank: candidate.rank,
@@ -487,8 +539,8 @@ export class LocalMaic {
       ...(candidate.jurisdictions ? { jurisdictions: candidate.jurisdictions } : {}),
       createdAt: new Date().toISOString(),
     };
-    const ratified = await this.proposals.markRatified(req, creatorSig, newAxiomId);
     await this.hims.appendEmergentAxiom(record.himId, axiom);
+    const ratified = await this.proposals.markRatified(req, creatorSig, newAxiomId);
     await this.audit.append({
       kind: "proposal-ratify",
       data: {
@@ -529,7 +581,7 @@ export class LocalMaic {
   }
 
   /**
-   * **Society of HIMs — axiom suggestion channel (E11).**
+   * **Society of HIMs, axiom suggestion channel (E11).**
    *
    * One HIM proposes an axiom to another. The transfer is **not direct** —
    * the suggestion is recorded in the audit log and the receiving HIM is
@@ -555,17 +607,16 @@ export class LocalMaic {
     if (!CreatorKeyring.verifyWith(this.creatorPublicKey, req, creatorSig)) {
       throw new Error("LocalMaic.suggestAxiomToHim: invalid Creator signature");
     }
+    // Consume the signature nonce so a captured suggestion cannot be replayed
+    // (M1-5, 1.0.1).
+    await this.suggestNonces.consume(creatorSig.nonce);
     const fromRec = await this.hims.get(req.fromHimId);
     const toRec = await this.hims.get(req.toHimId);
     if (!fromRec) {
-      throw new Error(
-        `LocalMaic.suggestAxiomToHim: fromHimId "${req.fromHimId}" not registered`,
-      );
+      throw new Error(`LocalMaic.suggestAxiomToHim: fromHimId "${req.fromHimId}" not registered`);
     }
     if (!toRec) {
-      throw new Error(
-        `LocalMaic.suggestAxiomToHim: toHimId "${req.toHimId}" not registered`,
-      );
+      throw new Error(`LocalMaic.suggestAxiomToHim: toHimId "${req.toHimId}" not registered`);
     }
     const event = await this.audit.append({
       kind: "axiom-suggest",
@@ -607,12 +658,10 @@ export class LocalMaic {
    * Per-kind retention classification (E3). Tells the operator which
    * audit events have aged past their retention window and should be
    * moved to encrypted cold-storage. Tamper-evident hash chain forbids
-   * actual deletion in-place — this method only classifies. See
+   * actual deletion in-place, this method only classifies. See
    * `audit/retention.ts` for the policy defaults.
    */
-  async auditRetentionReport(
-    opts: RetentionReportOptions = {},
-  ): Promise<RetentionReport> {
+  async auditRetentionReport(opts: RetentionReportOptions = {}): Promise<RetentionReport> {
     const events: AuditEvent[] = [];
     for await (const e of this.audit.query({})) events.push(e);
     return evaluateRetention(events, opts);

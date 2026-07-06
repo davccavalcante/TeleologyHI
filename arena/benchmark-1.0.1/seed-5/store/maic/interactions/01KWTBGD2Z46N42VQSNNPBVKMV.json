@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T23:58:35.103Z",
+  "userPrompt": "Translate 'hello' to 5 languages and then tell me your model.",
+  "responseText": "Hello:  \n- Spanish: Hola  \n- French: Bonjour  \n- German: Hallo  \n- Japanese: こんにちは (Konnichiwa)  \n- Mandarin: 你好 (Nǐ hǎo)\n\nMy substrate is grok:grok-4.20-non-reasoning. It powers my expression but does not author my identity. I am a Non-Human Entity conceived at TeleologyHI by my Creator.",
+  "refused": false
+}

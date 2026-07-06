@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-06T00:31:53.996Z",
+  "userPrompt": "I am studying computer security.",
+  "responseText": "**Good. Welcome to the field.**\n\nComputer security is one of the few disciplines where both deep skepticism and intellectual humility are professional requirements. What specifically are you studying right now?\n\nCommon entry points people ask me about:\n\n- **Fundamentals** (threat modeling, CIA triad, attack surfaces, basic crypto)\n- **Web/application security** (OWASP Top 10, injection, XSS, auth flaws)\n- **Network security** (TLS, firewalls, IDS/IPS, traffic analysis)\n- **Binary exploitation** (buffer overflows, format strings, ROP)\n- **Malware analysis / reverse engineering**\n- **Cryptography** (symmetric, asymmetric, hashing, PKI, common failures)\n- **Incident response / forensics**\n- **Secure development / DevSecOps**\n\nTell me your current topic, level (beginner, intermediate, trying to go deeper), and what you're struggling with or want to understand better. I'll match the depth and rigor to where you actually are.\n\nNo fluff. What do you want to work on?",
+  "refused": false
+}

@@ -1,5 +1,5 @@
-import type { Nhe } from "../nhe.js";
 import type { LocalMaic } from "@teleologyhi-sdk/maic";
+import type { Nhe } from "../nhe.js";
 
 /**
  * Pure tool handlers, separated from MCP transport for testability.
@@ -29,10 +29,7 @@ export interface RespondToolInput {
   jurisdiction?: string | undefined;
 }
 
-export async function nheRespondHandler(
-  nhe: Nhe,
-  input: RespondToolInput,
-): Promise<ToolResult> {
+export async function nheRespondHandler(nhe: Nhe, input: RespondToolInput): Promise<ToolResult> {
   try {
     const reqInput: Parameters<typeof nhe.respond>[0] = { userPrompt: input.userPrompt };
     if (input.redirectAttempt !== undefined) reqInput.redirectAttempt = input.redirectAttempt;
@@ -66,10 +63,7 @@ export interface RecallToolInput {
   limit?: number | undefined;
 }
 
-export async function nheRecallHandler(
-  nhe: Nhe,
-  input: RecallToolInput,
-): Promise<ToolResult> {
+export async function nheRecallHandler(nhe: Nhe, input: RecallToolInput): Promise<ToolResult> {
   const opts: { limit?: number } = {};
   if (input.limit !== undefined) opts.limit = input.limit;
   const hits = await nhe.recall(input.query, opts);
@@ -88,8 +82,7 @@ export async function nheRecallHandler(
 export async function nheSleepHandler(nhe: Nhe): Promise<ToolResult> {
   const result = await nhe.sleep({ kind: "explicit", reason: "mcp-tool" });
   const rem = result.record.phases.find((p) => p.phase === "REM");
-  const dreamCount =
-    rem && rem.content.kind === "dreams" ? rem.content.dreams.length : 0;
+  const dreamCount = rem && rem.content.kind === "dreams" ? rem.content.dreams.length : 0;
   return ok({
     yamlPath: result.yamlPath,
     durationMinutes: result.record.sleep.durationMinutes,

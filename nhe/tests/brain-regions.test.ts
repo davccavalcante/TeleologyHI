@@ -1,5 +1,5 @@
 /**
- * Tests for the brain region scaffolding (J-N4 — Entries 22, 23, 24).
+ * Tests for the brain region scaffolding (J-N4, Entries 22, 23, 24).
  *
  * Verifies the Entry-23 ownership map (him-owned vs nhe-body-owned).
  * The full implementations of REM-spontaneous engine, DaytimePipeline,
@@ -7,9 +7,10 @@
  * TemporalLobe.generateSnapshot() ship in a follow-up cut.
  */
 import { describe, expect, it } from "vitest";
+import type { BrainRegion } from "../src/index.js";
 import {
-  BRAIN_REGIONS,
   amygdala,
+  BRAIN_REGIONS,
   cortex,
   defaultModeNetwork,
   hippocampus,
@@ -17,7 +18,6 @@ import {
   prefrontal,
   temporalLobe,
 } from "../src/index.js";
-import type { BrainRegion } from "../src/index.js";
 
 describe("BrainRegion descriptors (J-N4)", () => {
   it("exposes seven canonical regions in BRAIN_REGIONS", () => {
@@ -44,12 +44,7 @@ describe("BrainRegion descriptors (J-N4)", () => {
     const bodyOwned = BRAIN_REGIONS.filter((r) => r.ownership === "nhe-body-owned")
       .map((r) => r.name)
       .sort();
-    expect(bodyOwned).toEqual([
-      "amygdala",
-      "cortex",
-      "default-mode-network",
-      "pineal",
-    ]);
+    expect(bodyOwned).toEqual(["amygdala", "cortex", "default-mode-network", "pineal"]);
   });
 
   it("each region descriptor cross-references at least one interview-log entry", () => {

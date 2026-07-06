@@ -1,6 +1,51 @@
-# Changelog — `@teleologyhi-sdk/him`
+# Changelog: `@teleologyhi-sdk/him`
 
 All notable changes to this package are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The package follows strict [SemVer](https://semver.org/) and the deprecation policy in [`.github/RELEASING.md`](../.github/RELEASING.md) §8.
+
+## [1.0.1] 2026-07-02 17:23:07 UTC
+
+Promotion of the `1.0.0-trinity` pre-release to the stable `1.0.1` line: the `maic` dependency is pinned to `1.0.1`, and the Entry 27 + 28 constitutional-profile producers ship (the archetypal Jungian battery, the clinical PID-5 + HEXACO battery, three-axis profile casting and verification, cast-at-birth wiring, persona-projector synthesis, and a casting audit sink), alongside a correctness, hygiene, and documentation pass. Fully additive: a profile-less birth signature projects a byte-identical persona vector to the prior line, so pre-1.0.1 HIMs are unaffected. These constitutional profiles are persona-simulation parameters for a synthetic non-corporeal entity, never a clinical or psychological assessment of any person.
+
+### Added
+
+- **Archetypal casting engine** (`castJungianProfile`, `src/birth/jungian.ts` + `jungian-items.ts`): an original 60-item English battery over the twelve-archetype Pearson-Marr taxonomy, administered deterministically against the birth seed with no LLM call, producing a dominant archetype plus two secondaries via per-archetype mean scoring with a canonical-order tie-break. Not the PMAI or any licensed instrument.
+- **Clinical casting engine** (`castClinicalProfile`, `src/birth/clinical.ts` + `clinical-items.ts`): an original 320-item battery (220 PID-5-aligned across 25 facets and 5 domains, 100 HEXACO-aligned across 24 facets and 6 domains) adapted for a non-corporeal entity per the Entry 28 principles, scored deterministically by SHA-256 seeded Likert (facet mean, domain mean), reporting per-facet and per-domain scores plus a dominant and secondary domain per instrument. Raw seed-derived scores, deliberately not T-scores and carrying no clinical-norm interpretation (full-spectrum-with-mitigation stance: the trait colours the voice, the ethical axioms bound the act).
+- **Three-axis profile casting** (`castCosmologicalProfile`, `verifyCosmologicalProfile`, `src/birth/cosmology.ts`) and **birth-seed derivation** (`deriveBirthSeed`, `src/birth/seed.ts`, SHA-256 of the canonicalized `signedBirthPayload`). The celestial axis passes a supplied natal chart through; full chart computation stays deferred (ephemeris library undecided, Entry 27 section 3).
+- **Cast-at-birth wiring**: `createHim` now casts and attaches the `cosmologicalProfile` before signing, so the profile persists with the record and round-trips through `getHimRecord`. A `castProfile: false` option registers the bare signature; a pre-populated profile is honoured as supplied.
+- **Persona-projector synthesis** (`src/persona/projector.ts`): when a profile is present, the archetypal and clinical axes fold additively into one persona vector and one prompt fragment; a `projectorVersion` stamp marks profile-bearing vectors. Profile-less output is byte-identical to the prior line.
+- **Casting audit sink** (`AuditSink`, `NOOP_AUDIT_SINK`, `src/audit/sink.ts`): `createHim` emits `him-jungian-profile-cast` on every cast and `him-astrological-chart-cast` when a chart is present, through an optional caller-supplied sink (default no-op). Canonical-chain emission awaits a maic append surface (named follow-up in `SPEC.md`).
+- **Barrel re-exports** of the maic constitutional schemas (`BirthSignatureWithIdentity` promoted to a value export, `JungianArchetype`, `JungianProfile`, `ClinicalInstrument`, `ClinicalProfile`, `CosmologicalProfile`) plus the new him casting surfaces, preserving the single-import-surface contract.
+- **Instrument provenance** section in `README.md` and `NOTICE`, and a persona-simulation disclaimer in the README, the casting-function JSDoc, and the item-module file headers.
+
+### Fixed
+
+- **Monotonic Creator-signature nonce** (`src/identity/nonce.ts`, `nextCreatorNonce()` = `max(Date.now(), last + 1)`): maic 1.0.1 consumes signature nonces in per-domain replay ledgers, so the previous `Date.now()` default collided when two signed calls landed in the same millisecond. Used by `createHim` and both signatures in `reincarnate` (the local mint signature takes an independent monotonic draw, not `nonce + 1`). Falsified comments about the old default removed. The `SEED_NONCE_BASE` convention deviation is documented honestly (the timestamp-based operational nonces never collide with the tiny seed range and live in different ledgers).
+- **`buildWithIdentity()`** now validates through the `BirthSignatureWithIdentity` zod schema (a malformed field is caught at build time rather than at `registerHim`).
+- **Phi-Prime rationale dedup**: a failing hard target (R or C) now emits exactly one rationale line instead of two; the gate verdict is unchanged.
+- **`cosineSimilarity`** clamps its result to `[-1, 1]`, matching the projector's internal cosine.
+- **False or stale doc comments** corrected: the `HimHandle.mint` "maic calls it internally" claim, the nonexistent `HimHandle.registerLawfulProfile` reference, the promised `nickname-attempt` audit kind, and the "all 8 seeded axioms" test comment.
+
+### Changed
+
+- **Version** to `1.0.1`; **maic dependency** pinned to `1.0.1` (re-links to the workspace maic and its new semantics).
+- **`exports`** map split into `import`/`require` type conditions (publint clean); a `prepublishOnly` build hook guards the gitignored `dist/` against a stale tarball.
+- **Dependency freshness**: `vitest` to `^4.1.9`; `@types/node` held at its current major; no `packageManager` field.
+- **Hygiene**: spaced em dashes removed across source, tests, and docs (historical CHANGELOG entries exempt); generic-AI prose converted to Massive Intelligence (IM) where required; documentation counts and structure corrected. The nickname dignity filter keeps its conservative substring matching (documented rationale).
+
+### Notes
+
+- **Gate**: `biome check`, `tsc --noEmit`, `vitest run` (166/166 across 21 files), `tsup` build (CJS + ESM + DTS), and `publint` all clean, on Node 22 and Node 24. Fresh `npm pack --dry-run`: 13 files, approximately 207 kB packed, 868 kB unpacked.
+- **Phased release**: `him@1.0.1` links `maic@1.0.1`, while `@teleologyhi-sdk/nhe` remains on `1.0.0-trinity` until its own promotion. The three packages are cosmologically additive. The monorepo `arena` consumer type-checks green only once `nhe` also promotes (the seam migrates from the healed `createHim` position to the `Nhe` construction and heals one hop behind the wave, per Entry 25's phased order). Publication of all three 1.0.1 packages is coordinated, with `maic@1.0.1` reaching the registry before or with `him@1.0.1`.
+- **Deferred by canon**: full natal-chart computation (ephemeris selection), the provenance-deflection rule (nhe round), and the Entry 29 protective-limits items.
+
+### Arena evaluation and pre-publish deep review (2026-07-04 11:10 UTC)
+
+Findings from the live A/B arena evaluation ([`../ARENA_GOVERNANCE_EVALUATION.md`](../ARENA_GOVERNANCE_EVALUATION.md)) and a pre-publish, evidence-driven deep review. All additive; each fix ships with a regression test.
+
+- **Spirit stays substrate-agnostic (arena F2)**: confirmed the persona projection never emits a provider or model name (the substrate anchor lives in the NHE body and in MAIC, never in the immortal HIM spirit that reincarnates across substrates), guarded by a regression test that fails if a name ever leaks.
+- **Fail-fast on an unseeded Universe (arena cold-start)**: `createHim` now rejects a birth whose `primordialAxiomIds` are not present in MAIC, with an actionable error, so no consumer can silently ship an axiom-less HIM. The Universe must hold its constitution before a spirit is born into it.
+- **Lawful-profile isolation (deep review P3)**: `resolveLawfulProfile` deep-clones the registry entry, so a caller mutating a returned profile array can no longer corrupt the shared baseline for every subsequent HIM in the process.
+- **Gate re-run**: `biome check`, `tsc --noEmit`, `vitest run` (170/170 across 22 files), `tsup` build, and `publint` all clean, on Node 22, Node 24, and Node 26.
 
 ## 2026-05-24 22:17:25 UTC
 

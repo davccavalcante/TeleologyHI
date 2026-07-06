@@ -21,24 +21,22 @@
  */
 import { type NextRequest, NextResponse } from "next/server";
 import { ulid } from "ulid";
-import { rawGemini, type RawGeminiHistoryTurn } from "@/lib/gemini";
-import { getTeleology } from "@/lib/teleology";
-import { DEFAULT_GEMINI_MODEL, governedModelLabel } from "@/lib/constants";
 import { readSessionUserId } from "@/lib/auth/cookie";
 import { loadUser } from "@/lib/auth/store";
 import { CURRENT_CONSENT_VERSION } from "@/lib/auth/types";
-import {
-  appendTurn,
-  loadConversation,
-  renameConversation,
-} from "@/lib/conversations/store";
+import { DEFAULT_GROK_MODEL, governedModelLabel } from "@/lib/constants";
+import { appendTurn, loadConversation, renameConversation } from "@/lib/conversations/store";
 import { deriveTitle, type Turn } from "@/lib/conversations/types";
+// Gemini path kept dormant for a future Gemini/Grok toggle:
+// import { rawGemini, type RawGeminiHistoryTurn } from "@/lib/gemini";
+import { type RawGrokHistoryTurn, rawGrok } from "@/lib/grok";
+import { getTeleology } from "@/lib/teleology";
 import { isUuidV7 } from "@/lib/uuid-v7";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const UNDERLYING_MODEL = process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL;
+const UNDERLYING_MODEL = process.env.GROK_MODEL ?? DEFAULT_GROK_MODEL;
 const PLACEHOLDER_TITLE = "New conversation";
 
 interface RouteContext {
@@ -54,10 +52,7 @@ interface NheHistoryMessage {
   content: string;
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: RouteContext,
-): Promise<NextResponse> {
+export async function POST(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   try {
     const userId = readSessionUserId(req);
     if (!userId) {
@@ -107,7 +102,7 @@ export async function POST(
     // Pairing the user prompt with a working response from a later
     // turn would be even worse — it would misattribute the answer —
     // so dropping the whole pair is the conservative choice.
-    const rawHistory: RawGeminiHistoryTurn[] = conversation.turns
+    const rawHistory: RawGrokHistoryTurn[] = conversation.turns
       .filter((t) => t.left.response.trim().length > 0)
       .map((t) => ({
         userPrompt: t.prompt,
@@ -138,7 +133,7 @@ export async function POST(
     // user's input in the conversation and lets them re-prompt on a
     // fresh turn if both columns came back empty.
     const [leftSettled, rightSettled] = await Promise.allSettled([
-      rawGemini(prompt, rawHistory),
+      rawGrok(prompt, rawHistory),
       (async () => {
         const start = Date.now();
         const { nhe } = await teleology;
@@ -205,9 +200,6 @@ export async function POST(
 
     return NextResponse.json({ conversation: final, turn });
   } catch (err) {
-    return NextResponse.json(
-      { error: (err as Error).message },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
 }

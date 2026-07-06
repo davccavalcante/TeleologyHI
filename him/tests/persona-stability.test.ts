@@ -1,19 +1,17 @@
-import { describe, it, expect } from "vitest";
 import { CreatorKeyring } from "@teleologyhi-sdk/maic";
-import { BirthSignatureBuilder, HimHandle } from "../src/index";
+import { describe, expect, it } from "vitest";
 import {
-  evaluatePersonaStability,
-  selfStability,
   adapterSensitivity,
+  BirthSignatureBuilder,
   cosineSimilarity,
+  evaluatePersonaStability,
+  HimHandle,
+  selfStability,
 } from "../src/index";
 
 function mintHim(himId: string, archetype: string): HimHandle {
   const kr = CreatorKeyring.generate();
-  const sig = BirthSignatureBuilder.now()
-    .withHimId(himId)
-    .withPrimaryArchetype(archetype)
-    .build();
+  const sig = BirthSignatureBuilder.now().withHimId(himId).withPrimaryArchetype(archetype).build();
   return HimHandle.mint(sig, kr.sign(sig, 1), kr.publicKey(), []);
 }
 

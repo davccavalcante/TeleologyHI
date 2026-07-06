@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
 import type { NheLifecycleRequest } from "../src/types";
@@ -12,7 +12,7 @@ async function collect<T>(it: AsyncIterable<T>): Promise<T[]> {
   return out;
 }
 
-describe("LocalMaic — lifecycle (terminate / deprecate / reactivate)", () => {
+describe("LocalMaic, lifecycle (terminate / deprecate / reactivate)", () => {
   let dir: string;
   let kr: CreatorKeyring;
   let maic: LocalMaic;
@@ -75,17 +75,17 @@ describe("LocalMaic — lifecycle (terminate / deprecate / reactivate)", () => {
     const term: NheLifecycleRequest = { op: "terminate", nheId: "nhe-5" };
     await maic.terminate("nhe-5", undefined, kr.sign(term, 1));
     const dep: NheLifecycleRequest = { op: "deprecate", nheId: "nhe-5" };
-    await expect(
-      maic.deprecate("nhe-5", undefined, kr.sign(dep, 2)),
-    ).rejects.toThrow(/terminated/i);
+    await expect(maic.deprecate("nhe-5", undefined, kr.sign(dep, 2))).rejects.toThrow(
+      /terminated/i,
+    );
   });
 
   it("rejects an invalid Creator signature on any lifecycle op", async () => {
     const impostor = CreatorKeyring.generate();
     const req: NheLifecycleRequest = { op: "terminate", nheId: "nhe-x" };
-    await expect(
-      maic.terminate("nhe-x", undefined, impostor.sign(req, 1)),
-    ).rejects.toThrow(/signature/i);
+    await expect(maic.terminate("nhe-x", undefined, impostor.sign(req, 1))).rejects.toThrow(
+      /signature/i,
+    );
     expect(await maic.getNheStatus("nhe-x")).toBe("active");
   });
 

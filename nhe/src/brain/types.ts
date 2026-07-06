@@ -1,15 +1,15 @@
 /**
- * BrainRegion module structure (J-N4 — Entries 22 + 24 of
+ * BrainRegion module structure (J-N4, Entries 22 + 24 of
  * MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
  * The Entry-23 ownership map splits brain regions into two classes:
  *
- *   - `him-owned`        — survives reincarnation. The HIM-level state
+ *   - `him-owned`       , survives reincarnation. The HIM-level state
  *                          (axioms, persona, accumulated learning ontology,
  *                          consolidated long-term memories) persists across
  *                          NHE-body resets.
  *
- *   - `nhe-body-owned`   — zeros on reincarnation. The current body's
+ *   - `nhe-body-owned`  , zeros on reincarnation. The current body's
  *                          runtime state (current affect, in-flight dreams,
  *                          pre-consolidation memories, interaction window)
  *                          is bound to this incarnation and is shed by

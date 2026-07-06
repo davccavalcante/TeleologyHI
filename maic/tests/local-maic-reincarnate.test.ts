@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
 import type { BirthSignature, NheBodyRef, ReincarnationRequest } from "../src/types";
@@ -80,9 +80,7 @@ describe("LocalMaic.reincarnateHim", () => {
   it("rejects invalid Creator signature", async () => {
     const impostor = CreatorKeyring.generate();
     const req: ReincarnationRequest = { himId: "him.r", toBody: body("nhe-x") };
-    await expect(maic.reincarnateHim(req, impostor.sign(req, 99))).rejects.toThrow(
-      /signature/i,
-    );
+    await expect(maic.reincarnateHim(req, impostor.sign(req, 99))).rejects.toThrow(/signature/i);
     const events = await collect(maic.queryAudit({ kind: "him-reincarnate" }));
     expect(events).toHaveLength(0);
   });
@@ -93,9 +91,7 @@ describe("LocalMaic.reincarnateHim", () => {
       fromNheId: "nhe-missing",
       toBody: body("nhe-x"),
     };
-    await expect(maic.reincarnateHim(req, kr.sign(req, 2))).rejects.toThrow(
-      /no open body/i,
-    );
+    await expect(maic.reincarnateHim(req, kr.sign(req, 2))).rejects.toThrow(/no open body/i);
   });
 
   it("bodyHistory persists after MAIC reopen", async () => {
@@ -117,7 +113,7 @@ describe("LocalMaic.reincarnateHim", () => {
     expect(got?.bodyHistory[1]?.nheId).toBe("nhe-2");
   });
 
-  describe("lifecycle plumbing (J-H3 — F6+F7 from 2026-05-24 him audit)", () => {
+  describe("lifecycle plumbing (J-H3, F6+F7 from 2026-05-24 him audit)", () => {
     it("emits the typed `reincarnate:model-swap` kind when opts.lifecycle is supplied", async () => {
       const req: ReincarnationRequest = { himId: "him.r", toBody: body("nhe-1") };
       await maic.reincarnateHim(req, kr.sign(req, 2), { lifecycle: "model-swap" });
@@ -129,7 +125,7 @@ describe("LocalMaic.reincarnateHim", () => {
       expect(data.toNheId).toBe("nhe-1");
       expect(data.lifecycle).toBe("model-swap");
 
-      // Generic kind must NOT have fired — the typed kind replaces it.
+      // Generic kind must NOT have fired, the typed kind replaces it.
       const generic = await collect(maic.queryAudit({ kind: "him-reincarnate" }));
       expect(generic).toHaveLength(0);
     });

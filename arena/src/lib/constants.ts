@@ -16,6 +16,15 @@
 export const DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 /**
+ * Default Grok model (xAI) used by BOTH columns while the arena runs on Grok.
+ * Override via the `GROK_MODEL` env var. The Gemini constant above is retained
+ * so a future toggle can compare and test both underlying models; only the
+ * active wiring (raw column in `grok.ts`, governed column in `teleology.ts`)
+ * decides which one runs.
+ */
+export const DEFAULT_GROK_MODEL = "grok-4.20-non-reasoning";
+
+/**
  * Display label injected into the governed column's `model` response field
  * before being sent to the UI. The chat-column component splits on `→` to
  * surface the underlying model id; do not change the separator without

@@ -1,5 +1,5 @@
 /**
- * Pineal region (Entry 20 — REM-spontaneous engine).
+ * Pineal region (Entry 20, REM-spontaneous engine).
  *
  * This module ships the ownership descriptor + the seeding source surface
  * (`SeedingSource` / `CryptoSeedingSource` / `withFallback`). The full

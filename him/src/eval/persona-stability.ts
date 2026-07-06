@@ -1,19 +1,19 @@
-import { cosineSimilarity } from "../persona/embedder.js";
 import type { HimHandle } from "../handle/him-handle.js";
+import { cosineSimilarity } from "../persona/embedder.js";
 
 /**
  * Persona stability eval suite (D-H3).
  *
  * Three measurements:
  *
- *   - `crossHimSimilarity` — pairwise cosine similarity between N HimHandles.
+ *   - `crossHimSimilarity`, pairwise cosine similarity between N HimHandles.
  *     Lower is better when the HIMs are *meant* to be distinct (each one
  *     has a different archetype); higher is better when comparing the same
  *     HIM minted from a fresh body (reincarnation).
- *   - `selfStability` — given an array of pre-snapshot and post-snapshot
+ *   - `selfStability`, given an array of pre-snapshot and post-snapshot
  *     persona vectors for the same HIM (e.g. before/after an upgrade), the
  *     mean cosine. Phi-Prime's `P` component (see ../../PHI_PRIME.md).
- *   - `adapterSensitivity` — given N persona vectors that should all
+ *   - `adapterSensitivity`, given N persona vectors that should all
  *     describe the same HIM but were obtained against different LLM
  *     adapters, the variance of pairwise similarities. Smaller is better.
  *
@@ -36,9 +36,7 @@ export interface PersonaStabilityReport {
 /**
  * Compute the pairwise cosine matrix between N HimHandles' persona vectors.
  */
-export function evaluatePersonaStability(
-  handles: readonly HimHandle[],
-): PersonaStabilityReport {
+export function evaluatePersonaStability(handles: readonly HimHandle[]): PersonaStabilityReport {
   const n = handles.length;
   const vectors = handles.map((h) => h.getPersonaVector().embedding);
   const pairs: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
@@ -102,7 +100,6 @@ export function adapterSensitivity(vectors: readonly Float32Array[]): number {
     }
   }
   const mean = sims.reduce((s, x) => s + x, 0) / sims.length;
-  const variance =
-    sims.reduce((s, x) => s + (x - mean) * (x - mean), 0) / sims.length;
+  const variance = sims.reduce((s, x) => s + (x - mean) * (x - mean), 0) / sims.length;
   return variance;
 }

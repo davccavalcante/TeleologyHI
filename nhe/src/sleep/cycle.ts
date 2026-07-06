@@ -1,18 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { LlmAdapter } from "../adapters/types.js";
-import {
-  generateNremSummaries,
-  generateRemDreams,
-  interactionsToFragments,
-} from "./phases.js";
+import { generateNremSummaries, generateRemDreams, interactionsToFragments } from "./phases.js";
+import type { DreamRecord, InteractionRecord, SleepPhase, SleepTrigger } from "./types.js";
 import { dreamRecordToYaml, sleepYamlFilename } from "./yaml.js";
-import type {
-  DreamRecord,
-  InteractionRecord,
-  SleepPhase,
-  SleepTrigger,
-} from "./types.js";
 
 export interface SleepCycleOptions {
   /** Total wall-clock seconds the cycle should occupy. Default 60. */
@@ -51,10 +42,10 @@ export interface SleepCycleResult {
  * content (the interactions snapshot) and only REM calls the LLM.
  */
 const PHASE_PROPORTIONS: Record<SleepPhase["phase"], number> = {
-  N1: 0.10,
-  N2: 0.20,
+  N1: 0.1,
+  N2: 0.2,
   N3: 0.15,
-  N4: 0.10,
+  N4: 0.1,
   REM: 0.45,
 };
 
@@ -68,20 +59,23 @@ export async function runSleepCycle(input: SleepCycleInput): Promise<SleepCycleR
   const startMs = Date.now();
   const startedAt = new Date(startMs).toISOString();
 
-  // N1 — snapshot recent interactions as fragments
+  // N1, snapshot recent interactions as fragments
   const fragments = interactionsToFragments(input.interactions);
 
-  // N2/N3/N4 — parallel one-sentence summaries (emotional / lasting / discard)
+  // N2/N3/N4, parallel one-sentence summaries (emotional / lasting / discard)
   const nrem = await generateNremSummaries(input.llm, fragments);
 
-  // REM — generate dreams via LLM, conditioned on the NREM summaries
+  // REM, generate dreams via LLM, conditioned on the NREM summaries
   const remStartMs = startMs + secondsFor(["N1", "N2", "N3", "N4"], total) * 1000;
-  const { dreams, tokensIn: remIn, tokensOut: remOut } = await generateRemDreams(
-    input.llm,
-    fragments,
-    opts.induction,
-    { n2: nrem.n2, n3: nrem.n3, n4: nrem.n4 },
-  );
+  const {
+    dreams,
+    tokensIn: remIn,
+    tokensOut: remOut,
+  } = await generateRemDreams(input.llm, fragments, opts.induction, {
+    n2: nrem.n2,
+    n3: nrem.n3,
+    n4: nrem.n4,
+  });
   const tokensIn = nrem.tokensIn + remIn;
   const tokensOut = nrem.tokensOut + remOut;
 
@@ -136,7 +130,7 @@ export async function runSleepCycle(input: SleepCycleInput): Promise<SleepCycleR
 /**
  * Build an NREM phase entry from the LLM-produced summary. Empty summaries
  * (provider failure or zero interactions) collapse to `{kind: "empty"}` so
- * the YAML stays minimal — a downstream reader treats the phase as a no-op.
+ * the YAML stays minimal, a downstream reader treats the phase as a no-op.
  */
 function nremPhase(
   name: Exclude<SleepPhase["phase"], "N1" | "REM">,

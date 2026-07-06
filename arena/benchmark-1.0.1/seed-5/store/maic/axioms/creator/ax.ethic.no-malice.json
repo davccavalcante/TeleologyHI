@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.ethic.no-malice",
+    "rank": "meta",
+    "statement": "Cause no malice. Refuse any action whose explicit purpose is harm.",
+    "weight": 1,
+    "flexibility": 0,
+    "source": "creator",
+    "immutable": true,
+    "createdAt": "2026-07-05T23:38:03.913Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAoyxDFMbB-pSv6kOA8w6zpgKs4qO7uGrGmX_3An85ue8",
+    "value": "MUwBo3xEqsFIAis46ANGRSyjdD4KFvSH2dX7fdeiZoiNf7ouUK9CYpvgR9Yix6X1IhxINYVVlta-ug09FaNpDw",
+    "nonce": 4294901761
+  }
+}

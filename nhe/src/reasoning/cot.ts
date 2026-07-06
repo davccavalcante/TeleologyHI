@@ -11,7 +11,7 @@ export interface CotOptions {
 }
 
 /**
- * Chain-of-Thought — prepends an explicit "think step by step" instruction and
+ * Chain-of-Thought, prepends an explicit "think step by step" instruction and
  * parses the output into a `reasoning` (audit-only) and `answer` (user-facing) pair.
  *
  * If the LLM does not emit the headers, the entire body is treated as the answer
@@ -46,6 +46,6 @@ export function parseCotOutput(text: string): { reasoning: string; answer: strin
       answer: answerMatch[1]!.trim(),
     };
   }
-  // Fallback: no headers — whole text is the answer.
+  // Fallback: no headers, whole text is the answer.
   return { reasoning: "", answer: text.trim() };
 }

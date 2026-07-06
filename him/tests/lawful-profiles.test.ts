@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { LAWFUL_PROFILES, resolveLawfulProfile } from "../src/lawful/profiles";
 
-describe("LawfulCharacterAdapter — built-in profiles (D-H2)", () => {
+describe("LawfulCharacterAdapter, built-in profiles (D-H2)", () => {
   it("ships the five baseline jurisdictions", () => {
     const keys = Object.keys(LAWFUL_PROFILES).sort();
     expect(keys).toEqual(["br", "default", "eu", "unstable", "us"]);
@@ -61,9 +61,7 @@ describe("LawfulCharacterAdapter — built-in profiles (D-H2)", () => {
     const { CreatorKeyring } = await import("@teleologyhi-sdk/maic");
     const { BirthSignatureBuilder, HimHandle } = await import("../src/index");
     const kr = CreatorKeyring.generate();
-    const sig = BirthSignatureBuilder.now()
-      .withPrimaryArchetype("aries-sun")
-      .build();
+    const sig = BirthSignatureBuilder.now().withPrimaryArchetype("aries-sun").build();
     const h = HimHandle.mint(sig, kr.sign(sig, 1), kr.publicKey(), []);
     expect(h.getLawfulCharacter().jurisdiction).toBe("default");
     const eu = await h.setJurisdiction("eu");

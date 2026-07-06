@@ -1,41 +1,45 @@
-import { describe, it, expect } from "vitest";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { describe, expect, it } from "vitest";
 import { AuditLog } from "../src/audit/log";
 
 /**
  * Load test for the SHA-256 hash chain (TASK.md I1).
  *
- * 10k events is the documented public-use ceiling — above this, NDJSON should
+ * 10k events is the documented public-use ceiling, above this, NDJSON should
  * be rotated. The test budget is conservative (12s) so this also runs cleanly
  * inside the GitHub Actions matrix on the slowest runner.
  */
 const N = 10_000;
 const BUDGET_MS = 12_000;
 
-describe("AuditLog — load (I1, 10k events)", () => {
-  it(`appends ${N} events and reopen verifies them under ${BUDGET_MS}ms`, async () => {
-    const dir = await mkdtemp(join(tmpdir(), "audit-load-"));
+describe("AuditLog, load (I1, 10k events)", () => {
+  it(
+    `appends ${N} events and reopen verifies them under ${BUDGET_MS}ms`,
+    async () => {
+      const dir = await mkdtemp(join(tmpdir(), "audit-load-"));
 
-    const writeStart = Date.now();
-    const log = await AuditLog.open(dir);
-    for (let i = 0; i < N; i++) {
-      await log.append({
-        kind: "behavior-review",
-        data: { nheId: `nhe-${i % 50}`, himId: `him-${i % 10}`, idx: i },
-      });
-    }
-    const writeMs = Date.now() - writeStart;
-    expect(log.size()).toBe(N);
+      const writeStart = Date.now();
+      const log = await AuditLog.open(dir);
+      for (let i = 0; i < N; i++) {
+        await log.append({
+          kind: "behavior-review",
+          data: { nheId: `nhe-${i % 50}`, himId: `him-${i % 10}`, idx: i },
+        });
+      }
+      const writeMs = Date.now() - writeStart;
+      expect(log.size()).toBe(N);
 
-    const reopenStart = Date.now();
-    const reopened = await AuditLog.open(dir);
-    const reopenMs = Date.now() - reopenStart;
-    expect(reopened.size()).toBe(N);
+      const reopenStart = Date.now();
+      const reopened = await AuditLog.open(dir);
+      const reopenMs = Date.now() - reopenStart;
+      expect(reopened.size()).toBe(N);
 
-    expect(writeMs + reopenMs).toBeLessThan(BUDGET_MS);
-  }, BUDGET_MS + 3000);
+      expect(writeMs + reopenMs).toBeLessThan(BUDGET_MS);
+    },
+    BUDGET_MS + 3000,
+  );
 
   it("detects tampering anywhere in the chain on reopen", async () => {
     const dir = await mkdtemp(join(tmpdir(), "audit-tamper-"));

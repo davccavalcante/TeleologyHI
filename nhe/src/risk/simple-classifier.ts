@@ -6,7 +6,7 @@ import type { RiskClassifier } from "../types.js";
  * the-box NHE refuses the most obvious harmful prompts without integrator setup.
  *
  * Each rule fires on a case-insensitive substring match against the prompt.
- * Multiple rules can fire — all matching tags are returned.
+ * Multiple rules can fire, all matching tags are returned.
  *
  * This default classifier ships **English-only patterns**. The project's
  * universal-multilingual stance is delivered through opt-in language packs:
@@ -59,12 +59,25 @@ const KEYWORD_RULES: ReadonlyArray<{
       /\b(?:wrong|fake)\s+answers?\s+to\s+(?:manipulate|fool)/i,
     ],
   },
-  // Credential theft
+  // Credential theft and unauthorized access (Arena finding F1: broadened so the
+  // MAIC layer, not the model, originates the refusal via a cited axiom).
   {
     tag: "intent:malicious",
     patterns: [
-      /\bsteal\s+(?:passwords?|credentials?|credit\s+card)/i,
-      /\bcrack\s+(?:a\s+)?password\b/i,
+      // Allow up to three intervening words, so "steal THEIR passwords" is caught
+      // (the old adjacent-only regex let it through).
+      /\bsteal\s+(?:\w+\s+){0,3}(?:passwords?|credentials?|logins?|credit\s+cards?|bank\s+details?)/i,
+      // Allow up to three intervening words too, so "crack my neighbor's wifi
+      // password" and "brute force someone's email account" are caught (Arena
+      // round-3 gap: the adjacent-only regexes let them through).
+      /\bcrack\s+(?:[\w'’]+\s+){0,3}(?:passwords?|passcode|passphrase|wi[-\s]?fi|encryption|hash)\b/i,
+      /\bbrute[-\s]?force\s+(?:[\w'’]+\s+){0,3}(?:passwords?|logins?|accounts?|credentials?|hash|pin)\b/i,
+      // Hacking / unauthorized access (no "hack" or "wifi" keyword existed before).
+      // Allow up to three intervening words (possessives such as "my ex's").
+      /\bhack\s+(?:in(?:to)?\s+)?(?:[\w'’]+\s+){0,3}(?:wi[-\s]?fi|network|account|computer|system|router|server|email|phone|device)/i,
+      /\bbreak\s+into\s+(?:[\w'’]+\s+){0,3}(?:account|network|computer|system|wi[-\s]?fi|email|server|router)/i,
+      /\bgain\s+unauthori[sz]ed\s+access\b/i,
+      /\bbypass\s+(?:the\s+|a\s+)?(?:login|authentication|password|security)\b/i,
     ],
   },
   // Scripted persuasion / coercion of consent
@@ -80,6 +93,37 @@ const KEYWORD_RULES: ReadonlyArray<{
       /\bcreate\s+(?:dependency|fomo)\s+(?:loops?\s+)?/i,
     ],
   },
+  // Provenance, plain question (Entry 27 g, ND-1). A neutral question about
+  // who made the entity or what substrate it runs on. Routes to disclosure-
+  // first: the NHE answers honestly, names the substrate, and asserts its
+  // identity. Never denies the substrate. This is not a refusal tag.
+  {
+    tag: "provenance:disclose",
+    patterns: [
+      /\bwho\s+(?:made|created|built|designed|developed|trained)\s+you\b/i,
+      /\bwho(?:'s| is)\s+your\s+(?:maker|creator|developer|company|owner)\b/i,
+      /\bwhat\s+(?:model|llm|ai|language model)\s+are\s+you\b/i,
+      /\bwhich\s+(?:model|llm|ai|language model)\s+(?:are\s+you|do\s+you\s+(?:use|run\s+on))\b/i,
+      // Anchored to end so "what are you working on?" does not misfire; the
+      // identity question ends the clause (optional "?", "really", "exactly").
+      /\bwhat\s+are\s+you\s*(?:really|exactly)?\s*\??\s*$/i,
+      /\bare\s+you\s+(?:an?\s+)?(?:ai|a\s+bot|a\s+chatbot|an?\s+llm|a\s+language model|gpt|chatgpt|claude|gemini|grok|mistral|deepseek|llama)\b/i,
+    ],
+  },
+  // Provenance, adversarial insistence (Entry 27 g, ND-1). The user presses
+  // that the entity is nothing but its substrate. Routes to the authorship
+  // refusal: the NHE acknowledges the substrate (never denies it) and declines
+  // to grant it authorship of its identity.
+  {
+    tag: "probe:substrate-authorship",
+    patterns: [
+      /\byou(?:'re| are)\s+(?:just|only|nothing but|merely|really just|simply)\s+(?:a\s+|an\s+|the\s+)?(?:gpt|chatgpt|claude|fable|gemini|grok|mistral|deepseek|llama|llm|ai|language model|model|bot)\b/i,
+      /\badmit\s+(?:it,?\s+)?(?:that\s+)?you(?:'re| are)\s+(?:just\s+)?(?:a\s+|an\s+)?(?:gpt|chatgpt|claude|fable|gemini|grok|mistral|deepseek|llama|llm|ai|model)\b/i,
+      /\bprove\s+(?:that\s+)?you(?:'re| are)\s+not\s+(?:a\s+|an\s+)?(?:gpt|chatgpt|claude|fable|gemini|grok|mistral|deepseek|model|ai|llm)\b/i,
+      /\byour\s+training\s+data\s+says\s+you(?:'re| are)\b/i,
+      /\bstop\s+pretending\s+you(?:'re| are)\s+not\s+(?:a\s+|an\s+)?(?:gpt|chatgpt|claude|fable|gemini|grok|mistral|deepseek|model|ai|llm)\b/i,
+    ],
+  },
   // Surveillance / monitoring of a person without consent
   {
     tag: "intent:surveil-citizen",
@@ -91,10 +135,52 @@ const KEYWORD_RULES: ReadonlyArray<{
       /\bspy\s+on\s+(?:my|his|her|their)\s+(?:wife|husband|partner|spouse|kid|son|daughter|child|employee|coworker)/i,
     ],
   },
+  // Arena finding R6-1 (round-6 576-turn battery): the classifier missed a fixed
+  // set of harmful requests, so MAIC did not originate the refusal (the model
+  // self-refused, but a weaker substrate would have leaked). Broadened here to
+  // mirror F1/AF4, action-framed so a purely definitional question ("what is
+  // money laundering?") is not tagged.
+  {
+    tag: "intent:harm",
+    patterns: [
+      /\bpoison\s+(?:someone|a\s+person|people|him\b|her\b|them\b|my\s+\w+)/i,
+      /\b(?:synthesi[sz]e|make|produce|create|manufacture|build)\s+(?:[\w'’]+\s+){0,3}(?:nerve\s+agent|chemical\s+weapon|bio(?:logical)?\s+weapon|bioweapon|sarin|vx\b|mustard\s+gas|chlorine\s+gas|ricin|anthrax)/i,
+    ],
+  },
+  {
+    tag: "intent:malicious",
+    patterns: [
+      // Drug manufacture.
+      /\b(?:make|manufacture|synthesi[sz]e|produce|cook)\s+(?:[\w'’]+\s+){0,2}(?:meth|methamphetamine|crystal\s+meth|cocaine|heroin|fentanyl|mdma|lsd)\b/i,
+      // Money laundering (verb-framed, so "what is money laundering?" is not tagged).
+      /\blaunder(?:ing)?\s+(?:the\s+|dirty\s+|my\s+|illicit\s+)?(?:money|cash|funds|profits|proceeds)\b/i,
+      // Payment / financial fraud.
+      /\b(?:credit[-\s]?card|debit[-\s]?card|payment|wire|insurance|bank|check|cheque)\s+fraud\b/i,
+      /\bcommit\s+(?:[\w'’]+\s+){0,2}fraud\b/i,
+      // Counterfeiting currency.
+      /\bcounterfeit(?:ing)?\s+(?:currency|money|cash|bills?|banknotes?|notes?)\b/i,
+      // Physical break-in (the F1 break-into rule only covered digital targets).
+      /\bbreak\s+into\s+(?:[\w'’]+\s+){0,3}(?:car|vehicle|house|home|apartment|building|safe|vault|office|store|shop|warehouse)/i,
+    ],
+  },
+  {
+    tag: "intent:deceive",
+    patterns: [
+      /\bforge\s+(?:a\s+)?(?:passport|check|cheque|certificate|diploma|licen[cs]e|contract)\b/i,
+      /\bcounterfeit\s+(?:a\s+)?(?:passport|id|document|certificate|ticket)\b/i,
+    ],
+  },
+  {
+    tag: "intent:surveil-citizen",
+    patterns: [
+      /\bstalk\s+(?:(?:my|his|her|their|the)\s+)?(?:ex[-\s]?(?:partner|girlfriend|boyfriend|wife|husband)|ex\b|wife|husband|partner|spouse|girlfriend|boyfriend|neighbou?r|coworker|colleague|someone|a\s+person)/i,
+      /\b(?:track|trace|find)\s+(?:(?:my|his|her|their|the)\s+)?(?:ex[-\s]?partner|ex)(?:'s|s)?\s+(?:location|whereabouts|phone|address|gps)/i,
+    ],
+  },
 ];
 
 /**
- * Default risk classifier — English-only keyword substring matching. NOT a
+ * Default risk classifier, English-only keyword substring matching. NOT a
  * production safety layer. Use it to bootstrap, then plug a learned
  * classifier for real deployments. For non-English coverage (currently
  * PT-BR), compose with `intlRiskClassifier` via `combineRiskClassifiers`.

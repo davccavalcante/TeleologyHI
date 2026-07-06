@@ -6,14 +6,14 @@
  * The OKL exists *implicitly* in maic today: axioms carry `rank`,
  * `weight`, and `flexibility`; the meta-axiom `ax.theos.universe-as-god`
  * sits at the top; the rule pack consumes them. This module exposes the
- * *projection* — a single typed shape that maps 1:1 to the paper's
+ * *projection*, a single typed shape that maps 1:1 to the paper's
  * description so downstream tooling (Φ′ runner, compliance auditors, the
  * forthcoming `@teleologyhi-sdk/him` `OntologicalKernelLayer`) can read the
  * kernel without re-deriving it from the axiom store.
  *
  * Surface:
- *   - `META_AXIOM_ID` — the canonical id ("ax.theos.universe-as-god").
- *   - `projectOntologicalKernel(axioms, opts?)` — given a list of axioms
+ *   - `META_AXIOM_ID`: the canonical id ("ax.theos.universe-as-god").
+ *   - `projectOntologicalKernel(axioms, opts?)`: given a list of axioms
  *     (typically `AxiomStore.list()`), return the projection.
  *
  * The HIM-specific projection (per-HIM kernel narrowed to its
@@ -41,7 +41,7 @@ export interface ProjectKernelOptions {
  *
  * The meta-axiom (`META_AXIOM_ID`) is hoisted to the top regardless of
  * its position in the input. If it is missing, `metaAxiomId` is set to
- * `META_AXIOM_ID` but `axioms[0]?.id` may differ — the consumer should
+ * `META_AXIOM_ID` but `axioms[0]?.id` may differ, the consumer should
  * treat that as an OKL incompleteness warning.
  */
 export function projectOntologicalKernel(

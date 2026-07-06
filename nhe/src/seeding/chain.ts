@@ -1,5 +1,5 @@
 /**
- * Explicit-fallback composition for SeedingSource (J-N1 — Entry 21).
+ * Explicit-fallback composition for SeedingSource (J-N1, Entry 21).
  *
  * Operators MAY chain multiple sources so a high-grade primary
  * (quantum / hardware TRNG) is tried first and the OS CSPRNG fills in
@@ -8,10 +8,7 @@
  */
 import type { SeedingChain, SeedingSource } from "./types.js";
 
-export function withFallback(
-  primary: SeedingSource,
-  ...fallbacks: SeedingSource[]
-): SeedingChain {
+export function withFallback(primary: SeedingSource, ...fallbacks: SeedingSource[]): SeedingChain {
   const sources = [primary, ...fallbacks];
   let lastUsedId: string | undefined;
   const chainIds = Object.freeze(sources.map((s) => s.id));

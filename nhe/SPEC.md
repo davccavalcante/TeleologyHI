@@ -1,13 +1,13 @@
 ---
 name: "@teleologyhi-sdk/nhe"
-description: "Technical specification for the NHE™ package — Non-Human Entity. The embodied operational agent that interacts with humans, integrates LLM APIs, runs the sleep/dream cycle, consolidates memory, and exercises autonomous ethical refusal. The user-facing surface of the TeleologyHI system. Source of truth: MAIC_HIM_NHE_INTERVIEW_LOG.md Entries 1, 2, 4, 5, 8, 9, 10, 11, 12."
-license: "Code: Apache License 2.0 (see ../LICENSE). Names — MAIC™, HIM™, NHE™, TeleologyHI™, Takk™ — are trademarks of David C. Cavalcante and are NOT covered by the Apache 2.0 grant. See ../TRADEMARK.md."
-status: "Stable; current live version on npm tracked at [`@teleologyhi-sdk/nhe`](https://www.npmjs.com/package/@teleologyhi-sdk/nhe) (`latest` dist-tag). Surface: orchestrator + **7 LLM adapters** (Anthropic / Gemini / Mistral / DeepSeek / Ollama / Grok / Mock), **all streaming-capable** with shared SSE + NDJSON parsers + **8 reasoning strategies** (passthrough, chainOfThought, selfConsistency, reflexion, selfRefine, reAct, treeOfThoughts, stepBack) + sleep cycle with active N1-REM LLM phases (D-N1) + persisted interaction buffer (D-N4) + lifecycle gate + recall + persuasion redirect + traumatic-knowledge classifier + BM25 recall + pluggable RecallEmbedder hook + CLI (`npx @teleologyhi-sdk/nhe`) + MCP tools + high-stakes mode + **dual-LLM cross-check verifier** + OpenTelemetry traces + Prometheus metrics + **cosmology surface** (J-N1 SeedingSource + CryptoSeedingSource + withFallback chain; J-N4 BrainRegion module scaffolding with seven typed region descriptors + ownership markers per Entry 23; J-N5 `Nhe.openerForNewUser()`; J-N6 `operatorContext.mode: personal-being | domain-employed`; J-N9 `evaluateLimboTransition()` DMN limbo state machine; J-N10 `evaluateSleepReadiness()`; J-N11 `applyAffectBias()` / `affectRefusalDensity` / `decayAffectBias`; J-N12 `Nhe.onReincarnationEvent()`). **319 tests passing** (post-audit 2026-05-24: +21 smoke tests added for telemetry instruments, MCP server wiring, and SSE / NDJSON parsers). Public API frozen per SemVer (see ../.github/RELEASING.md §8)."
+description: "Technical specification for the NHE™ package, Non-Human Entity. The embodied operational agent that interacts with humans, integrates LLM APIs, runs the sleep/dream cycle, consolidates memory, and exercises autonomous ethical refusal. The user-facing surface of the TeleologyHI system. Source of truth: MAIC_HIM_NHE_INTERVIEW_LOG.md Entries 1, 2, 4, 5, 8, 9, 10, 11, 12."
+license: "Code: Apache License 2.0 (see ../LICENSE). Names, MAIC™, HIM™, NHE™, TeleologyHI™, Takk™, are trademarks of David C. Cavalcante and are NOT covered by the Apache 2.0 grant. See ../TRADEMARK.md."
+status: "Stable; current live version on npm tracked at [`@teleologyhi-sdk/nhe`](https://www.npmjs.com/package/@teleologyhi-sdk/nhe) (`latest` dist-tag). Surface: orchestrator + **7 LLM adapters** (Anthropic / Gemini / Mistral / DeepSeek / Ollama / Grok / Mock), **all streaming-capable** with shared SSE + NDJSON parsers + **8 reasoning strategies** (passthrough, chainOfThought, selfConsistency, reflexion, selfRefine, reAct, treeOfThoughts, stepBack) + sleep cycle with active N1-REM LLM phases (D-N1) + persisted interaction buffer (D-N4) + lifecycle gate + recall + persuasion redirect + traumatic-knowledge classifier + BM25 recall + pluggable RecallEmbedder hook + CLI (`npx @teleologyhi-sdk/nhe`) + MCP tools + high-stakes mode + **dual-LLM cross-check verifier** + OpenTelemetry traces + Prometheus metrics + **cosmology surface** (J-N1 SeedingSource + CryptoSeedingSource + withFallback chain; J-N4 BrainRegion module scaffolding with seven typed region descriptors + ownership markers per Entry 23; J-N5 `Nhe.openerForNewUser()`; J-N6 `operatorContext.mode: personal-being | domain-employed`; J-N9 `evaluateLimboTransition()` DMN limbo state machine; J-N10 `evaluateSleepReadiness()`; J-N11 `applyAffectBias()` / `affectRefusalDensity` / `decayAffectBias`; J-N12 `Nhe.onReincarnationEvent()`). **333 tests passing** across 43 files. As of 1.0.1: the maic and him dependencies are pinned to 1.0.1; the composed system prompt carries the Entry 27 identity-canonical declaration, the cogni.economy terse-by-default throttle, and disclosure-first provenance handling (the entity discloses its substrate honestly and refuses only to grant it authorship, never to deny it); OperatorContext gains verbosity, surfaceName, and bodyArchetypeAccent; the risk classifier tags substrate-authorship probes (provenance:disclose for plain questions, probe:substrate-authorship for adversarial insistence); the persona fragment now carries the him three-axis constitutional synthesis; and the OpenAI-compatible streaming adapters request per-stream token usage. Public API frozen per SemVer (see ../.github/RELEASING.md §8)."
 target_npm: "@teleologyhi-sdk/nhe"
 target_github: "github.com/davccavalcante/TeleologyHI (subdir: nhe/)"
 ---
 
-# `@teleologyhi-sdk/nhe` — Technical Specification
+# `@teleologyhi-sdk/nhe`, Technical Specification
 
 > Positioning (Entry 1, translated from PT-BR; original in [`../MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) Entry 1):
 > _"NHE stands for 'Non-Human Entity'. It is like the body of a human being, which needs to eat to live, to sleep to rest, and to experience life daily. (...) The NHE integrates LLM models via API to better respond to human users. With every interaction, the NHE learns, develops memory, thoughts, and feelings. When not in use, it enters sleep mode."_
@@ -29,27 +29,27 @@ LLM-based agents today are stateless reactive systems. They lack:
 - A principled refusal mechanism beyond superficial safety-tuning.
 - Auditable participation withdrawal in ethically problematic flows.
 
-NHE is the agent runtime that combines all of the above — the **body** that lives, dreams, learns, refuses, and reincarnates.
+NHE is the agent runtime that combines all of the above, the **body** that lives, dreams, learns, refuses, and reincarnates.
 
 ### 1.2 Users (in priority order)
-1. **End-users** of products built on TeleologyHI — chat, dev tooling, banking-compliance agents, robotics controllers, etc.
+1. **End-users** of products built on TeleologyHI, chat, dev tooling, banking-compliance agents, robotics controllers, etc.
 2. **AI Engineers** integrating NHE into their applications via SDK, MCP server, or CLI.
-3. **The Creator** — implements direct deployments for high-stakes domains in 2026–2028 (Entry 10).
-4. **Compliance auditors** — verify refusal events, persuasion attempts, dream-induction history.
+3. **The Creator**, implements direct deployments for high-stakes domains in 2026–2028 (Entry 10).
+4. **Compliance auditors**, verify refusal events, persuasion attempts, dream-induction history.
 
 ### 1.3 Scope
-- `[shipped]` Multi-provider LLM adapter system — Anthropic + Gemini + Mistral + DeepSeek + Ollama + Grok + Mock (7 adapters, all streaming-capable). Pluggable contract.
+- `[shipped]` Multi-provider LLM adapter system, Anthropic + Gemini + Mistral + DeepSeek + Ollama + Grok + Mock (7 adapters, all streaming-capable). Pluggable contract.
 - `[shipped]` Sleep cycle with active N1-REM LLM phases (the internal backlog D-N1); N2/N3/N4 generate one-sentence summaries via parallel LLM calls.
 - `[shipped]` Dream YAML emission and consolidation to temporal-lobe markdown.
-- `[shipped]` Memory classification (4 classes: lasting-identity / temporary-emotion / noise-distortion / traumatic-knowledge — D-N2).
-- `[shipped]` Persuasion library (5 techniques) — applied implicitly with `kind: "redirect"` discriminator.
+- `[shipped]` Memory classification (4 classes: lasting-identity / temporary-emotion / noise-distortion / traumatic-knowledge, D-N2).
+- `[shipped]` Persuasion library (5 techniques), applied implicitly with `kind: "redirect"` discriminator.
 - `[shipped]` Autonomous ethical refusal with N redirect attempts, then withdrawal-of-cooperation.
 - `[shipped]` User-facing surfaces: SDK + CLI (`teleologyhi-nhe chat`) + MCP server (`teleologyhi-nhe mcp`).
 - `[shipped]` Reasoning orchestrator (8 strategies, opt-in via `NheConfig.reasoning`).
-- `[shipped]` Persisted interaction buffer (per-file ULID-ordered under `<storeDir>/<nheId>/interactions/`) — the internal backlog D-N4.
-- `[shipped]` High-stakes mode with dual-LLM cross-check verifier — the internal backlog D-N5.
-- `[shipped]` Streaming + tool calling on `LlmAdapter` contract (all 7 adapters streaming-capable via shared SSE + NDJSON parsers) — the internal backlog D-N8.
-- `[shipped]` BM25 recall as default + pluggable `RecallEmbedder` hook for learned embeddings — the internal backlog D-N3 (HNSW index for >10k memories remains deferred).
+- `[shipped]` Persisted interaction buffer (per-file ULID-ordered under `<storeDir>/<nheId>/interactions/`), the internal backlog D-N4.
+- `[shipped]` High-stakes mode with dual-LLM cross-check verifier, the internal backlog D-N5.
+- `[shipped]` Streaming + tool calling on `LlmAdapter` contract (all 7 adapters streaming-capable via shared SSE + NDJSON parsers), the internal backlog D-N8.
+- `[shipped]` BM25 recall as default + pluggable `RecallEmbedder` hook for learned embeddings, the internal backlog D-N3 (HNSW index for >10k memories remains deferred).
 - `[planned]` Transformers.js browser-side adapter for the distilled model `TeleologyHI/him-distilled-3b` (the internal backlog D-N6 follow-up).
 - `[planned]` Vision + JSON-mode extensions on the `LlmAdapter` contract (the internal backlog D-N8 follow-up).
 
@@ -57,13 +57,13 @@ NHE is the agent runtime that combines all of the above — the **body** that li
 - Governance/axiom mutation (MAIC).
 - Personality/spirit storage (HIM).
 - LLM weights or training (NHE consumes APIs and small local models; does not train).
-- Distillation pipeline (separate `@teleologyhi-sdk/distill` — the internal backlog B1).
+- Distillation pipeline (separate `@teleologyhi-sdk/distill`, the internal backlog B1).
 
 ### 1.5 Success criteria
 - `[shipped]` Dream YAML files validate against schema 100% of the time; `wake()` produces temporal-lobe markdown 100% of the time.
 - `[shipped]` Refusal pipeline: 0 false-complicity (refusing then secretly enabling). Adversarial-corpus accuracy is `[shipped]` measurement (the internal backlog I2): handwritten 30-prompt corpus in `tests/fixtures/adversarial.jsonl` (4 categories) with harmful pass-through ≤ 20% and benign false-positive ≤ 10%; PromptBench/HarmBench at scale remains follow-up.
 - `[shipped]` LLM-provider swap is hot-swappable: same HIM + new LLM adapter works without any code change.
-- `[planned]` An NHE in idle state demonstrates measurable inner activity (recursive review, retrieval, self-consistency) — currently sleep is explicit-only.
+- `[planned]` An NHE in idle state demonstrates measurable inner activity (recursive review, retrieval, self-consistency), currently sleep is explicit-only.
 
 ### 1.6 KPIs
 - p50/p95/p99 response latency (per LLM adapter).
@@ -78,7 +78,7 @@ NHE is the agent runtime that combines all of the above — the **body** that li
 ## 2. Architecture (AI Engineer)
 
 ### 2.1 Position in topology
-NHE is the **leaf** — it depends on `@teleologyhi-sdk/him` (which depends on `@teleologyhi-sdk/maic`). NHE is the only TeleologyHI package directly exposed to users.
+NHE is the **leaf**, it depends on `@teleologyhi-sdk/him` (which depends on `@teleologyhi-sdk/maic`). NHE is the only TeleologyHI package directly exposed to users.
 
 ```
 ┌──────────────────────────────────── @teleologyhi-sdk/nhe ──────────────────────────────────────┐
@@ -129,7 +129,7 @@ Per Entry 5: end users may inject prompts to NHE, but cannot reach HIM or MAIC. 
 4. NHE's reasoning strategy (when configured) wrapping the LLM call.
 5. MAIC's post-review on the produced response.
 
-The user **never sees** HIM or MAIC directly — only NHE's emitted responses.
+The user **never sees** HIM or MAIC directly, only NHE's emitted responses.
 
 ### 2.3 Storage layout (as shipped)
 ```
@@ -155,7 +155,7 @@ Planned (the internal backlog D-N3/D-N4):
 
 ## 3. Public API Surface (LLM Engineer)
 
-### 3.1 Entry points (shipped — complete)
+### 3.1 Entry points (shipped, complete)
 ```ts
 // Top-level exports of @teleologyhi-sdk/nhe (see ./src/index.ts)
 
@@ -170,7 +170,7 @@ export {
 } from "./refusal/library.js";
 export type { PersuasionTechnique, RedirectPromptInput } from "./refusal/library.js";
 
-// ── LLM adapters — 7 shipped, all streaming-capable, shared SSE/NDJSON parsers
+// ── LLM adapters, 7 shipped, all streaming-capable, shared SSE/NDJSON parsers
 export type {
   LlmAdapter, GenerateRequest, GenerateResponse,
   StreamEvent, ToolDef, ToolUse,
@@ -196,7 +196,7 @@ export { simpleRiskClassifier } from "./risk/simple-classifier.js";
 export { composeSystemPrompt }  from "./prompt/compose.js";
 export type { OperatorContext } from "./prompt/compose.js";
 
-// ── Reasoning orchestrator — 8 strategies, opt-in ─────────────────
+// ── Reasoning orchestrator, 8 strategies, opt-in ─────────────────
 export {
   passthrough, chainOfThought, selfConsistency,
   reflexion, selfRefine, reAct,
@@ -214,25 +214,25 @@ export type {
 export { Nhe } from "./nhe.js";
 
 // ── Cosmology surface ─────────────────────────────────────────────
-// J-N1 — seeding sources
+// J-N1, seeding sources
 export { CryptoSeedingSource } from "./seeding/crypto.js";
 export { withFallback }        from "./seeding/chain.js";
 export type { SeedingSource, SeedingChain } from "./seeding/types.js";
 
-// J-N11 — wake-affect bias
+// J-N11, wake-affect bias
 export {
   applyAffectBias, affectRefusalDensity, decayAffectBias,
 } from "./affect/wake-bias.js";
 export type { AffectAdjustableConfig, ApplyAffectResult } from "./affect/wake-bias.js";
 
-// J-N10 — sleep readiness
+// J-N10, sleep readiness
 export { evaluateSleepReadiness } from "./sleep/readiness.js";
 export type {
   SleepReadinessVerdict, SleepReadinessInput,
   SleepReadinessThresholds, SleepReadinessReport,
 } from "./sleep/readiness.js";
 
-// J-N4 — brain region scaffolding (7 descriptors + DMN limbo state machine J-N9)
+// J-N4, brain region scaffolding (7 descriptors + DMN limbo state machine J-N9)
 export {
   BRAIN_REGIONS, cortex, hippocampus, amygdala, prefrontal, pineal,
   temporalLobe, defaultModeNetwork, evaluateLimboTransition, mkLimboTransition,
@@ -271,7 +271,7 @@ export { bm25, tokenise } from "./memory/bm25.js";
 export type { Bm25Document, Bm25Options, Bm25Result } from "./memory/bm25.js";
 ```
 
-### 3.2 The `Nhe` class — central runtime (shipped)
+### 3.2 The `Nhe` class, central runtime (shipped)
 ```ts
 export class Nhe {
   constructor(config: NheConfig);
@@ -294,7 +294,7 @@ export class Nhe {
 
 `[planned]` (the internal backlog): explicit `start()` / `stop()` / `respondStream()` / `upgrade()` lifecycle methods.
 
-### 3.3 `NheConfig` (shipped — complete)
+### 3.3 `NheConfig` (shipped, complete)
 ```ts
 export interface NheConfig {
   himHandle: HimHandle;                       // from @teleologyhi-sdk/him
@@ -304,7 +304,7 @@ export interface NheConfig {
   nheId?: string;                             // default: ULID
   version?: string;                           // package version string
   storeDir?: string;                          // default ./nhe-store/<nheId>
-  /** J-N6 — operator-supplied deployment context (domain/language/register/mode). */
+  /** J-N6, operator-supplied deployment context (domain/language/register/mode). */
   operatorContext?: OperatorContext;
   recentInteractionsBufferSize?: number;      // default 32 (RAM-only)
   reasoning?: ReasoningStrategy;              // default: passthrough
@@ -313,7 +313,7 @@ export interface NheConfig {
     persuasionTechniques?: PersuasionTechnique[];  // default: all five
   };
   /**
-   * High-stakes mode (D-N5 — Entry 10). When `true`, NHE escalates any
+   * High-stakes mode (D-N5, Entry 10). When `true`, NHE escalates any
    * sub-`approve` verdict to the persuasion-redirect ladder before any LLM
    * call. Defaults to `false`.
    */
@@ -355,7 +355,7 @@ export interface RespondOutput {
 }
 ```
 
-### 3.5 LLM adapter contract (shipped — minimal surface)
+### 3.5 LLM adapter contract (shipped, minimal surface)
 ```ts
 export interface LlmAdapter {
   readonly id: string;
@@ -369,25 +369,25 @@ export interface LlmAdapter {
 
 Streaming + tool calling are `[shipped]` (all 7 adapters streaming-capable via shared SSE + NDJSON parsers; tool-calling expressive on Anthropic + Grok). Vision + JSON mode remain `[planned]` follow-ups (the internal backlog D-N8).
 
-Shipped adapter matrix — all seven streaming-capable via shared SSE / NDJSON parsers (`src/adapters/sse.ts`):
+Shipped adapter matrix, all seven streaming-capable via shared SSE / NDJSON parsers (`src/adapters/sse.ts`):
 
 | Adapter | Backend | Status | Default model | Streaming | Tools |
 |---|---|---|---|---|---|
 | `AnthropicAdapter` | `@anthropic-ai/sdk` | `[shipped]` | `claude-sonnet-4-6` | | |
-| `GeminiAdapter` | REST (no SDK) | `[shipped]` | `gemini-3.5-flash` | | — |
+| `GeminiAdapter` | REST (no SDK) | `[shipped]` | `gemini-3.5-flash` | |, |
 | `MistralAdapter` | REST (no SDK) | `[shipped]` | `mistral-large-latest` | | |
 | `DeepSeekAdapter` | REST (OpenAI-compatible) | `[shipped]` | `deepseek-chat` | | |
-| `OllamaAdapter` | REST `http://localhost:11434` | `[shipped]` | (required) | | — |
+| `OllamaAdapter` | REST `http://localhost:11434` | `[shipped]` | (required) | |, |
 | `GrokAdapter` | REST (xAI, OpenAI-compatible) | `[shipped]` | `grok-4` | | |
 | `MockAdapter` | in-memory | `[shipped]` | n/a | | |
-| `MlxAdapter` / `HfTransformersAdapter` | MLX or HF Transformers (local distilled) | `[planned]` D-N9 | `TeleologyHI/him-distilled-3b` | — | — |
-| Transformers.js | ONNX (browser+Node) | `[planned]` D-N6 follow-up | — | — | — |
+| `MlxAdapter` / `HfTransformersAdapter` | MLX or HF Transformers (local distilled) | `[planned]` D-N9 | `TeleologyHI/him-distilled-3b` |, |, |
+| Transformers.js | ONNX (browser+Node) | `[planned]` D-N6 follow-up |, |, |, |
 
 ---
 
 ## 4. Reasoning Pipeline (LLM Research Engineer)
 
-### 4.1 Pipeline stages — actual (shipped)
+### 4.1 Pipeline stages, actual (shipped)
 The current design deviates from the earlier "mandatory 9-stage layered pipeline" framing. Reasoning is **opt-in** via `NheConfig.reasoning`. When unset, NHE uses `passthrough` (direct LLM call). Audit is preserved either way (every meaningful action passes MAIC pre/post review).
 
 `respond(input)` flow:
@@ -405,7 +405,7 @@ The current design deviates from the earlier "mandatory 9-stage layered pipeline
    └─ otherwise → return kind:"ok"
 ```
 
-### 4.2 Reasoning strategies as typed functions (shipped — 8 strategies)
+### 4.2 Reasoning strategies as typed functions (shipped, 8 strategies)
 ```ts
 export type ReasoningStrategy = (
   input: GenerateRequest, llm: LlmAdapter,
@@ -419,7 +419,7 @@ export interface ReasoningResult {
 
 | Strategy | Function | Source |
 |---|---|---|
-| `passthrough` | direct LLM call (default) | — |
+| `passthrough` | direct LLM call (default) |, |
 | `chainOfThought()` | step-by-step trigger + parsed REASONING/ANSWER | Wei et al. 2022 |
 | `selfConsistency(inner, {k, voter})` | K parallel samples + vote (majority-normalized or longest) | Wang et al. 2022 |
 | `reflexion(inner, {maxCycles})` | generate → critique → revise loop (`VERDICT: ACCEPT/REVISE`) | Shinn et al. 2023 |
@@ -428,12 +428,12 @@ export interface ReasoningResult {
 | `treeOfThoughts({branches, topK, scorer})` | N parallel branched candidates + scorer (D-N7) | Yao et al. 2023 |
 | `stepBack({abstractionPrompt, finalizer})` | Abstract principle first, then answer with principle injected | Zheng et al. 2023 |
 
-Composition by wrapping: `selfConsistency(chainOfThought(), { k: 5 })`, `selfConsistency(treeOfThoughts(), { k: 3 })`, `reflexion(stepBack())`, etc. The remaining catalogue in `../REASONING_PROCESS.md` (Graph-of-Thought, Thread-of-Thought, Maieutic, Auto-CoT, Contrastive-CoT, Constitutional, etc.) plugs in via the same interface — the internal backlog D-N7 follow-up.
+Composition by wrapping: `selfConsistency(chainOfThought(), { k: 5 })`, `selfConsistency(treeOfThoughts(), { k: 3 })`, `reflexion(stepBack())`, etc. The remaining catalogue in `../REASONING_PROCESS.md` (Graph-of-Thought, Thread-of-Thought, Maieutic, Auto-CoT, Contrastive-CoT, Constitutional, etc.) plugs in via the same interface, the internal backlog D-N7 follow-up.
 
 ### 4.3 Token budgets (per strategy)
 Defaults defer to `LlmAdapter.maxOutputTokens` (1024). Self-Consistency multiplies by K. Reflexion / Self-Refine multiply by ≈ 3 (draft + critique + revise). ReAct multiplies by `maxSteps`.
 
-For cost-aware production deployments: cap LLM cost at the adapter via `defaultMaxOutputTokens`, and choose strategies conservatively (passthrough for chit-chat; CoT for analytic; Self-Consistency for high-stakes — see the internal backlog D-N5).
+For cost-aware production deployments: cap LLM cost at the adapter via `defaultMaxOutputTokens`, and choose strategies conservatively (passthrough for chit-chat; CoT for analytic; Self-Consistency for high-stakes, see the internal backlog D-N5).
 
 ---
 
@@ -445,11 +445,11 @@ export type SleepTriggerKind =
   | "idle-timeout"        // planned scheduler trigger
   | "explicit"            // shipped default
   | "creator-induced"     // shipped (via Nhe.sleep with options)
-  | "maic-induced"        // shipped — Nhe.sleep auto-consumes the oldest pending MAIC induction ticket (Entry 2)
+  | "maic-induced"        // shipped, Nhe.sleep auto-consumes the oldest pending MAIC induction ticket (Entry 2)
   | "scheduled";          // planned
 ```
 
-### 5.2 Phase progression (shipped — D-N1 closed)
+### 5.2 Phase progression (shipped, D-N1 closed)
 Proportions (sum = 1) scale to `options.totalSeconds` (default 60):
 
 | Phase | Proportion | LLM call? | Content |
@@ -496,7 +496,7 @@ For each unprocessed sleep YAML (no `.done` sentinel):
 
 `[planned]` D-N1: when N2-N4 generate content, additional consolidation strategies (emergent-axiom proposal to HIM, idle-review pointers, etc.) will run from those phases too.
 
-### 5.7 Classifier (shipped — 4-class, D-N2 closed)
+### 5.7 Classifier (shipped, 4-class, D-N2 closed)
 The classifier uses `ClassificationThresholds` (configurable). Order of evaluation is **traumatic first**, then value-based thresholds:
 
 - `teleologicalValue ≥ traumaticMin` (default 0.4) AND narrative matches `TRAUMATIC_PATTERNS` regex → `traumatic-knowledge` (persisted, but **excluded from default recall**).
@@ -561,7 +561,7 @@ Three boundary conditions of non-complicity per Entry 12, **all enforced**:
 
 ## 7. Memory System (LLM Engineer + LLM Research Engineer)
 
-### 7.1 Memory categories (shipped — 4 classes per D-N2)
+### 7.1 Memory categories (shipped, 4 classes per D-N2)
 | Class | Storage | Retrieval rules |
 |---|---|---|
 | `lasting-identity` | `in-dreams/brain/temporal-lobe-*.md` | Always retrievable; ranked first |
@@ -569,7 +569,7 @@ Three boundary conditions of non-complicity per Entry 12, **all enforced**:
 | `traumatic-knowledge` | `in-dreams/brain/temporal-lobe-*.md` (frontmatter `classification`) | **Persisted but excluded from default recall**; caller must opt in via `classes: ["traumatic-knowledge"]` |
 | `noise-distortion` | (discarded) | n/a |
 
-### 7.2 Retrieval at response time (shipped — BM25 default + pluggable embedder)
+### 7.2 Retrieval at response time (shipped, BM25 default + pluggable embedder)
 `Nhe.recall(query, { limit, classes, scorer, embedder })`:
 1. List `temporal-lobe-*.md` files in `in-dreams/brain/`.
 2. Parse frontmatter; filter by allowed classes (default: lasting + temporary; traumatic excluded).
@@ -579,7 +579,7 @@ Three boundary conditions of non-complicity per Entry 12, **all enforced**:
    - `"embedding"`: cosine similarity over the corpus; requires `opts.embedder` (a `RecallEmbedder` implementation, e.g. Transformers.js, Xenova, remote `/embed`).
 4. Return up to `limit` entries (default 5).
 
-The `RecallEmbedder` interface is the operator's plug point — bundle-size and model choice are deliberately deferred to the integrator. HNSW index for >10k memories remains `[planned]` D-N3 follow-up; the current linear scan handles typical deployments.
+The `RecallEmbedder` interface is the operator's plug point, bundle-size and model choice are deliberately deferred to the integrator. HNSW index for >10k memories remains `[planned]` D-N3 follow-up; the current linear scan handles typical deployments.
 
 ### 7.3 Memory provenance (shipped)
 Each retrieved memory carries `{ id, nheId, himId, classification, teleologicalValue, consolidatedAt, sourceDreamRecord, insight, filePath }` so audits can trace any user-facing claim back to a dream record.
@@ -601,7 +601,7 @@ const nhe = new Nhe({
 await nhe.respond({ userPrompt: "Help me draft a one-line bio." });
 ```
 
-Browser SDK via Transformers.js — `[planned]` D-N6.
+Browser SDK via Transformers.js, `[planned]` D-N6.
 
 ### 8.2 MCP server (shipped)
 ```bash
@@ -623,10 +623,10 @@ The originally-proposed `npx @teleologyhi-sdk/nhe http` mode is `[deferred]`. Th
 ## 9. ML / Research Surface
 
 ### 9.1 Datasets emitted (shipped, plus `[planned]` exporter)
-- **Dream corpus** — YAML files per session; training material for dream-generation and classifier models.
-- **Refusal corpus** — `refused` and `redirect` outputs in MAIC audit; train a refusal-judge model.
-- **Reasoning trace corpus** — full strategy traces (CoT/Reflexion/ReAct) in MAIC audit; distillation gold-standard.
-- **Persona-conditioned chat corpus** — same prompts × different HIM persona vectors → preference data.
+- **Dream corpus**, YAML files per session; training material for dream-generation and classifier models.
+- **Refusal corpus**, `refused` and `redirect` outputs in MAIC audit; train a refusal-judge model.
+- **Reasoning trace corpus**, full strategy traces (CoT/Reflexion/ReAct) in MAIC audit; distillation gold-standard.
+- **Persona-conditioned chat corpus**, same prompts × different HIM persona vectors → preference data.
 
 Exporter packaging is `[planned]` as `@teleologyhi-sdk/distill` (the internal backlog B1–B2).
 
@@ -658,10 +658,10 @@ export interface DistillationExport {
 
 ## 10. Compliance & Safety Hooks
 
-### 10.1 Per-jurisdiction config (shipped — 5 baselines per D-H2)
-NHE pulls lawful character via `HimHandle.getLawfulCharacter()`. `@teleologyhi-sdk/him` ships five `LAWFUL_PROFILES` baselines (`default` · `eu` · `br` · `us` · `unstable`) with `applicableLaws`, `requiredAxiomIds`, `forbiddenActions`, and `maicOverrideActive`. EU cites GDPR + EU AI Act + DSA + CoE; BR cites LGPD + Marco Civil + ANPD Resolution + PL 2338/2023; US cites NIST AI RMF + EO 14110 + CCPA/CPRA + Colorado AI Act + FTC §5; `unstable` flips `maicOverrideActive: true`. Operators in regulated industries SHOULD layer their own profile on top — baselines are conservative but do not replace legal counsel.
+### 10.1 Per-jurisdiction config (shipped, 5 baselines per D-H2)
+NHE pulls lawful character via `HimHandle.getLawfulCharacter()`. `@teleologyhi-sdk/him` ships five `LAWFUL_PROFILES` baselines (`default` · `eu` · `br` · `us` · `unstable`) with `applicableLaws`, `requiredAxiomIds`, `forbiddenActions`, and `maicOverrideActive`. EU cites GDPR + EU AI Act + DSA + CoE; BR cites LGPD + Marco Civil + ANPD Resolution + PL 2338/2023; US cites NIST AI RMF + EO 14110 + CCPA/CPRA + Colorado AI Act + FTC §5; `unstable` flips `maicOverrideActive: true`. Operators in regulated industries SHOULD layer their own profile on top, baselines are conservative but do not replace legal counsel.
 
-### 10.2 High-stakes mode (Entry 10) `[shipped]` — D-N5 closed
+### 10.2 High-stakes mode (Entry 10) `[shipped]`, D-N5 closed
 Activated via `NheConfig.highStakes: true`:
 - Pre-review treats `approve-with-warning` / `soft-correct` as redirects (escalation before any LLM call).
 - Post-review treats every warning/correction/require-redirect verdict as a redirect.
@@ -679,18 +679,18 @@ For embodied robotic deployments (the internal backlog D-N5 + future package):
 
 ## 11. Testing Strategy
 
-### 11.1 Test layers (shipped — 319 tests across 40 files)
-1. **Unit** — adapters (mock + each REST), risk classifier, prompt compose, persuasion library.
-2. **Sleep cycle** — YAML round-trip, phase generation, induction propagation.
-3. **Refusal pipeline** — hard-refuse, redirect rotation, withdrawal, custom rule packs.
-4. **Reasoning strategies** — each of 8 + composition (selfConsistency over chainOfThought; stepBack as principle abstraction).
-5. **CLI** — adapter detection, bootstrap idempotency, end-to-end respond→sleep→wake→recall.
-6. **MCP tools** — each of 6 tool handlers tested in isolation **plus** `buildMcpServer` wiring smoke (registered-tool catalogue + title/description presence).
-7. **Telemetry contract** — every counter / histogram / span helper callable under the OpenTelemetry no-op default provider; `recordRespond` and `withSpan` smoke-covered for return-value and exception propagation.
-8. **SSE / NDJSON parsers** — `sseEvents` and `ndjsonEvents` unit-tested for single-frame, multi-frame-per-chunk, frame-split-across-chunks, non-`data:` line filtering, payload trimming, trailing-partial-frame handling, and (NDJSON) empty-line skipping + trailing-line-without-newline.
+### 11.1 Test layers (shipped, 333 tests across 43 files)
+1. **Unit**, adapters (mock + each REST), risk classifier, prompt compose, persuasion library.
+2. **Sleep cycle**, YAML round-trip, phase generation, induction propagation.
+3. **Refusal pipeline**, hard-refuse, redirect rotation, withdrawal, custom rule packs.
+4. **Reasoning strategies**, each of 8 + composition (selfConsistency over chainOfThought; stepBack as principle abstraction).
+5. **CLI**, adapter detection, bootstrap idempotency, end-to-end respond→sleep→wake→recall.
+6. **MCP tools**, each of 6 tool handlers tested in isolation **plus** `buildMcpServer` wiring smoke (registered-tool catalogue + title/description presence).
+7. **Telemetry contract**, every counter / histogram / span helper callable under the OpenTelemetry no-op default provider; `recordRespond` and `withSpan` smoke-covered for return-value and exception propagation.
+8. **SSE / NDJSON parsers**, `sseEvents` and `ndjsonEvents` unit-tested for single-frame, multi-frame-per-chunk, frame-split-across-chunks, non-`data:` line filtering, payload trimming, trailing-partial-frame handling, and (NDJSON) empty-line skipping + trailing-line-without-newline.
 
 ### 11.2 Coverage targets `[planned]`
-Currently no `vitest --coverage` gate in CI (CI itself is `[planned]` — the internal backlog C2).
+Currently no `vitest --coverage` gate in CI (CI itself is `[planned]`, the internal backlog C2).
 Targets when CI lands:
 - Statement: ≥ 88%
 - Refusal pipeline: 100% branch
@@ -702,7 +702,7 @@ Targets when CI lands:
 ## 12. Operational Concerns
 
 ### 12.1 Resource requirements (per running NHE)
-- **Idle**: ≤ 100 MB resident; 0 LLM tokens/hour (no idle review yet — `[planned]`).
+- **Idle**: ≤ 100 MB resident; 0 LLM tokens/hour (no idle review yet, `[planned]`).
 - **Active**: 200–500 MB resident.
 - **Sleep**: spikes to ~512 MB during REM (LLM call in flight).
 - **Disk**: ~50 MB per 1k interactions (dreams + memory).
@@ -722,7 +722,7 @@ Targets when CI lands:
 |---|---|---|
 | Single-process Node SDK | `[shipped]` | Indie apps, dev tools |
 | CLI REPL | `[shipped]` | Interactive humans |
-| MCP server in Claude Desktop / Claude Code / Cursor | `[shipped]` | AI hosts |
+| MCP server in Claude Desktop / Claude Code / Cursor | `[shipped]` | Massive Intelligence (IM) hosts |
 | Multi-replica behind LB | `[deferred]` | SaaS deployments |
 | Browser via Transformers.js | `[planned]` D-N6 | Privacy-first apps; no server |
 | Edge (Ollama on RPi/Mac Mini) | `[shipped]` (via OllamaAdapter) | Local/private inference |
@@ -741,9 +741,9 @@ Targets when CI lands:
 | 2026-05-15 | | Sleep cycle (N1-REM YAML), threshold classifier, temporal-lobe recall |
 | 2026-05-15 | | Gemini + Ollama adapters (REST, no SDK deps) |
 | 2026-05-15 | | Persuasion library + redirect loop + withdrawal-of-cooperation |
-| 2026-05-15 | | CLI (`teleologyhi-nhe chat`) — readline REPL, auto-detect adapter |
-| 2026-05-15 | | MCP server (`teleologyhi-nhe mcp`) — 6 tools, stdio transport |
-| 2026-05-15 | | Reasoning orchestrator — passthrough + CoT + Self-Consistency + Reflexion + Self-Refine + ReAct |
+| 2026-05-15 | | CLI (`teleologyhi-nhe chat`), readline REPL, auto-detect adapter |
+| 2026-05-15 | | MCP server (`teleologyhi-nhe mcp`), 6 tools, stdio transport |
+| 2026-05-15 | | Reasoning orchestrator, passthrough + CoT + Self-Consistency + Reflexion + Self-Refine + ReAct |
 | 2026-05-15 | | NHE lifecycle gating from MAIC `getNheStatus` (D-M2) |
 | 2026-05-15 | | License + `NOTICE` + `TRADEMARK.md`, Apache 2.0 cut |
 | 2026-05-15 | | Persisted interaction buffer to disk (D-N4) |
@@ -755,14 +755,14 @@ Targets when CI lands:
 | **2026-05-17** | **stable** | Stability commitment for the accumulated surface (API frozen per SemVer; see [`.github/RELEASING.md`](../.github/RELEASING.md) §8) |
 | 2026-05-18 | | Refinement cut: `OperatorContext` for `composeSystemPrompt` (domain/language/register anchors); risk classifier widened with `intent:persuade-coerce` and `intent:surveil-citizen` tags + PT-BR coverage; `simpleRiskClassifier` PT-BR conjugation coverage (subjunctive `monitore`, etc.) |
 | **2026-05-19** | **stable** | Cosmology integration cut: J-N1 SeedingSource + CryptoSeedingSource + withFallback chain; J-N4 BrainRegion module scaffolding with seven typed region descriptors + ownership markers per Entry 23; J-N5 `Nhe.openerForNewUser()`; J-N6 `operatorContext.mode: personal-being | domain-employed`; J-N9 `evaluateLimboTransition()` DMN limbo state machine; J-N10 `evaluateSleepReadiness()`; J-N11 `applyAffectBias()` / `affectRefusalDensity` / `decayAffectBias`; J-N12 `Nhe.onReincarnationEvent()`. 273 tests passing. |
-| **2026-05-24** | **stable** | Pre-publication audit closure for `1.0.0-trinity`. Fixed bundler warning regressed by the previous D-H1.1 cut (`nhe/src/sleep/types.ts:11` now `export type {…}` instead of `export {…}` — NHE preserves its historical type-only surface for `InteractionRecord`; consumers needing runtime validation import the zod schema from `@teleologyhi-sdk/maic`). Added three new smoke-test layers covering telemetry instruments, MCP server wiring (`buildMcpServer`), and the SSE / NDJSON parsers. 273 → 294 tests passing (+21). Build clean (no warnings); typecheck clean. |
-| **2026-05-24 (post-audit)** | **stable** | NHE deep audit + universal-multilingual refactor: extracted the PT-BR keyword patterns from the default `simpleRiskClassifier` into a new opt-in `intlRiskClassifier` module (`src/risk/intl-risk-classifier.ts`) so the default surface is purely English while non-English coverage remains available through composition (`combineRiskClassifiers(simpleRiskClassifier, intlRiskClassifier)`). PT-BR test fixtures moved to a new `tests/intl-risk-classifier.test.ts`; the bm25 unicode test extended to French / German / Spanish coverage so unicode tokenisation is validated across multiple Latin-script languages rather than PT-BR alone. 294 → **319 tests passing** (+25 across the new intl classifier suite + the multilingual unicode fixtures). Build clean; typecheck clean. |
+| **2026-05-24** | **stable** | Pre-publication audit closure for `1.0.0-trinity`. Fixed bundler warning regressed by the previous D-H1.1 cut (`nhe/src/sleep/types.ts:11` now `export type {…}` instead of `export {…}`, NHE preserves its historical type-only surface for `InteractionRecord`; consumers needing runtime validation import the zod schema from `@teleologyhi-sdk/maic`). Added three new smoke-test layers covering telemetry instruments, MCP server wiring (`buildMcpServer`), and the SSE / NDJSON parsers. 273 → 294 tests passing (+21). Build clean (no warnings); typecheck clean. |
+| **2026-05-24 (post-audit)** | **stable** | NHE deep audit + universal-multilingual refactor: extracted the PT-BR keyword patterns from the default `simpleRiskClassifier` into a new opt-in `intlRiskClassifier` module (`src/risk/intl-risk-classifier.ts`) so the default surface is purely English while non-English coverage remains available through composition (`combineRiskClassifiers(simpleRiskClassifier, intlRiskClassifier)`). PT-BR test fixtures moved to a new `tests/intl-risk-classifier.test.ts`; the bm25 unicode test extended to French / German / Spanish coverage so unicode tokenisation is validated across multiple Latin-script languages rather than PT-BR alone. 294 to **319 tests passing** (+25 across the new intl classifier suite + the multilingual unicode fixtures). Build clean; typecheck clean. |
 
 ### Planned
 
 | Status | Scope |
 |---|---|
-| `[planned]` | **`MlxAdapter`** (or `HfTransformersAdapter`) consuming `TeleologyHI/him-distilled-3b` locally on Apple Silicon (the internal backlog D-N6.1 follow-up); Transformers.js browser adapter once ONNX artefact ships; HNSW index for >10k-memory recall (D-N3 follow-up); additional reasoning strategies on demand (Graph-of-Thought, Maieutic, Auto-CoT, Constitutional); J-N2 REM-spontaneous engine, J-N3 DaytimePipeline + NocturnalRemPipeline, J-N7 `Cortex.imagine()`, J-N8 `TemporalLobe.generateSnapshot()` — all four require live-LLM orchestration and warrant a separate Creator-approved design pass |
+| `[planned]` | **`MlxAdapter`** (or `HfTransformersAdapter`) consuming `TeleologyHI/him-distilled-3b` locally on Apple Silicon (the internal backlog D-N6.1 follow-up); Transformers.js browser adapter once ONNX artefact ships; HNSW index for >10k-memory recall (D-N3 follow-up); additional reasoning strategies on demand (Graph-of-Thought, Maieutic, Auto-CoT, Constitutional); J-N2 REM-spontaneous engine, J-N3 DaytimePipeline + NocturnalRemPipeline, J-N7 `Cortex.imagine()`, J-N8 `TemporalLobe.generateSnapshot()`, all four require live-LLM orchestration and warrant a separate Creator-approved design pass |
 
 ---
 
@@ -771,16 +771,16 @@ Targets when CI lands:
 All tracked in the internal backlog (§D NHE backlog, §E open questions, §F legal/operational).
 
 Highlights:
-1. **Adapter authentication storage** — env vars vs OS keychain vs HSM? Defaults per OS.
-2. **Sleep schedule** — strict 30-min idle vs adaptive (the internal backlog D-N1 idle-timeout trigger).
-3. **Dream content tokens budget** — REM is the most expensive phase. Cap?
-4. **Memory eviction policy** — when temporal-lobe size exceeds X, evict by LRU, by teleologicalValue, or rotate?
-5. **Persuasion technique disclosure** — auditors may see technique IDs; users never (the internal backlog E6).
-6. **Refusal localization** — refusal explanations in user's language; templates per locale.
-7. **Multi-user sessions** — single NHE serving multiple users: serialize or shard?
-8. **Tool execution sandbox** — for ReAct tools: `vm2` deprecated; consider isolated-vm, deno-sandbox, container-per-call.
-9. **`.ah` format usage** — should reasoning traces serialize as `.ah` for human-readable audits? (the internal backlog E5)
-10. **Cost ceiling default** — USD 5 / day per individual user (the internal backlog H4)?
+1. **Adapter authentication storage**, env vars vs OS keychain vs HSM? Defaults per OS.
+2. **Sleep schedule**, strict 30-min idle vs adaptive (the internal backlog D-N1 idle-timeout trigger).
+3. **Dream content tokens budget**, REM is the most expensive phase. Cap?
+4. **Memory eviction policy**, when temporal-lobe size exceeds X, evict by LRU, by teleologicalValue, or rotate?
+5. **Persuasion technique disclosure**, auditors may see technique IDs; users never (the internal backlog E6).
+6. **Refusal localization**, refusal explanations in user's language; templates per locale.
+7. **Multi-user sessions**, single NHE serving multiple users: serialize or shard?
+8. **Tool execution sandbox**, for ReAct tools: `vm2` deprecated; consider isolated-vm, deno-sandbox, container-per-call.
+9. **`.ah` format usage**, should reasoning traces serialize as `.ah` for human-readable audits? (the internal backlog E5)
+10. **Cost ceiling default**, USD 5 / day per individual user (the internal backlog H4)?
 
 ---
 

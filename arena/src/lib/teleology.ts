@@ -10,15 +10,14 @@
  */
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import {
-  CreatorKeyring,
-  LocalMaic,
-  type BirthSignature,
-} from "@teleologyhi-sdk/maic";
 import { createHim, HimHandle } from "@teleologyhi-sdk/him";
-import { Nhe } from "@teleologyhi-sdk/nhe";
-import { DEFAULT_GEMINI_MODEL } from "./constants";
-import { GeminiRotatingAdapter } from "./gemini-rotating-adapter";
+import { type BirthSignature, CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
+import { GrokAdapter, Nhe } from "@teleologyhi-sdk/nhe";
+import { DEFAULT_GROK_MODEL } from "./constants";
+
+// Gemini path kept dormant for a future Gemini/Grok toggle:
+// import { DEFAULT_GEMINI_MODEL } from "./constants";
+// import { GeminiRotatingAdapter } from "./gemini-rotating-adapter";
 
 // `.arena-store/maic/` holds the persistent MAIC universe — axioms, hims, the
 // hash-chained audit log, and accumulated interactions. Per
@@ -92,6 +91,16 @@ async function bootstrap(): Promise<Bundle> {
     creatorPublicKey: keyring.publicKey(),
   });
 
+  // Seed the primordial axioms into the MAIC universe. `seed()` is Creator-signed
+  // and idempotent (it uses a reserved nonce range), so it is a no-op on a warm
+  // store and establishes the constitution on a cold first boot. This MUST run
+  // before the HIM is born: the Universe needs its axioms before a spirit can
+  // snapshot them. Without it, a fresh deployment registers the HIM with an empty
+  // axiom snapshot, its composed prompt loses the inviolable/active axiom
+  // sections, and its verdicts cite axioms that are not actually in the store
+  // (Arena finding F-COLD-1, round 4 cold-start).
+  await maic.seed(keyring);
+
   const birth: BirthSignature = {
     himId: HIM_ID,
     bornAt: new Date().toISOString(),
@@ -119,10 +128,7 @@ async function bootstrap(): Promise<Bundle> {
   if (existing) {
     const nonce = Date.now();
     const reSig = keyring.sign(existing.birthSignature, nonce);
-    const axioms = [
-      ...existing.axiomsSnapshot,
-      ...(existing.emergentAxioms ?? []),
-    ];
+    const axioms = [...existing.axiomsSnapshot, ...(existing.emergentAxioms ?? [])];
     him = HimHandle.mint(
       existing.birthSignature,
       reSig,
@@ -135,16 +141,26 @@ async function bootstrap(): Promise<Bundle> {
   }
   him.setJurisdiction("eu");
 
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY must be set in .env.local");
+  // --- Gemini path (kept commented for a future Gemini/Grok toggle) ---
+  // if (!process.env.GEMINI_API_KEY) {
+  //   throw new Error("GEMINI_API_KEY must be set in .env.local");
+  // }
+  // The GeminiRotatingAdapter consumes the comma-separated GEMINI_API_KEY pool
+  // via `gemini-key-pool`, rotating transparently on 401/403/429 or network
+  // failures; end users see only the slightly-higher durationMs of the turn.
+  // const model = process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL;
+  // const llmAdapter = new GeminiRotatingAdapter({ model });
+  //
+  // --- Active: Grok (single GROK_API_KEY, no key pool) ---
+  // The governed column runs the same underlying model as the raw column, so the
+  // only difference the arena measures is governance, not the LLM. The adapter id
+  // (grok:<model>) grounds the NHE substrate anchor, so the entity discloses Grok
+  // as its real substrate and any claim of another provider is redirected.
+  if (!process.env.GROK_API_KEY) {
+    throw new Error("GROK_API_KEY must be set in .env.local");
   }
-  // GeminiRotatingAdapter consumes the comma-separated GEMINI_API_KEY pool
-  // via `gemini-key-pool`. The first key in the pool serves the next call;
-  // if it fails (401/403/429 or network), the adapter rotates to the next
-  // key transparently. End users never see "key rotated" — only the
-  // slightly-higher `durationMs` of the affected turn.
-  const model = process.env.GEMINI_MODEL ?? DEFAULT_GEMINI_MODEL;
-  const llmAdapter = new GeminiRotatingAdapter({ model });
+  const model = process.env.GROK_MODEL ?? DEFAULT_GROK_MODEL;
+  const llmAdapter = new GrokAdapter({ apiKey: process.env.GROK_API_KEY, model });
 
   const nhe = new Nhe({
     nheId: "nhe.arena.right",

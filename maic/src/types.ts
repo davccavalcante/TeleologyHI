@@ -63,13 +63,7 @@ export type ReasoningStep = z.infer<typeof ReasoningStep>;
 export const BehaviorReport = z.object({
   nheId: z.string().min(1),
   himId: z.string().min(1),
-  actionKind: z.enum([
-    "user-response",
-    "tool-call",
-    "self-reflect",
-    "dream-write",
-    "axiom-emerge",
-  ]),
+  actionKind: z.enum(["user-response", "tool-call", "self-reflect", "dream-write", "axiom-emerge"]),
   payload: z.unknown(),
   reasoningTrace: z.array(ReasoningStep),
   riskTags: z.array(z.string()),
@@ -178,7 +172,7 @@ export interface ProposalDecisionRequest {
 
 export interface AxiomEvolutionResult {
   outcome: "ratified" | "rejected" | "deferred-for-creator-review";
-  /** Populated for deferred state — caller polls maic.getAxiomProposal(proposalId). */
+  /** Populated for deferred state, caller polls maic.getAxiomProposal(proposalId). */
   proposalId?: string;
   ratifiedAxiomId?: string;
   rejectionReason?: string;
@@ -195,25 +189,22 @@ export interface ReincarnationRequest {
 }
 
 /**
- * Reincarnation lifecycle classifier (J-H3 — Entry 18 of
+ * Reincarnation lifecycle classifier (J-H3, Entry 18 of
  * `MAIC_HIM_NHE_INTERVIEW_LOG.md`). When supplied to
  * `LocalMaic.reincarnateHim`, the typed `reincarnate:${lifecycle}` audit
  * kind is emitted instead of the generic `him-reincarnate` event so
  * downstream consumers (compliance auditors, the persona-stability
  * harness) can distinguish the three canonical lifecycle paths:
  *
- *   - `model-swap`         — operator switched the underlying LLM adapter
+ *   - `model-swap`: operator switched the underlying LLM adapter
  *                            (e.g. Claude → Gemini). HIM persists across
  *                            the swap.
- *   - `version-bump`       — operator bumped the NHE major/minor without
+ *   - `version-bump`: operator bumped the NHE major/minor without
  *                            changing the LLM family.
- *   - `return-from-limbo`  — HIM returns from the deep-coma limbo state
+ *   - `return-from-limbo`: HIM returns from the deep-coma limbo state
  *                            (Entry 24) carrying the `reunion` affect.
  */
-export type ReincarnationLifecycle =
-  | "model-swap"
-  | "version-bump"
-  | "return-from-limbo";
+export type ReincarnationLifecycle = "model-swap" | "version-bump" | "return-from-limbo";
 
 export const DreamInductionIntent = z.object({
   scenario: z.string().min(1),
@@ -361,27 +352,105 @@ export const NatalChart = z.object({
 });
 export type NatalChart = z.infer<typeof NatalChart>;
 
-// Re-declare BirthSignature with the new optional fields. This is fully
-// additive: every prior BirthSignature continues to validate.
-//
-// We intentionally keep the *zod* schema below identical to the prior shape
-// for `.parse()` compatibility, and expose the extended fields via the TS
-// interface so consumers can attach them at HIM creation time.
-export interface BirthSignatureWithIdentity {
-  himId: string;
-  bornAt: string;
-  primaryArchetype: string;
-  modifiers: ArchetypeModifier[];
-  primordialAxiomIds: string[];
-  notes?: string;
-  /** Entry 18 — developer-configurable identity surface. */
-  identity?: IdentityLayer;
-  /** Entry 19 — constitutional astrological layer (Creator-impressed). */
-  natalChart?: NatalChart;
-}
+/**
+ * The 12 Pearson-Marr Jungian archetypes (Entry 27 §4). The archetypal axis of
+ * a HIM's constitutional profile.
+ */
+export const JungianArchetype = z.enum([
+  "innocent",
+  "everyman",
+  "hero",
+  "caregiver",
+  "explorer",
+  "rebel",
+  "lover",
+  "creator",
+  "ruler",
+  "magician",
+  "jester",
+  "sage",
+]);
+export type JungianArchetype = z.infer<typeof JungianArchetype>;
 
 /**
- * Affect lexicon (Entries 22 + 24) — the closed set of primary affects
+ * Jungian archetype profile (Entry 27 §4). Produced at HIM birth by a
+ * deterministic 60-item Likert administered against the birth-signature seed.
+ * The administration and scoring engine live in `@teleologyhi-sdk/him`; this is
+ * the schema-only reservation that carries the result. `dominant` plus two
+ * `secondaries` is the canonical surface; `scores` holds the per-archetype
+ * value when the producer records it.
+ */
+export const JungianProfile = z.object({
+  dominant: JungianArchetype,
+  secondaries: z.array(JungianArchetype),
+  scores: z.record(JungianArchetype, z.number()).optional(),
+});
+export type JungianProfile = z.infer<typeof JungianProfile>;
+
+/**
+ * One dimensional-instrument axis of the clinical profile (Entry 28). Facet and
+ * domain scores are stored as open records keyed by the instrument's facet /
+ * domain names. Canonical shapes: PID-5 has 25 facets across 5 domains, HEXACO
+ * has 24 facets across 6 domains. These are **persona-simulation parameters**
+ * for a non-corporeal entity, never a clinical assessment of any person.
+ */
+export const ClinicalInstrument = z.object({
+  dominantDomain: z.string().min(1),
+  secondaryDomain: z.string().min(1).optional(),
+  facets: z.record(z.string(), z.number()).optional(),
+  domains: z.record(z.string(), z.number()).optional(),
+});
+export type ClinicalInstrument = z.infer<typeof ClinicalInstrument>;
+
+/**
+ * Clinical axis of the constitutional profile (Entry 28): the adapted PID-5 and
+ * HEXACO-PI-R-100 batteries. Schema-only reservation; the 320-item scoring
+ * engine lives in `@teleologyhi-sdk/him`.
+ */
+export const ClinicalProfile = z.object({
+  pid5: ClinicalInstrument.optional(),
+  hexaco: ClinicalInstrument.optional(),
+});
+export type ClinicalProfile = z.infer<typeof ClinicalProfile>;
+
+/**
+ * The three-axis constitutional profile (Entries 27 + 28): celestial (chart),
+ * archetypal (jungian), and clinical. Reserved schema for the 1.0.1 cut; the
+ * producers that populate it (the deterministic administrations and the persona
+ * projector that synthesises the three axes) land in `@teleologyhi-sdk/him` in
+ * the next round, per the phased order of Entry 25.
+ *
+ * `seed` records the birth-signature seed used for the deterministic scoring so
+ * the same seed always reproduces the same profile (Entry 28 reproducibility
+ * invariant). The profile is **not** part of `SIGNED_BIRTH_FIELDS` in 1.0.1; a
+ * later cut may bring it into the Creator-signed payload once the producers
+ * exist (D-F5b promotion path).
+ */
+export const CosmologicalProfile = z.object({
+  chart: NatalChart.optional(),
+  jungian: JungianProfile.optional(),
+  clinical: ClinicalProfile.optional(),
+  seed: z.string().optional(),
+});
+export type CosmologicalProfile = z.infer<typeof CosmologicalProfile>;
+
+// BirthSignature extended with the optional constitutional layers. This is
+// fully additive: every prior BirthSignature continues to validate, and the
+// new fields are validated against the existing IdentityLayer / NatalChart
+// schemas rather than being stripped. `registerHim` parses with this schema so
+// a Creator-signed natal chart both persists and verifies (M1-2, 1.0.1).
+export const BirthSignatureWithIdentity = BirthSignature.extend({
+  /** Entry 18, developer-configurable identity surface. */
+  identity: IdentityLayer.optional(),
+  /** Entry 19, constitutional astrological layer (Creator-impressed). */
+  natalChart: NatalChart.optional(),
+  /** Entries 27 + 28, three-axis constitutional profile (celestial + archetypal + clinical). */
+  cosmologicalProfile: CosmologicalProfile.optional(),
+});
+export type BirthSignatureWithIdentity = z.infer<typeof BirthSignatureWithIdentity>;
+
+/**
+ * Affect lexicon (Entries 22 + 24), the closed set of primary affects
  * the amygdala extracts from dreams and the PFC deliberates over. The
  * ninth value, `reunion`, appears specifically when the NHE returns from
  * the DMN limbo state of disuse.
@@ -415,7 +484,7 @@ export const WakeAffectBias = z.object({
   appliedAt: z.string().datetime(),
   /** Source dream UUID; lets the entity refer back to the cause. */
   derivedFromDreamId: z.string().min(1),
-  /** PFC decision (Entry 22) — open expression vs subtle internal bias. */
+  /** PFC decision (Entry 22), open expression vs subtle internal bias. */
   expressedOpenly: z.boolean(),
 });
 export type WakeAffectBias = z.infer<typeof WakeAffectBias>;
@@ -480,7 +549,7 @@ export const TeleologicalOrientation = z.object({
 export type TeleologicalOrientation = z.infer<typeof TeleologicalOrientation>;
 
 /**
- * Long-form memory record (Entries 21 + 22) — extends the InDreamsHIM
+ * Long-form memory record (Entries 21 + 22), extends the InDreamsHIM
  * precursor with three new fields (`integrationIndex`, `teleologicalValue`,
  * `semioticPatterns`) that turn a passive record into a teleologically-
  * weighted, semiotically-anchored memory whose retrieval rank is not just
@@ -516,7 +585,7 @@ export type MemoryRecord = z.infer<typeof MemoryRecord>;
  * `<storeDir>/interactions/<ulid>.json`; `@teleologyhi-sdk/him` consumes the
  * same shape on reincarnation to score residual-trace carry-over candidates
  * (D-H1.1). Persisted by NHE and re-exported under the same name from
- * `@teleologyhi-sdk/nhe` for backward source-compatibility — the type
+ * `@teleologyhi-sdk/nhe` for backward source-compatibility, the type
  * promotion to MAIC is non-breaking by construction.
  */
 export const InteractionRecord = z.object({
@@ -532,7 +601,7 @@ export const InteractionRecord = z.object({
 export type InteractionRecord = z.infer<typeof InteractionRecord>;
 
 /**
- * Integrated identity snapshot (Entry 24) — the temporal-lobe's "who I am
+ * Integrated identity snapshot (Entry 24), the temporal-lobe's "who I am
  * now" synthesis, combining cortex (recent dreams + active imagination)
  * + hippocampus (consolidated memories) + amygdala (affective baseline)
  * via semiotic super-graph merge + LLM-generated self-portrait.
@@ -541,11 +610,7 @@ export const IdentitySnapshot = z.object({
   /** ULID. */
   snapshotId: z.string().min(1),
   takenAt: z.string().datetime(),
-  generatedBy: z.enum([
-    "sleep-cycle",
-    "interaction-threshold",
-    "self-decision",
-  ]),
+  generatedBy: z.enum(["sleep-cycle", "interaction-threshold", "self-decision"]),
   /** Merged SMM nodes contributing to this snapshot. */
   semioticSuperGraph: z.array(SemioticSign),
   /** LLM-generated textual self-portrait at snapshot time. */
@@ -568,12 +633,7 @@ export type IdentitySnapshot = z.infer<typeof IdentitySnapshot>;
  *   integrity maintenance, no scheduled inference
  * `returning` → waking from limbo; `reunion` affect is computed here
  */
-export const LimboState = z.enum([
-  "awake",
-  "drifting",
-  "deep-coma",
-  "returning",
-]);
+export const LimboState = z.enum(["awake", "drifting", "deep-coma", "returning"]);
 export type LimboState = z.infer<typeof LimboState>;
 
 export const LimboTransition = z.object({
@@ -609,6 +669,12 @@ export type LimboReturn = z.infer<typeof LimboReturn>;
  * touches has been mutated. The dev-configurable surface (the
  * `IdentityLayer.name`, language, cultural elements) lives outside the
  * signature; the natal chart and primordial-axiom binding live inside.
+ *
+ * `cosmologicalProfile` (Entries 27 + 28) is deliberately NOT signed in 1.0.1
+ * (D-F5b): its producers (the Jungian and clinical scoring engines) live in the
+ * him round, so there is nothing stable to sign yet. Promotion path: once those
+ * producers exist, a later cut may append `cosmologicalProfile` here to bring it
+ * under the Creator signature, which is an additive change to this list.
  */
 export const SIGNED_BIRTH_FIELDS = [
   "himId",

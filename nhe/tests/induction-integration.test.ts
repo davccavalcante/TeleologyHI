@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder, HimHandle } from "@teleologyhi-sdk/him";
-import { Nhe } from "../src/nhe";
+import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { Nhe } from "../src/nhe";
 
 async function bootstrap(nheId: string) {
   const storeDir = await mkdtemp(join(tmpdir(), "nhe-induction-"));
@@ -125,7 +125,7 @@ describe("NHE auto-consumes pending MAIC induction tickets on sleep", () => {
     const { maic, nhe, capturedUser } = await bootstrap("nhe-override");
 
     await maic.induceDream("nhe-override", {
-      scenario: "Pending ticket scenario — should NOT be used.",
+      scenario: "Pending ticket scenario, should NOT be used.",
       desiredLearning: "should not appear",
       inducedBy: "maic",
     });

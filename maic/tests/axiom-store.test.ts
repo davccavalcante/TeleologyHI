@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtemp, rm, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import { AxiomStore } from "../src/axioms/store";
 import { CreatorKeyring } from "../src/creator/keyring";
 
@@ -112,17 +112,38 @@ describe("AxiomStore", () => {
   });
 
   it("filters list by rank", async () => {
-    const meta = { id: "m1", rank: "meta" as const, statement: "m", weight: 1, flexibility: 0, immutable: true };
-    const sec  = { id: "s1", rank: "secondary" as const, statement: "s", weight: 0.5, flexibility: 0.5, immutable: false };
+    const meta = {
+      id: "m1",
+      rank: "meta" as const,
+      statement: "m",
+      weight: 1,
+      flexibility: 0,
+      immutable: true,
+    };
+    const sec = {
+      id: "s1",
+      rank: "secondary" as const,
+      statement: "s",
+      weight: 0.5,
+      flexibility: 0.5,
+      immutable: false,
+    };
     await store.mint(meta, kr.sign(meta, 1));
-    await store.mint(sec,  kr.sign(sec,  2));
+    await store.mint(sec, kr.sign(sec, 2));
     const onlyMeta = await store.list({ rank: "meta" });
     expect(onlyMeta).toHaveLength(1);
     expect(onlyMeta[0]?.id).toBe("m1");
   });
 
   it("writes a signed envelope to disk that round-trips through canonical JSON", async () => {
-    const req = { id: "ax.disk", rank: "meta" as const, statement: "x", weight: 1, flexibility: 0, immutable: true };
+    const req = {
+      id: "ax.disk",
+      rank: "meta" as const,
+      statement: "x",
+      weight: 1,
+      flexibility: 0,
+      immutable: true,
+    };
     const sig = kr.sign(req, 1);
     await store.mint(req, sig);
     const raw = await readFile(join(dir, "axioms", "creator", "ax.disk.json"), "utf-8");

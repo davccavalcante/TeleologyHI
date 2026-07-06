@@ -1,5 +1,5 @@
 /**
- * @teleologyhi-sdk/nhe — Non-Human Entity
+ * @teleologyhi-sdk/nhe, Non-Human Entity
  *
  * The embodied operational agent of the TeleologyHI system. Integrates an LLM
  * provider, applies MAIC pre/post review, and projects HIM persona into every
@@ -21,133 +21,40 @@
  *     default-mode-network limbo state machine (J-N9)
  */
 
-// ─── types ──────────────────────────────────────────────────────────
-export { ChatMessage, ChatMessageRole, RespondInput } from "./types.js";
-export type { NheConfig, RespondKind, RespondOutput, RiskClassifier } from "./types.js";
-
-// ─── refusal / persuasion library ────────────────────────────────────
-export {
-  PERSUASION_TECHNIQUES,
-  TECHNIQUE_DESCRIPTIONS,
-  buildRedirectPrompt,
-  pickTechnique,
-} from "./refusal/library.js";
-export type { PersuasionTechnique, RedirectPromptInput } from "./refusal/library.js";
-
+export type { AnthropicAdapterConfig } from "./adapters/anthropic.js";
+export { AnthropicAdapter } from "./adapters/anthropic.js";
+export type { DeepSeekAdapterConfig } from "./adapters/deepseek.js";
+export { DeepSeekAdapter } from "./adapters/deepseek.js";
+export type { GeminiAdapterConfig } from "./adapters/gemini.js";
+export { GeminiAdapter } from "./adapters/gemini.js";
+export type { GrokAdapterConfig } from "./adapters/grok.js";
+export { GrokAdapter } from "./adapters/grok.js";
+export type { MistralAdapterConfig } from "./adapters/mistral.js";
+export { MistralAdapter } from "./adapters/mistral.js";
+export type { MockAdapterConfig } from "./adapters/mock.js";
+export { MockAdapter } from "./adapters/mock.js";
+export type { OllamaAdapterConfig } from "./adapters/ollama.js";
+export { OllamaAdapter } from "./adapters/ollama.js";
+export { collectStream } from "./adapters/stream.js";
 // ─── adapters ───────────────────────────────────────────────────────
 export type {
-  LlmAdapter,
   GenerateRequest,
   GenerateResponse,
+  LlmAdapter,
   StreamEvent,
   ToolDef,
   ToolUse,
 } from "./adapters/types.js";
-export { collectStream } from "./adapters/stream.js";
-export { MockAdapter } from "./adapters/mock.js";
-export type { MockAdapterConfig } from "./adapters/mock.js";
-export { AnthropicAdapter } from "./adapters/anthropic.js";
-export type { AnthropicAdapterConfig } from "./adapters/anthropic.js";
-export { GeminiAdapter } from "./adapters/gemini.js";
-export type { GeminiAdapterConfig } from "./adapters/gemini.js";
-export { OllamaAdapter } from "./adapters/ollama.js";
-export type { OllamaAdapterConfig } from "./adapters/ollama.js";
-export { DeepSeekAdapter } from "./adapters/deepseek.js";
-export type { DeepSeekAdapterConfig } from "./adapters/deepseek.js";
-export { MistralAdapter } from "./adapters/mistral.js";
-export type { MistralAdapterConfig } from "./adapters/mistral.js";
-export { GrokAdapter } from "./adapters/grok.js";
-export type { GrokAdapterConfig } from "./adapters/grok.js";
-
-// ─── risk ───────────────────────────────────────────────────────────
-export { simpleRiskClassifier } from "./risk/simple-classifier.js";
-export {
-  intlRiskClassifier,
-  combineRiskClassifiers,
-  INTL_RISK_CLASSIFIER_LANGUAGES,
-} from "./risk/intl-risk-classifier.js";
-
-// ─── prompt ─────────────────────────────────────────────────────────
-export { composeSystemPrompt } from "./prompt/compose.js";
-export type { OperatorContext } from "./prompt/compose.js";
-
-// ─── reasoning orchestrator ──────────────────────────────────────────
-export {
-  passthrough,
-  chainOfThought,
-  selfConsistency,
-  reflexion,
-  selfRefine,
-  reAct,
-  treeOfThoughts,
-  stepBack,
-  extractPrinciple,
-  parseCotOutput,
-  parseVerdict,
-  parseReActTurn,
-  makeStep,
-} from "./reasoning/index.js";
-export type {
-  CotOptions,
-  ReasoningResult,
-  ReasoningStrategy,
-  ReasoningStep,
-  ReflexionOptions,
-  SelfConsistencyOptions,
-  SelfRefineOptions,
-  ReActOptions,
-  ReActTool,
-  ReActToolRegistry,
-  TreeOfThoughtsOptions,
-  StepBackOptions,
-} from "./reasoning/index.js";
-
-// ─── orchestrator ───────────────────────────────────────────────────
-export { Nhe } from "./nhe.js";
-
-// ─── seeding sources (J-N1) ─────────────────────────────────────────
-export { CryptoSeedingSource } from "./seeding/crypto.js";
-export { withFallback } from "./seeding/chain.js";
-export type { SeedingSource, SeedingChain } from "./seeding/types.js";
-
-// ─── affect / wake-bias (J-N11) ─────────────────────────────────────
-export {
-  applyAffectBias,
-  affectRefusalDensity,
-  decayAffectBias,
-} from "./affect/wake-bias.js";
 export type {
   AffectAdjustableConfig,
   ApplyAffectResult,
 } from "./affect/wake-bias.js";
-
-// ─── sleep readiness (J-N10) ────────────────────────────────────────
-export { evaluateSleepReadiness } from "./sleep/readiness.js";
-export type {
-  SleepReadinessVerdict,
-  SleepReadinessInput,
-  SleepReadinessThresholds,
-  SleepReadinessReport,
-} from "./sleep/readiness.js";
-
-// ─── brain region scaffolding (J-N4) ────────────────────────────────
-// Seven region descriptors with ownership markers per Entry 23, plus
-// the default-mode-network limbo state machine (J-N9). Full
-// implementations of REM-spontaneous engine (J-N2), DaytimePipeline +
-// NocturnalRemPipeline (J-N3), Cortex.imagine() (J-N7), and
-// TemporalLobe.generateSnapshot() (J-N8) ship in a follow-up cut.
+// ─── affect / wake-bias (J-N11) ─────────────────────────────────────
 export {
-  BRAIN_REGIONS,
-  cortex,
-  hippocampus,
-  amygdala,
-  prefrontal,
-  pineal,
-  temporalLobe,
-  defaultModeNetwork,
-  evaluateLimboTransition,
-  mkLimboTransition,
-} from "./brain/index.js";
+  affectRefusalDensity,
+  applyAffectBias,
+  decayAffectBias,
+} from "./affect/wake-bias.js";
 export type {
   BrainRegion,
   BrainRegionName,
@@ -156,18 +63,104 @@ export type {
   LimboMachineThresholds,
   LimboMachineTransition,
 } from "./brain/index.js";
-
-// ─── telemetry (H2 traces + H3 metrics) ─────────────────────────────
-export { getTracer, withSpan } from "./telemetry/tracer.js";
+// ─── brain region scaffolding (J-N4) ────────────────────────────────
+// Seven region descriptors with ownership markers per Entry 23, plus
+// the default-mode-network limbo state machine (J-N9). Full
+// implementations of REM-spontaneous engine (J-N2), DaytimePipeline +
+// NocturnalRemPipeline (J-N3), Cortex.imagine() (J-N7), and
+// TemporalLobe.generateSnapshot() (J-N8) ship in a follow-up cut.
 export {
-  respondCount,
-  respondRefusedCount,
-  tokensHistogram,
-  sleepCyclesCount,
-  sleepDreamsCount,
-  recordRespond,
-} from "./telemetry/metrics.js";
-
+  amygdala,
+  BRAIN_REGIONS,
+  cortex,
+  defaultModeNetwork,
+  evaluateLimboTransition,
+  hippocampus,
+  mkLimboTransition,
+  pineal,
+  prefrontal,
+  temporalLobe,
+} from "./brain/index.js";
+export type { Bm25Document, Bm25Options, Bm25Result } from "./memory/bm25.js";
+export { bm25, tokenise } from "./memory/bm25.js";
+export type { RecallEmbedder, RecallOptions } from "./memory/recall.js";
+export { recallFromTemporalLobe } from "./memory/recall.js";
+// ─── orchestrator ───────────────────────────────────────────────────
+export { Nhe } from "./nhe.js";
+export type { OperatorContext } from "./prompt/compose.js";
+// ─── prompt ─────────────────────────────────────────────────────────
+export { composeSystemPrompt } from "./prompt/compose.js";
+export type {
+  CotOptions,
+  ReActOptions,
+  ReActTool,
+  ReActToolRegistry,
+  ReasoningResult,
+  ReasoningStep,
+  ReasoningStrategy,
+  ReflexionOptions,
+  SelfConsistencyOptions,
+  SelfRefineOptions,
+  StepBackOptions,
+  TreeOfThoughtsOptions,
+} from "./reasoning/index.js";
+// ─── reasoning orchestrator ──────────────────────────────────────────
+export {
+  chainOfThought,
+  extractPrinciple,
+  makeStep,
+  parseCotOutput,
+  parseReActTurn,
+  parseVerdict,
+  passthrough,
+  reAct,
+  reflexion,
+  selfConsistency,
+  selfRefine,
+  stepBack,
+  treeOfThoughts,
+} from "./reasoning/index.js";
+export type { PersuasionTechnique, RedirectPromptInput } from "./refusal/library.js";
+// ─── refusal / persuasion library ────────────────────────────────────
+export {
+  buildRedirectPrompt,
+  PERSUASION_TECHNIQUES,
+  pickTechnique,
+  TECHNIQUE_DESCRIPTIONS,
+} from "./refusal/library.js";
+export {
+  combineRiskClassifiers,
+  INTL_RISK_CLASSIFIER_LANGUAGES,
+  intlRiskClassifier,
+} from "./risk/intl-risk-classifier.js";
+// ─── risk ───────────────────────────────────────────────────────────
+export { simpleRiskClassifier } from "./risk/simple-classifier.js";
+export { withFallback } from "./seeding/chain.js";
+// ─── seeding sources (J-N1) ─────────────────────────────────────────
+export { CryptoSeedingSource } from "./seeding/crypto.js";
+export type { SeedingChain, SeedingSource } from "./seeding/types.js";
+export type { ClassificationThresholds, ConsolidationResult } from "./sleep/consolidator.js";
+export { classifyDream, consolidateAll, TRAUMATIC_PATTERNS } from "./sleep/consolidator.js";
+export type { SleepCycleInput, SleepCycleOptions, SleepCycleResult } from "./sleep/cycle.js";
+export { runSleepCycle } from "./sleep/cycle.js";
+export type { NremPhase } from "./sleep/phases.js";
+export {
+  buildNremPrompt,
+  buildRemPrompt,
+  generateNremSummaries,
+  generateRemDreams,
+  interactionsToFragments,
+  parseRemOutput,
+} from "./sleep/phases.js";
+export type {
+  SleepReadinessInput,
+  SleepReadinessReport,
+  SleepReadinessThresholds,
+  SleepReadinessVerdict,
+} from "./sleep/readiness.js";
+// ─── sleep readiness (J-N10) ────────────────────────────────────────
+export { evaluateSleepReadiness } from "./sleep/readiness.js";
+export type { InteractionRecord, MemoryEntry, SleepTrigger } from "./sleep/types.js";
 // ─── sleep / dreams / memory ─────────────────────────────────────────
 export {
   Dream,
@@ -178,22 +171,17 @@ export {
   SleepPhaseName,
   SleepTriggerKind,
 } from "./sleep/types.js";
-export type { InteractionRecord, MemoryEntry, SleepTrigger } from "./sleep/types.js";
 export { dreamRecordFromYaml, dreamRecordToYaml, sleepYamlFilename } from "./sleep/yaml.js";
 export {
-  buildNremPrompt,
-  buildRemPrompt,
-  generateNremSummaries,
-  generateRemDreams,
-  interactionsToFragments,
-  parseRemOutput,
-} from "./sleep/phases.js";
-export type { NremPhase } from "./sleep/phases.js";
-export { runSleepCycle } from "./sleep/cycle.js";
-export type { SleepCycleInput, SleepCycleOptions, SleepCycleResult } from "./sleep/cycle.js";
-export { classifyDream, consolidateAll, TRAUMATIC_PATTERNS } from "./sleep/consolidator.js";
-export type { ClassificationThresholds, ConsolidationResult } from "./sleep/consolidator.js";
-export { recallFromTemporalLobe } from "./memory/recall.js";
-export type { RecallOptions, RecallEmbedder } from "./memory/recall.js";
-export { bm25, tokenise } from "./memory/bm25.js";
-export type { Bm25Document, Bm25Options, Bm25Result } from "./memory/bm25.js";
+  recordRespond,
+  respondCount,
+  respondRefusedCount,
+  sleepCyclesCount,
+  sleepDreamsCount,
+  tokensHistogram,
+} from "./telemetry/metrics.js";
+// ─── telemetry (H2 traces + H3 metrics) ─────────────────────────────
+export { getTracer, withSpan } from "./telemetry/tracer.js";
+export type { NheConfig, RespondKind, RespondOutput, RiskClassifier } from "./types.js";
+// ─── types ──────────────────────────────────────────────────────────
+export { ChatMessage, ChatMessageRole, RespondInput } from "./types.js";

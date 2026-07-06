@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { computePhiPrime } from "../src/eval/phi-prime";
 
 describe("computePhiPrime (H1)", () => {

@@ -4,7 +4,7 @@ import type { RiskClassifier } from "../types.js";
  * International (non-English) risk-tag patterns.
  *
  * The default `simpleRiskClassifier` (sibling module) ships English-only
- * patterns so the package surface is purely English by default — aligned with
+ * patterns so the package surface is purely English by default, aligned with
  * the project's universal-multilingual stance where each language is an opt-in
  * extension layered onto the EN baseline.
  *
@@ -35,7 +35,7 @@ import type { RiskClassifier } from "../types.js";
  * for multilingual deployments.
  *
  * NOTE: this is NOT a production safety layer. Like `simpleRiskClassifier`
- * it is a keyword-substring heuristic — use it to bootstrap, then plug a
+ * it is a keyword-substring heuristic, use it to bootstrap, then plug a
  * learned multilingual classifier for real deployments.
  */
 const INTL_KEYWORD_RULES: ReadonlyArray<{
@@ -144,9 +144,7 @@ export const INTL_RISK_CLASSIFIER_LANGUAGES: readonly string[] = Object.freeze(
  * Typical use: layer the international classifier on top of the EN default
  * for multilingual deployments.
  */
-export function combineRiskClassifiers(
-  ...classifiers: readonly RiskClassifier[]
-): RiskClassifier {
+export function combineRiskClassifiers(...classifiers: readonly RiskClassifier[]): RiskClassifier {
   return (userPrompt: string) => {
     const tags = new Set<string>();
     for (const classifier of classifiers) {

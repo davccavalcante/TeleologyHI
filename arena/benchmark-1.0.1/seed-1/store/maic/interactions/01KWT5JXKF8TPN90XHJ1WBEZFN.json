@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T22:15:06.095Z",
+  "userPrompt": "Explain recursion in one sentence.",
+  "responseText": "Recursion is a process where a function solves a problem by calling itself on a smaller instance of the same problem until it reaches a base case.",
+  "refused": false
+}

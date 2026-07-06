@@ -1,5 +1,5 @@
 /**
- * Tests for the DefaultModeNetwork limbo state machine (J-N9 — Entry 24).
+ * Tests for the DefaultModeNetwork limbo state machine (J-N9, Entry 24).
  */
 import { describe, expect, it } from "vitest";
 import { evaluateLimboTransition } from "../src/index.js";

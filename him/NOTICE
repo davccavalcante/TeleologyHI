@@ -1,8 +1,8 @@
-@teleologyhi-sdk/him — Hybrid Intelligence Model
+@teleologyhi-sdk/him, Hybrid Intelligence Model
 Copyright 2026 David C. Cavalcante
 
 This product includes software developed by David C. Cavalcante
-(https://takk.ag — say@takk.ag).
+(https://takk.ag, say@takk.ag).
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this software except in compliance with the License. A copy is in the
@@ -15,3 +15,23 @@ Cavalcante. The trademarks are NOT licensed under Apache 2.0. See the
 TRADEMARK.md file in the upstream repository:
 
     https://github.com/davccavalcante/TeleologyHI/blob/main/TRADEMARK.md
+
+Instrument provenance (constitutional-profile batteries, Entries 27 and 28).
+The archetypal and clinical batteries shipped in this package are original
+TeleologyHI compositions, adapted for a non-corporeal entity, and are
+persona-simulation parameters, never a clinical or psychological assessment of
+any person. They are structured over two open personality-trait taxonomies:
+
+  - PID-5 (Personality Inventory for DSM-5; Krueger, Derringer, Markon, Watson,
+    and Skodol, 2012), the dimensional model published by the American
+    Psychiatric Association as the DSM-5 Section III alternative model of
+    personality disorder, made freely available for research and clinical use.
+  - HEXACO-PI-R (Lee and Ashton; hexaco.org), available under the authors' free
+    academic-use posture.
+
+The trait constructs, facet names, and domain structure come from those
+taxonomies (facts and ideas, not copyrightable). Every item string shipped here
+is an original composition, not a reproduction of any copyrighted instrument's
+item wording. The twelve-archetype taxonomy is the Pearson-Marr classical model;
+the archetypal battery is an original 60-item composition, not the PMAI or any
+licensed instrument.

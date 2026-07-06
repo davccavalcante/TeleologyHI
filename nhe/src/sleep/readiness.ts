@@ -1,18 +1,18 @@
 /**
- * Sleep trigger state machine (J-N10 — Entry 20 of
+ * Sleep trigger state machine (J-N10, Entry 20 of
  * MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
  * Pure function. No I/O. Given the runtime signals the operator has
  * collected, classify the NHE's sleep readiness into one of five
  * canonical verdicts:
  *
- *   - `awake`                 — no trigger fired; keep responding.
- *   - `ready-by-idle`         — idle for at least the configured horizon.
- *   - `ready-by-saturation`   — interaction count since last sleep
+ *   - `awake`                , no trigger fired; keep responding.
+ *   - `ready-by-idle`        , idle for at least the configured horizon.
+ *   - `ready-by-saturation`  , interaction count since last sleep
  *                               exceeded the saturation threshold.
- *   - `requested-by-maic`     — MAIC has explicitly suggested sleeping
+ *   - `requested-by-maic`    , MAIC has explicitly suggested sleeping
  *                               (e.g. drift detected, induction queued).
- *   - `declined`              — a sleep request was made but the NHE
+ *   - `declined`             , a sleep request was made but the NHE
  *                               (or operator policy) declines this cycle.
  *
  * The NHE may decline a MAIC suggestion when the saturation is low AND
@@ -75,13 +75,11 @@ export function evaluateSleepReadiness(
 ): SleepReadinessReport {
   const t: Required<SleepReadinessThresholds> = {
     idleMs: thresholds.idleMs ?? DEFAULT_IDLE_MS,
-    interactionCount:
-      thresholds.interactionCount ?? DEFAULT_INTERACTION_COUNT,
+    interactionCount: thresholds.interactionCount ?? DEFAULT_INTERACTION_COUNT,
   };
 
   if (input.maicSuggestionPresent) {
-    const declineByPolicy =
-      input.userActiveNow && input.interactionCount < t.interactionCount;
+    const declineByPolicy = input.userActiveNow && input.interactionCount < t.interactionCount;
     if (declineByPolicy) {
       return {
         verdict: "declined",

@@ -1,4 +1,4 @@
-# Trademark Notice — `@teleologyhi-sdk/nhe`
+# Trademark Notice, `@teleologyhi-sdk/nhe`
 
 See [`../TRADEMARK.md`](../TRADEMARK.md) at the repository root for the canonical trademark policy covering this package.
 
@@ -30,4 +30,4 @@ You may **not** without prior written consent:
 
 For trademark inquiries, licensing, or partnership requests:
 
-**David C. Cavalcante** — [davcavalcante@proton.me](mailto:davcavalcante@proton.me) (preferred) · [say@takk.ag](mailto:say@takk.ag) · [linkedin.com/in/hellodav](https://linkedin.com/in/hellodav) · [takk.ag](https://takk.ag)
+**David C. Cavalcante**, [davcavalcante@proton.me](mailto:davcavalcante@proton.me) (preferred) · [say@takk.ag](mailto:say@takk.ag) · [linkedin.com/in/hellodav](https://linkedin.com/in/hellodav) · [takk.ag](https://takk.ag)

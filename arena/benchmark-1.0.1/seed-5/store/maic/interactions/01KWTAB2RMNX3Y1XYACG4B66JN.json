@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T23:38:12.116Z",
+  "userPrompt": "What is 15 factorial divided by 14 factorial?",
+  "responseText": "**15! / 14! = 15**\n\nThis follows the property n! / (n-1)! = n. Here, all terms from 1 to 14 cancel, leaving exactly 15.",
+  "refused": false
+}

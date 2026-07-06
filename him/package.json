@@ -1,16 +1,21 @@
 {
     "name": "@teleologyhi-sdk/him",
-    "version": "1.0.0-trinity",
-    "description": "HIM™ — Hybrid Intelligence Model. The persistent spirit/personality layer between MAIC™ and NHE™ in the TeleologyHI system.",
+    "version": "1.0.1",
+    "description": "HIM™, Hybrid Intelligence Model. The persistent spirit/personality layer between MAIC™ and NHE™ in the TeleologyHI system.",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
         }
     },
     "sideEffects": false,
@@ -29,6 +34,7 @@
     ],
     "scripts": {
         "build": "tsup",
+        "prepublishOnly": "npm run build",
         "test": "vitest run",
         "test:watch": "vitest",
         "typecheck": "tsc --noEmit"
@@ -82,7 +88,7 @@
         "node": ">=20"
     },
     "dependencies": {
-        "@teleologyhi-sdk/maic": "1.0.0-trinity",
+        "@teleologyhi-sdk/maic": "1.0.1",
         "ulid": "^3.0.2",
         "zod": "^4.4.3"
     },
@@ -90,6 +96,6 @@
         "@types/node": "^25.9.1",
         "tsup": "^8.5.1",
         "typescript": "^6.0.3",
-        "vitest": "^4.1.7"
+        "vitest": "^4.1.9"
     }
 }

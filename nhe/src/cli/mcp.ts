@@ -1,8 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
 import type { LocalMaic } from "@teleologyhi-sdk/maic";
+import { z } from "zod";
 import type { Nhe } from "../nhe.js";
+import { NHE_VERSION } from "../version.js";
 import {
   maicListAxiomsHandler,
   maicListHimsHandler,
@@ -12,7 +13,7 @@ import {
   nheWakeHandler,
 } from "./mcp-tools.js";
 
-const PKG_VERSION = "1.0.0-trinity";
+const PKG_VERSION = NHE_VERSION;
 
 /** Build a configured McpServer wired to a bootstrapped NHE + MAIC. */
 export function buildMcpServer(nhe: Nhe, maic: LocalMaic): McpServer {

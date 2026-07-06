@@ -1,3 +1,4 @@
+import { sseEvents } from "./sse.js";
 import type {
   GenerateRequest,
   GenerateResponse,
@@ -5,7 +6,6 @@ import type {
   StreamEvent,
   ToolUse,
 } from "./types.js";
-import { sseEvents } from "./sse.js";
 
 export interface GrokAdapterConfig {
   /** xAI API key. Falls back to `XAI_API_KEY` when omitted. */
@@ -45,6 +45,8 @@ interface ChatRequestBody {
   messages: { role: "system" | "user" | "assistant"; content: string }[];
   max_tokens?: number;
   stream?: boolean;
+  /** Request per-stream token usage in the terminal SSE frame (ND-5). */
+  stream_options?: { include_usage: boolean };
   tools?: OpenAIToolDef[];
 }
 
@@ -62,7 +64,7 @@ interface ChatResponseBody {
 }
 
 /**
- * GrokAdapter — production adapter for xAI Grok via the OpenAI-compatible
+ * GrokAdapter, production adapter for xAI Grok via the OpenAI-compatible
  * Chat Completions REST endpoint. No SDK dependency.
  *
  * Reads the API key from constructor config or the `XAI_API_KEY` env var.
@@ -135,10 +137,7 @@ export class GrokAdapter implements LlmAdapter {
 
     let tokensIn = 0;
     let tokensOut = 0;
-    const pendingTools = new Map<
-      number,
-      { id: string; name: string; partial: string }
-    >();
+    const pendingTools = new Map<number, { id: string; name: string; partial: string }>();
     for await (const data of sseEvents(response.body)) {
       if (data === "[DONE]") break;
       let parsed: {
@@ -203,6 +202,9 @@ export class GrokAdapter implements LlmAdapter {
       messages,
       max_tokens: req.maxOutputTokens ?? this.defaultMaxOutputTokens,
       stream,
+      // Ask for token usage in the final SSE frame so streamed responses do
+      // not report zero tokens (ND-5).
+      ...(stream ? { stream_options: { include_usage: true } } : {}),
     };
     if (req.tools && req.tools.length > 0) {
       body.tools = req.tools.map((t) => ({

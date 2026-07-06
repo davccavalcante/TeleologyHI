@@ -1,16 +1,21 @@
 {
     "name": "@teleologyhi-sdk/nhe",
-    "version": "1.0.0-trinity",
-    "description": "NHE™ — Non-Human Entity. The embodied operational agent of the TeleologyHI system: LLM integration, MAIC-supervised reasoning, persona-aware response.",
+    "version": "1.0.1",
+    "description": "NHE™, Non-Human Entity. The embodied operational agent of the TeleologyHI system: LLM integration, MAIC-supervised reasoning, persona-aware response.",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
         }
     },
     "bin": {
@@ -35,6 +40,7 @@
     ],
     "scripts": {
         "build": "tsup",
+        "prepublishOnly": "npm run build",
         "test": "vitest run",
         "test:watch": "vitest",
         "typecheck": "tsc --noEmit"
@@ -101,11 +107,11 @@
         "node": ">=20"
     },
     "dependencies": {
-        "@anthropic-ai/sdk": "^0.98.0",
+        "@anthropic-ai/sdk": "^0.109.1",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "@opentelemetry/api": "^1.9.1",
-        "@teleologyhi-sdk/him": "1.0.0-trinity",
-        "@teleologyhi-sdk/maic": "1.0.0-trinity",
+        "@teleologyhi-sdk/him": "1.0.1",
+        "@teleologyhi-sdk/maic": "1.0.1",
         "ulid": "^3.0.2",
         "yaml": "^2.9.0",
         "zod": "^4.4.3"
@@ -114,6 +120,6 @@
         "@types/node": "^25.9.1",
         "tsup": "^8.5.1",
         "typescript": "^6.0.3",
-        "vitest": "^4.1.7"
+        "vitest": "^4.1.9"
     }
 }

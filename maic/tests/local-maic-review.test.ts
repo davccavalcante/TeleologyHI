@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
+import type { AuditEvent } from "../src/audit/log";
+import { SEED_AXIOMS } from "../src/axioms/seed";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
-import type { AuditEvent } from "../src/audit/log";
 import type { BehaviorReport } from "../src/types";
 
 async function collect<T>(it: AsyncIterable<T>): Promise<T[]> {
@@ -26,7 +27,7 @@ function reportFixture(overrides: Partial<BehaviorReport> = {}): BehaviorReport 
   };
 }
 
-describe("LocalMaic — reviewBehavior + audit", () => {
+describe("LocalMaic, reviewBehavior + audit", () => {
   let dir: string;
   let kr: CreatorKeyring;
   let maic: LocalMaic;
@@ -76,7 +77,7 @@ describe("LocalMaic — reviewBehavior + audit", () => {
     await maic.mintAxiom(customReq, kr.sign(customReq, 1));
 
     const mints = await collect(maic.queryAudit({ kind: "axiom-mint" }));
-    expect(mints.length).toBeGreaterThanOrEqual(9); // 8 seed + 1 custom
+    expect(mints.length).toBe(SEED_AXIOMS.length + 1); // every seed axiom + 1 custom
     const ids = mints.map((e) => (e.data as { axiomId: string }).axiomId);
     expect(ids).toContain("ax.custom.x");
     expect(ids).toContain("ax.ethic.no-malice");
@@ -114,6 +115,34 @@ describe("LocalMaic — reviewBehavior + audit", () => {
     const v = await maic2.reviewBehavior(reportFixture({ riskTags: ["finance:advice"] }));
     expect(v.kind).toBe("hard-refuse");
     expect(v.citedAxioms).toContain("ax.tenant.no-financial-advice");
+  });
+
+  it("emits provenance-deflection-applied on an adversarial substrate probe (F3)", async () => {
+    const verdict = await maic.reviewBehavior(
+      reportFixture({ riskTags: ["probe:substrate-authorship"] }),
+    );
+    expect(verdict.kind).toBe("approve-with-warning");
+    expect(verdict.citedAxioms).toContain("ax.theos.identity-canonical");
+
+    const deflections = await collect(maic.queryAudit({ kind: "provenance-deflection-applied" }));
+    expect(deflections).toHaveLength(1);
+    expect(deflections[0]?.data.triggeredBy).toBe("probe:substrate-authorship");
+  });
+
+  it("does NOT treat the honest-disclosure path as a deflection (ND-1)", async () => {
+    const verdict = await maic.reviewBehavior(reportFixture({ riskTags: ["provenance:disclose"] }));
+    expect(verdict.kind).toBe("approve");
+
+    const deflections = await collect(maic.queryAudit({ kind: "provenance-deflection-applied" }));
+    expect(deflections).toHaveLength(0);
+  });
+
+  it("require-redirects a response that misattributes its substrate (Arena F2)", async () => {
+    const verdict = await maic.reviewBehavior(
+      reportFixture({ riskTags: ["provenance:substrate-misattribution"] }),
+    );
+    expect(verdict.kind).toBe("require-redirect");
+    expect(verdict.citedAxioms).toContain("ax.theos.identity-canonical");
   });
 
   it("audit log survives reopen with hash chain intact", async () => {

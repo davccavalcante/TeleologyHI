@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { RemoteMaic } from "../src/client/remote";
 import type { BehaviorReport } from "../src/types";
 
@@ -112,28 +112,28 @@ describe("RemoteMaic", () => {
   // E4 fail-policy mix (PROPOSED_DECISIONS.md): review fail-closed,
   // status/inductions/consume fail-open.
 
-  it("getNheStatus is fail-open — defaults to 'active' on remote error", async () => {
+  it("getNheStatus is fail-open, defaults to 'active' on remote error", async () => {
     const fetchFn = makeMockFetch({ error: "down" }, 503);
     const r = new RemoteMaic({ baseUrl: "https://m.example", fetch: fetchFn });
     const s = await r.getNheStatus("nhe-1");
     expect(s).toBe("active");
   });
 
-  it("listPendingInductions is fail-open — returns [] on remote error", async () => {
+  it("listPendingInductions is fail-open, returns [] on remote error", async () => {
     const fetchFn = makeMockFetch({ error: "down" }, 503);
     const r = new RemoteMaic({ baseUrl: "https://m.example", fetch: fetchFn });
     const list = await r.listPendingInductions("nhe-1");
     expect(list).toEqual([]);
   });
 
-  it("consumeInduction is fail-open — returns a synthetic pending ticket on error (clean shape)", async () => {
+  it("consumeInduction is fail-open, returns a synthetic pending ticket on error (clean shape)", async () => {
     const fetchFn = makeMockFetch({ error: "down" }, 503);
     const r = new RemoteMaic({ baseUrl: "https://m.example", fetch: fetchFn });
     const t = await r.consumeInduction("t-1");
     expect(t.id).toBe("t-1");
     expect(t.status).toBe("pending");
     // Pending-status tickets must never carry a `cancelReason` /
-    // `cancelledAt` / `consumedAt` — the placeholder shape stays strictly
+    // `cancelledAt` / `consumedAt`, the placeholder shape stays strictly
     // valid so downstream auditors don't see a shape contradiction.
     expect(t.cancelReason).toBeUndefined();
     expect(t.cancelledAt).toBeUndefined();

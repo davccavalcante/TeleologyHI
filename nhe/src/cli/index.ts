@@ -1,8 +1,9 @@
+import { SEED_AXIOMS } from "@teleologyhi-sdk/maic";
 import {
+  type DetectedAdapter,
+  type DetectOptions,
   detectAdapter,
   isAdapterName,
-  type DetectOptions,
-  type DetectedAdapter,
 } from "./adapter-detection.js";
 import { bootstrap } from "./bootstrap.js";
 import { startChat } from "./chat.js";
@@ -16,7 +17,7 @@ interface ParsedArgs {
 }
 
 const HELP_TEXT = `
-@teleologyhi-sdk/nhe — CLI
+@teleologyhi-sdk/nhe, CLI
 
 Usage:
   teleologyhi-nhe <command> [options]
@@ -98,7 +99,7 @@ async function mcpCommand(args: ParsedArgs): Promise<number> {
     ...(args.flags.archetype ? { archetype: args.flags.archetype } : {}),
   });
 
-  // Only stderr gets bootstrap notes — stdout is reserved for MCP protocol.
+  // Only stderr gets bootstrap notes, stdout is reserved for MCP protocol.
   process.stderr.write(
     `[@teleologyhi-sdk/nhe mcp] storeDir=${result.storeDir} him=${result.him.id} adapter=${detected.source}:${detected.model}\n`,
   );
@@ -137,7 +138,9 @@ async function chatCommand(args: ParsedArgs): Promise<number> {
   if (result.freshInstall) {
     console.log(fmt.dim(`• fresh setup at ${result.storeDir}`));
     console.log(fmt.dim(`• Creator keyring saved to ${result.storeDir}/creator.pem`));
-    console.log(fmt.dim(`• MAIC seeded with 8 axioms; HIM "${result.him.id}" minted`));
+    console.log(
+      fmt.dim(`• MAIC seeded with ${SEED_AXIOMS.length} axioms; HIM "${result.him.id}" minted`),
+    );
   } else {
     console.log(fmt.dim(`• reopened ${result.storeDir} (HIM "${result.him.id}")`));
   }

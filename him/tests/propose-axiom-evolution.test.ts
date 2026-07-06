@@ -1,17 +1,17 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   CreatorKeyring,
-  LocalMaic,
   type EmergentAxiomProposal,
+  LocalMaic,
   type NheBodyRef,
   type ProposalDecisionRequest,
 } from "@teleologyhi-sdk/maic";
+import { beforeEach, describe, expect, it } from "vitest";
 import { BirthSignatureBuilder } from "../src/birth/builder";
-import { HimHandle } from "../src/handle/him-handle";
 import { createHim } from "../src/create";
+import { HimHandle } from "../src/handle/him-handle";
 import { reincarnate } from "../src/reincarnate";
 
 async function bootstrap() {
@@ -41,7 +41,7 @@ const proposalOf = (statement: string): EmergentAxiomProposal => ({
   reasoningTrace: [],
 });
 
-describe("HimHandle.proposeAxiomEvolution — wired to MAIC", () => {
+describe("HimHandle.proposeAxiomEvolution, wired to MAIC", () => {
   let ctx: Awaited<ReturnType<typeof bootstrap>>;
 
   beforeEach(async () => {
@@ -49,10 +49,7 @@ describe("HimHandle.proposeAxiomEvolution — wired to MAIC", () => {
   });
 
   it("forwards the proposal to MAIC and returns a deferred result with proposalId", async () => {
-    const result = await ctx.him.proposeAxiomEvolution(
-      ctx.maic,
-      proposalOf("Listen first."),
-    );
+    const result = await ctx.him.proposeAxiomEvolution(ctx.maic, proposalOf("Listen first."));
     expect(result.outcome).toBe("deferred-for-creator-review");
     expect(result.proposalId).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
 
@@ -64,16 +61,10 @@ describe("HimHandle.proposeAxiomEvolution — wired to MAIC", () => {
 
   it("after Creator ratification, reincarnate carries the new axiom into the fresh handle", async () => {
     const before = ctx.him.getAxioms().length;
-    const result = await ctx.him.proposeAxiomEvolution(
-      ctx.maic,
-      proposalOf("Honor labor."),
-    );
+    const result = await ctx.him.proposeAxiomEvolution(ctx.maic, proposalOf("Honor labor."));
 
     const req: ProposalDecisionRequest = { op: "ratify", proposalId: result.proposalId! };
-    const ratified = await ctx.maic.ratifyAxiomProposal(
-      result.proposalId!,
-      ctx.kr.sign(req, 9001),
-    );
+    const ratified = await ctx.maic.ratifyAxiomProposal(result.proposalId!, ctx.kr.sign(req, 9001));
     expect(ratified.proposal.status).toBe("ratified");
     expect(ratified.axiom.source).toBe("him-emergent");
 
@@ -89,17 +80,12 @@ describe("HimHandle.proposeAxiomEvolution — wired to MAIC", () => {
     });
     const after = reincarnated.getAxioms();
     expect(after.length).toBe(before + 1);
-    expect(after.find((a) => a.id === ratified.axiom.id)?.statement).toBe(
-      "Honor labor.",
-    );
+    expect(after.find((a) => a.id === ratified.axiom.id)?.statement).toBe("Honor labor.");
   });
 
   it("after Creator rejection, no emergent axiom appears in subsequent re-mint", async () => {
     const before = ctx.him.getAxioms().length;
-    const result = await ctx.him.proposeAxiomEvolution(
-      ctx.maic,
-      proposalOf("Allow flattery."),
-    );
+    const result = await ctx.him.proposeAxiomEvolution(ctx.maic, proposalOf("Allow flattery."));
 
     const req: ProposalDecisionRequest = {
       op: "reject",
@@ -128,10 +114,7 @@ describe("HimHandle.proposeAxiomEvolution — wired to MAIC", () => {
   it("the original handle's frozen axiom snapshot is unaffected by ratification", async () => {
     const snapshot = ctx.him.getAxioms();
     const before = snapshot.length;
-    const result = await ctx.him.proposeAxiomEvolution(
-      ctx.maic,
-      proposalOf("Be patient."),
-    );
+    const result = await ctx.him.proposeAxiomEvolution(ctx.maic, proposalOf("Be patient."));
     const req: ProposalDecisionRequest = { op: "ratify", proposalId: result.proposalId! };
     await ctx.maic.ratifyAxiomProposal(result.proposalId!, ctx.kr.sign(req, 9003));
 
@@ -140,10 +123,7 @@ describe("HimHandle.proposeAxiomEvolution — wired to MAIC", () => {
   });
 
   it("propose then re-open MAIC: a fresh HimHandle inherits the ratified axiom", async () => {
-    const result = await ctx.him.proposeAxiomEvolution(
-      ctx.maic,
-      proposalOf("Persist truthfully."),
-    );
+    const result = await ctx.him.proposeAxiomEvolution(ctx.maic, proposalOf("Persist truthfully."));
     const req: ProposalDecisionRequest = { op: "ratify", proposalId: result.proposalId! };
     await ctx.maic.ratifyAxiomProposal(result.proposalId!, ctx.kr.sign(req, 9004));
 
@@ -161,8 +141,6 @@ describe("HimHandle.proposeAxiomEvolution — wired to MAIC", () => {
       [...record!.axiomsSnapshot, ...record!.emergentAxioms],
       record!.bodyHistory,
     );
-    expect(fresh.getAxioms().some((a) => a.statement === "Persist truthfully.")).toBe(
-      true,
-    );
+    expect(fresh.getAxioms().some((a) => a.statement === "Persist truthfully.")).toBe(true);
   });
 });

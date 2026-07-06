@@ -1,14 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
+import { SEED_AXIOMS } from "../src/axioms/seed";
 import { LocalMaic } from "../src/client/local";
+import { EU_AI_ACT_MAPPING, ISO_42001_MAPPING } from "../src/compliance/mapper";
 import { CreatorKeyring } from "../src/creator/keyring";
-import {
-  ComplianceMapper,
-  ISO_42001_MAPPING,
-  EU_AI_ACT_MAPPING,
-} from "../src/compliance/mapper";
 import type {
   BehaviorReport,
   BirthSignature,
@@ -35,7 +32,7 @@ const behaviorReport = (overrides: Partial<BehaviorReport> = {}): BehaviorReport
   ...overrides,
 });
 
-describe("ComplianceMapper — declarative mapping tables", () => {
+describe("ComplianceMapper, declarative mapping tables", () => {
   it("ISO 42001 maps every audit kind to at least one control", () => {
     for (const kind of Object.keys(ISO_42001_MAPPING)) {
       const ctrls = ISO_42001_MAPPING[kind as keyof typeof ISO_42001_MAPPING];
@@ -51,13 +48,11 @@ describe("ComplianceMapper — declarative mapping tables", () => {
   });
 
   it("ISO_42001_MAPPING and EU_AI_ACT_MAPPING cover the same kinds", () => {
-    expect(Object.keys(ISO_42001_MAPPING).sort()).toEqual(
-      Object.keys(EU_AI_ACT_MAPPING).sort(),
-    );
+    expect(Object.keys(ISO_42001_MAPPING).sort()).toEqual(Object.keys(EU_AI_ACT_MAPPING).sort());
   });
 });
 
-describe("LocalMaic.toCompliance — end-to-end", () => {
+describe("LocalMaic.toCompliance, end-to-end", () => {
   let dir: string;
   let kr: CreatorKeyring;
   let maic: LocalMaic;
@@ -77,12 +72,12 @@ describe("LocalMaic.toCompliance — end-to-end", () => {
     expect(r.uncoveredKinds).toEqual([]);
   });
 
-  it("8 seed axiom-mints surface under ISO §5.2 (policy) and §7.5 (docs)", async () => {
+  it("every seed axiom-mint surfaces under ISO §5.2 (policy) and §7.5 (docs)", async () => {
     await maic.seed(kr);
     const r = await maic.toCompliance("iso-42001");
     const ctrls = Object.fromEntries(r.controls.map((c) => [c.control, c]));
-    expect(ctrls["5.2"]?.count).toBe(8);
-    expect(ctrls["7.5"]?.count).toBe(8);
+    expect(ctrls["5.2"]?.count).toBe(SEED_AXIOMS.length);
+    expect(ctrls["7.5"]?.count).toBe(SEED_AXIOMS.length);
     expect(ctrls["5.2"]?.events[0]?.kind).toBe("axiom-mint");
     expect(ctrls["5.2"]?.events[0]?.summary).toMatch(/Axiom minted/);
   });
@@ -91,8 +86,8 @@ describe("LocalMaic.toCompliance — end-to-end", () => {
     await maic.seed(kr);
     const r = await maic.toCompliance("eu-ai-act");
     const ctrls = Object.fromEntries(r.controls.map((c) => [c.control, c]));
-    expect(ctrls["art-11"]?.count).toBe(8);
-    expect(ctrls["art-13"]?.count).toBe(8);
+    expect(ctrls["art-11"]?.count).toBe(SEED_AXIOMS.length);
+    expect(ctrls["art-13"]?.count).toBe(SEED_AXIOMS.length);
   });
 
   it("behavior-review events surface under §7.5 + §8.3 (ISO) and Art 12 + Art 14 (EU)", async () => {
@@ -138,7 +133,10 @@ describe("LocalMaic.toCompliance — end-to-end", () => {
   it("him-register + him-reincarnate are projected correctly", async () => {
     const sig = bsig("him.r");
     await maic.registerHim(sig, kr.sign(sig, 1));
-    const req = { himId: "him.r", toBody: { nheId: "nhe-1", llmAdapter: "x", embodiedAt: new Date().toISOString() } };
+    const req = {
+      himId: "him.r",
+      toBody: { nheId: "nhe-1", llmAdapter: "x", embodiedAt: new Date().toISOString() },
+    };
     await maic.reincarnateHim(req, kr.sign(req, 2));
 
     const iso = await maic.toCompliance("iso-42001");
@@ -155,10 +153,10 @@ describe("LocalMaic.toCompliance — end-to-end", () => {
   });
 
   it("perControlLimit caps events per control (oldest dropped)", async () => {
-    await maic.seed(kr); // 8 axiom-mints under 5.2 + 7.5
+    await maic.seed(kr); // every seed axiom-mint surfaces under 5.2 + 7.5
     const r = await maic.toCompliance("iso-42001", { perControlLimit: 3 });
     const c52 = r.controls.find((c) => c.control === "5.2");
-    expect(c52?.count).toBe(8); // full count preserved
+    expect(c52?.count).toBe(SEED_AXIOMS.length); // full count preserved
     expect(c52?.events).toHaveLength(3); // but only 3 surface
   });
 
@@ -175,7 +173,7 @@ describe("LocalMaic.toCompliance — end-to-end", () => {
   });
 });
 
-describe("ComplianceMapper — summaries are human-readable", () => {
+describe("ComplianceMapper, summaries are human-readable", () => {
   it("each summary references the relevant entity (axiom id / nhe id / him id)", async () => {
     const dir = await mkdtemp(join(tmpdir(), "maic-summaries-"));
     const kr = CreatorKeyring.generate();

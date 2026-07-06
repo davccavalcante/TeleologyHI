@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   CreatorKeyring,
-  LocalMaic,
   type InteractionRecord,
+  LocalMaic,
   type NheBodyRef,
 } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { BirthSignatureBuilder } from "../src/birth/builder";
 import { createHim } from "../src/create";
 import { reincarnate } from "../src/reincarnate";
@@ -24,9 +24,7 @@ async function bootstrap() {
   const kr = CreatorKeyring.generate();
   const maic = await LocalMaic.open({ storeDir: dir, creatorPublicKey: kr.publicKey() });
   await maic.seed(kr);
-  const sig = BirthSignatureBuilder.now()
-    .withPrimaryArchetype("aries-sun")
-    .build();
+  const sig = BirthSignatureBuilder.now().withPrimaryArchetype("aries-sun").build();
   const him = await createHim(maic, kr, sig);
   return { maic, kr, him };
 }
@@ -64,12 +62,18 @@ describe("reincarnate helper", () => {
 
   it("the same HIM persists across bodies (same id, same axioms)", async () => {
     const { maic, kr, him } = await bootstrap();
-    const before = him.getAxioms().map((a) => a.id).sort();
+    const before = him
+      .getAxioms()
+      .map((a) => a.id)
+      .sort();
     const { handle } = await reincarnate(maic, kr, {
       himId: him.id,
       toBody: body("nhe-1"),
     });
-    const after = handle.getAxioms().map((a) => a.id).sort();
+    const after = handle
+      .getAxioms()
+      .map((a) => a.id)
+      .sort();
     expect(after).toEqual(before);
     expect(handle.id).toBe(him.id);
     // birthSignature unchanged
@@ -86,10 +90,10 @@ describe("reincarnate helper", () => {
   });
 });
 
-describe("reincarnate helper — residual-trace carry-over (D-H1.1)", () => {
+describe("reincarnate helper, residual-trace carry-over (D-H1.1)", () => {
   const sampleInteraction = (i: number): InteractionRecord => ({
     at: `2026-05-24T1${i % 10}:00:00.000Z`,
-    userPrompt: `q${i} — why does this matter for my purpose?`,
+    userPrompt: `q${i}, why does this matter for my purpose?`,
     responseText: `Long substantive response ${i} `.repeat(20),
     refused: false,
   });
@@ -114,9 +118,7 @@ describe("reincarnate helper — residual-trace carry-over (D-H1.1)", () => {
     for (const trace of traces) {
       expect(trace.kind).toBe("interaction-summary");
       expect(trace.carriedFromNheId).toBe("nhe-1");
-      expect(trace.carriedAtReincarnation).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
-      );
+      expect(trace.carriedAtReincarnation).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     }
   });
 
@@ -148,9 +150,7 @@ describe("reincarnate helper — residual-trace carry-over (D-H1.1)", () => {
   it("caps carry-over at RESIDUAL_TRACE_CAP (64) by default", async () => {
     const { maic, kr, him } = await bootstrap();
     await reincarnate(maic, kr, { himId: him.id, toBody: body("nhe-1") });
-    const flood = Array.from({ length: RESIDUAL_TRACE_CAP + 30 }, (_, i) =>
-      sampleInteraction(i),
-    );
+    const flood = Array.from({ length: RESIDUAL_TRACE_CAP + 30 }, (_, i) => sampleInteraction(i));
     const { handle } = await reincarnate(
       maic,
       kr,
@@ -188,7 +188,7 @@ describe("reincarnate helper — residual-trace carry-over (D-H1.1)", () => {
     const { maic, kr, him } = await bootstrap();
     await reincarnate(maic, kr, { himId: him.id, toBody: body("nhe-1") });
     const interactions = [sampleInteraction(0)];
-    // Omit fromNheId — reincarnate must infer the prior body from bodyHistory.
+    // Omit fromNheId, reincarnate must infer the prior body from bodyHistory.
     const { handle } = await reincarnate(
       maic,
       kr,

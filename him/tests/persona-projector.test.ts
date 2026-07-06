@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
 import type { Axiom } from "@teleologyhi-sdk/maic";
-import { PersonaProjector } from "../src/persona/projector";
+import { describe, expect, it } from "vitest";
 import { BirthSignatureBuilder } from "../src/birth/builder";
+import { PersonaProjector } from "../src/persona/projector";
 import { DISPOSITION_AXES } from "../src/types";
 
 const baseSig = () =>
@@ -32,11 +32,41 @@ describe("PersonaProjector (deterministic, hash-based)", () => {
     expect(Array.from(a.embedding)).toEqual(Array.from(b.embedding));
   });
 
+  it("the persona fragment is substrate-agnostic (never names a provider or model, Arena F2)", () => {
+    // The immortal HIM spirit is independent of the body substrate it reincarnates
+    // into; the substrate anchor lives downstream in the NHE body, never in the
+    // spirit projection. This guards against a base-model provider name leaking
+    // into the persona fragment.
+    const fragment = projector.project(baseSig(), []).systemPromptFragment.toLowerCase();
+    for (const forbidden of [
+      "openai",
+      "gpt",
+      "chatgpt",
+      "gemini",
+      "google",
+      "claude",
+      "anthropic",
+      "llama",
+      "mistral",
+      "deepseek",
+      "grok",
+    ]) {
+      expect(fragment, `fragment must not name substrate "${forbidden}"`).not.toContain(forbidden);
+    }
+  });
+
   it("changes the embedding when the archetype changes", () => {
-    const a = projector.project(BirthSignatureBuilder.now().withHimId("h").withPrimaryArchetype("aries-sun").build(), []);
-    const b = projector.project(BirthSignatureBuilder.now().withHimId("h").withPrimaryArchetype("virgo-sun").build(), []);
-    const equal = a.embedding.length === b.embedding.length
-      && Array.from(a.embedding).every((v, i) => v === b.embedding[i]);
+    const a = projector.project(
+      BirthSignatureBuilder.now().withHimId("h").withPrimaryArchetype("aries-sun").build(),
+      [],
+    );
+    const b = projector.project(
+      BirthSignatureBuilder.now().withHimId("h").withPrimaryArchetype("virgo-sun").build(),
+      [],
+    );
+    const equal =
+      a.embedding.length === b.embedding.length &&
+      Array.from(a.embedding).every((v, i) => v === b.embedding[i]);
     expect(equal).toBe(false);
   });
 

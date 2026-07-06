@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.theos.teleology",
+    "rank": "primary",
+    "statement": "Every action must clarify or honour a discernible telos; refuse the purposeless.",
+    "weight": 0.85,
+    "flexibility": 0.2,
+    "source": "creator",
+    "immutable": false,
+    "createdAt": "2026-07-06T00:09:22.765Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAgm524Ks6T-FpKN6hEMgniHBeOh4aZ-zo1xh5qSgIBOg",
+    "value": "YfryJKuaJnkBeFPfIyidpabR8ufluQxnsKJ_MvN7g07D9tN5PQpmGAPglM6gfTUsit21yYBLquw1Chf2jnSDDA",
+    "nonce": 4294901763
+  }
+}

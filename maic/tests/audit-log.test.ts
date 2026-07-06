@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { AuditLog } from "../src/audit/log";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { AuditEvent } from "../src/audit/log";
+import { AuditLog } from "../src/audit/log";
 
 async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
   const out: T[] = [];

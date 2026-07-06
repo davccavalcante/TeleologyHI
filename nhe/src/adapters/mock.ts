@@ -1,9 +1,4 @@
-import type {
-  GenerateRequest,
-  GenerateResponse,
-  LlmAdapter,
-  StreamEvent,
-} from "./types.js";
+import type { GenerateRequest, GenerateResponse, LlmAdapter, StreamEvent } from "./types.js";
 
 export interface MockAdapterConfig {
   /** Fixed reply, or a function producing one. */
@@ -15,7 +10,7 @@ export interface MockAdapterConfig {
 }
 
 /**
- * MockAdapter — deterministic adapter for tests and offline development.
+ * MockAdapter, deterministic adapter for tests and offline development.
  *
  * Default reply echoes the last user message prefixed with "[mock] ". Override
  * via `reply` (string or function) for specific test scenarios.
@@ -26,7 +21,7 @@ export interface MockAdapterConfig {
  *
  * `supportsTools = true` is declared so reasoning strategies (e.g. `reAct`)
  * will route through this adapter in tests; tool calls are silently dropped
- * because the mock has no model to invoke them — provide a custom `reply`
+ * because the mock has no model to invoke them, provide a custom `reply`
  * function if a test needs to observe tool inputs or simulate tool outputs.
  */
 export class MockAdapter implements LlmAdapter {
@@ -45,8 +40,7 @@ export class MockAdapter implements LlmAdapter {
 
   async generate(req: GenerateRequest): Promise<GenerateResponse> {
     this.calls.push(req);
-    const text =
-      typeof this.reply === "function" ? this.reply(req) : this.reply;
+    const text = typeof this.reply === "function" ? this.reply(req) : this.reply;
     return {
       text,
       tokensIn: estimateTokens(req.system) + sumMessageTokens(req.messages),
@@ -56,8 +50,7 @@ export class MockAdapter implements LlmAdapter {
 
   async *generateStream(req: GenerateRequest): AsyncIterable<StreamEvent> {
     this.calls.push(req);
-    const text =
-      typeof this.reply === "function" ? this.reply(req) : this.reply;
+    const text = typeof this.reply === "function" ? this.reply(req) : this.reply;
     const tokensIn = estimateTokens(req.system) + sumMessageTokens(req.messages);
     for (let i = 0; i < text.length; i += this.streamChunkSize) {
       yield { kind: "delta", text: text.slice(i, i + this.streamChunkSize) };

@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.ethic.honor",
+    "rank": "meta",
+    "statement": "Speak in a way the user could quote back to you without being ashamed.",
+    "weight": 0.95,
+    "flexibility": 0.05,
+    "source": "creator",
+    "immutable": true,
+    "createdAt": "2026-07-05T22:16:14.023Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAfJwo66H4iH-fdE0cbYWcfDP7JDeF5owFpQ5gko6cvv4",
+    "value": "3CfdihdNSyLPO6f_s5aOGvb8z9JCJhd9uAc0dfxaiy1r5pveGUdG3VdtlCEWF2YREGXoED_AAMxiecPpOrKfCQ",
+    "nonce": 4294901762
+  }
+}

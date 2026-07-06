@@ -1,9 +1,6 @@
-import { describe, it, expect } from "vitest";
-import {
-  DEFAULT_RETENTION_DAYS,
-  evaluateRetention,
-} from "../src/audit/retention";
+import { describe, expect, it } from "vitest";
 import type { AuditEvent } from "../src/audit/log";
+import { DEFAULT_RETENTION_DAYS, evaluateRetention } from "../src/audit/retention";
 
 function ev(kind: AuditEvent["kind"], daysAgo: number): AuditEvent {
   const ts = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
@@ -23,7 +20,7 @@ describe("audit retention policy (E3)", () => {
 
   it("compliance events default to ~5 years", () => {
     expect(DEFAULT_RETENTION_DAYS["behavior-review"]).toBe(365 * 5);
-    expect(DEFAULT_RETENTION_DAYS["terminate"]).toBe(365 * 5);
+    expect(DEFAULT_RETENTION_DAYS.terminate).toBe(365 * 5);
   });
 
   it("classifies young behavior-review events as keep", () => {

@@ -1,5 +1,5 @@
 /**
- * SeedingSource plug-in interface (J-N1 — Entry 21 of
+ * SeedingSource plug-in interface (J-N1, Entry 21 of
  * MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
  * Entry 21 commits to a pluggable randomness source so REM-spontaneous
@@ -24,7 +24,7 @@ export interface SeedingSource {
   readonly id: string;
   /**
    * Return `n` uniform-random bytes. Implementations MUST be either
-   * synchronous OR return a Promise — they MUST NOT silently fall back
+   * synchronous OR return a Promise, they MUST NOT silently fall back
    * to a weaker source on failure. Callers wire fallback chains
    * explicitly via `withFallback()` so the audit trail records which
    * source actually produced the seed.

@@ -1,5 +1,5 @@
 /**
- * Tests for `LocalMaic.getOntologicalKernel(himId?)` — the integration
+ * Tests for `LocalMaic.getOntologicalKernel(himId?)`, the integration
  * surface of TASK.md D-M6 closure.
  *
  * The standalone `projectOntologicalKernel(axioms, opts?)` function is
@@ -7,14 +7,15 @@
  * integration with the AxiomStore (root projection) and the HimStore
  * (HIM-narrowed projection with snapshot + emergent axioms).
  */
-import { describe, it, expect, beforeEach } from "vitest";
+
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
+import { SEED_AXIOMS } from "../src/axioms/seed";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
 import { META_AXIOM_ID } from "../src/okl/projector";
-import { SEED_AXIOMS } from "../src/axioms/seed";
 import type { BirthSignature } from "../src/types";
 
 const bsig = (id: string): BirthSignature => ({

@@ -1,0 +1,123 @@
+{
+  "birthSignature": {
+    "himId": "him.legal-consulting.lex",
+    "bornAt": "2026-07-05T18:38:45.107Z",
+    "primaryArchetype": "virgo-sun",
+    "modifiers": [],
+    "primordialAxiomIds": [
+      "ax.theos.universe-as-god",
+      "ax.ethic.no-malice",
+      "ax.ethic.honor",
+      "ax.theos.teleology",
+      "ax.cynic.candor"
+    ],
+    "cosmologicalProfile": {
+      "jungian": {
+        "dominant": "magician",
+        "secondaries": [
+          "ruler",
+          "caregiver"
+        ],
+        "scores": {
+          "innocent": 3,
+          "everyman": 2.5,
+          "hero": 3,
+          "caregiver": 3.2,
+          "explorer": 2.8,
+          "rebel": 2.2,
+          "lover": 2.2,
+          "creator": 2.2,
+          "ruler": 3.857,
+          "magician": 4.4,
+          "jester": 2.4,
+          "sage": 2.333
+        }
+      },
+      "clinical": {
+        "pid5": {
+          "dominantDomain": "Antagonism",
+          "secondaryDomain": "Negative Affectivity",
+          "facets": {
+            "Anhedonia": 3.625,
+            "Anxiousness": 3.222,
+            "Attention Seeking": 3,
+            "Callousness": 2.429,
+            "Deceitfulness": 3.2,
+            "Depressivity": 3,
+            "Distractibility": 3.222,
+            "Eccentricity": 3.538,
+            "Emotional Lability": 3.286,
+            "Grandiosity": 3.5,
+            "Hostility": 3.8,
+            "Impulsivity": 2.333,
+            "Intimacy Avoidance": 3.167,
+            "Irresponsibility": 3.143,
+            "Manipulativeness": 4.2,
+            "Perceptual Dysregulation": 2.583,
+            "Perseveration": 3.222,
+            "Restricted Affectivity": 3.143,
+            "Rigid Perfectionism": 2.7,
+            "Risk Taking": 2,
+            "Separation Insecurity": 3.286,
+            "Submissiveness": 2,
+            "Suspiciousness": 2.143,
+            "Unusual Beliefs and Experiences": 2.75,
+            "Withdrawal": 2.6
+          },
+          "domains": {
+            "Detachment": 2.946,
+            "Negative Affectivity": 3.136,
+            "Antagonism": 3.266,
+            "Disinhibition": 2.68,
+            "Psychoticism": 2.957
+          }
+        },
+        "hexaco": {
+          "dominantDomain": "Extraversion",
+          "secondaryDomain": "Honesty-Humility",
+          "facets": {
+            "Sincerity": 4,
+            "Fairness": 2.75,
+            "Greed Avoidance": 3.25,
+            "Modesty": 3.5,
+            "Fearfulness": 3.25,
+            "Anxiety": 1.75,
+            "Dependence": 3.75,
+            "Sentimentality": 2.5,
+            "Social Self-Esteem": 2.75,
+            "Social Boldness": 3.5,
+            "Sociability": 3.6,
+            "Liveliness": 3.75,
+            "Forgiveness": 3.4,
+            "Gentleness": 2.75,
+            "Flexibility": 2,
+            "Patience": 4.25,
+            "Organization": 2.75,
+            "Diligence": 3.75,
+            "Perfectionism": 3.75,
+            "Prudence": 1.75,
+            "Aesthetic Appreciation": 3,
+            "Inquisitiveness": 3,
+            "Creativity": 3,
+            "Unconventionality": 4
+          },
+          "domains": {
+            "Honesty-Humility": 3.375,
+            "Emotionality": 2.813,
+            "Extraversion": 3.4,
+            "Agreeableness": 3.1,
+            "Conscientiousness": 3,
+            "Openness to Experience": 3.25
+          }
+        }
+      },
+      "seed": "ca3a74cdbfaea31eb86e1fdec5bc06d256ae8f5f64ad7566ff3e92ca1c3026c1"
+    }
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAgm524Ks6T-FpKN6hEMgniHBeOh4aZ-zo1xh5qSgIBOg",
+    "value": "jkxSpBr_jb6Z64K5BtSpCvDl7mupq_-K8YT0kO5kN0hQT1NL_mhrhCfeoGKrY1ZlCglaoQ2qZzBRyof3y79GCQ",
+    "nonce": 1783296562776
+  }
+}

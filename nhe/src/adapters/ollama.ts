@@ -1,13 +1,8 @@
-import type {
-  GenerateRequest,
-  GenerateResponse,
-  LlmAdapter,
-  StreamEvent,
-} from "./types.js";
 import { ndjsonEvents } from "./sse.js";
+import type { GenerateRequest, GenerateResponse, LlmAdapter, StreamEvent } from "./types.js";
 
 export interface OllamaAdapterConfig {
-  /** Model identifier. Required — Ollama users typically pull specific models locally. */
+  /** Model identifier. Required, Ollama users typically pull specific models locally. */
   model: string;
   /** Ollama base URL. Default: `http://localhost:11434`. */
   baseUrl?: string;
@@ -36,7 +31,7 @@ interface OllamaResponseBody {
 }
 
 /**
- * OllamaAdapter — adapter for a locally-running Ollama server. Zero API cost,
+ * OllamaAdapter, adapter for a locally-running Ollama server. Zero API cost,
  * fully offline-capable, no native dependencies. Best for development and
  * privacy-first deployments.
  *
@@ -48,7 +43,7 @@ interface OllamaResponseBody {
  * Surface (D-N8): non-streaming `generate` + streaming `generateStream`
  * (Ollama emits NDJSON over `/api/chat`; parsed via the shared
  * `ndjsonEvents` helper). Tool-calling is not exposed because the Ollama
- * surface and model behaviour vary widely per local model — operators that
+ * surface and model behaviour vary widely per local model, operators that
  * need tools should use the SDK-backed adapters (Anthropic, Grok) or wire
  * their own MCP layer.
  */
@@ -95,9 +90,7 @@ export class OllamaAdapter implements LlmAdapter {
 
     if (!response.ok) {
       const errText = await safeReadText(response);
-      throw new Error(
-        `OllamaAdapter: HTTP ${response.status} ${response.statusText}: ${errText}`,
-      );
+      throw new Error(`OllamaAdapter: HTTP ${response.status} ${response.statusText}: ${errText}`);
     }
 
     const parsed = (await response.json()) as OllamaResponseBody;

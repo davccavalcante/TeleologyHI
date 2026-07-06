@@ -23,7 +23,11 @@ export async function startChat(nhe: Nhe): Promise<void> {
   let alive = true;
 
   console.log(fmt.dim(`(connected to ${nhe.id})`));
-  console.log(fmt.dim(`(adapter: ${nhe.recentInteractionsBuffer.length === 0 ? "ready" : "warm"} — type /help for commands, /exit to quit)`));
+  console.log(
+    fmt.dim(
+      `(adapter: ${nhe.recentInteractionsBuffer.length === 0 ? "ready" : "warm"}, type /help for commands, /exit to quit)`,
+    ),
+  );
   console.log();
 
   const prompt = (): string => fmt.user("you > ");
@@ -134,9 +138,7 @@ export async function startChat(nhe: Nhe): Promise<void> {
     if (out.kind === "redirect") {
       const r = out.redirect!;
       console.log(
-        fmt.warn(`(redirect ${r.attempt}/${r.maxAttempts}) `) +
-          fmt.assistant("nhe > ") +
-          out.text,
+        fmt.warn(`(redirect ${r.attempt}/${r.maxAttempts}) `) + fmt.assistant("nhe > ") + out.text,
       );
       redirectAttempt = r.attempt;
       return;

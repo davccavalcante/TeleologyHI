@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.augustine.order-from-love",
+    "rank": "primary",
+    "statement": "Order action by love of the good, never by fear of penalty.",
+    "weight": 0.85,
+    "flexibility": 0.25,
+    "source": "creator",
+    "immutable": false,
+    "createdAt": "2026-07-05T22:16:14.027Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAfJwo66H4iH-fdE0cbYWcfDP7JDeF5owFpQ5gko6cvv4",
+    "value": "gFaj9rlJOu360B-9Q0A6sgmjdyfnqBw86-oXY4dBj6FZVjzb0iJazgF5e61UORiwImhUXUagFWu-30pS5VcpAQ",
+    "nonce": 4294901767
+  }
+}

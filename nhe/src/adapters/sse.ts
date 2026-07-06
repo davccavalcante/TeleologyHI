@@ -3,9 +3,7 @@
  * payload strings. Used by OpenAI-compatible streaming adapters (Grok /
  * DeepSeek / Mistral) and Ollama's newline-delimited streaming.
  */
-export async function* sseEvents(
-  body: ReadableStream<Uint8Array>,
-): AsyncIterable<string> {
+export async function* sseEvents(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
   const reader = body.getReader();
   const decoder = new TextDecoder("utf-8");
   let buffer = "";
@@ -33,9 +31,7 @@ export async function* sseEvents(
  * Parse newline-delimited JSON from a ReadableStream. Ollama and some
  * Google endpoints stream this format instead of SSE.
  */
-export async function* ndjsonEvents(
-  body: ReadableStream<Uint8Array>,
-): AsyncIterable<string> {
+export async function* ndjsonEvents(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
   const reader = body.getReader();
   const decoder = new TextDecoder("utf-8");
   let buffer = "";

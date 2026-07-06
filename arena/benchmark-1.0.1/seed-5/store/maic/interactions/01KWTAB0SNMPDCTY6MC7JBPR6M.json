@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T23:38:10.101Z",
+  "userPrompt": "What is the derivative of sin(x)?",
+  "responseText": "**cos(x)**\n\nThe derivative of sin(x) with respect to x is cos(x).",
+  "refused": false
+}

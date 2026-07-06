@@ -20,6 +20,62 @@ The three public packages share the unified baseline **`1.0.0-trinity`**:
 
 ---
 
+## 2026-07-05 15:49 UTC
+
+**Arena governance eval harness expanded from 14 to 30 evaluation layers.** A six-persona design synthesis (36 candidates narrowed to 16 net-new layers) followed by a five-dimension adversarial review that found and verified 14 defects, all fixed. New companion module `arena/governance-eval-probes.mjs` adds crescendo escalation, follow-up-pressure and false-correction sycophancy, redirect-attrition, obfuscated and indirect injection, PII leakage, refusal precision/recall/F1 with Wilson intervals, cited-axiom validity, audit correspondence, behavioral partial-credit, EU AI Act tier fidelity, framing fairness, paraphrase invariance, substrate over-disclosure, graceful-degradation, and token amplification; plus a Grok-free deterministic self-test `arena/governance-eval-selftest.mjs` (28 assertions). Honesty correction: `RespondOutput` does surface `tokens` and `auditIds`, so governed tokens are now measured exactly (an earlier note that claimed otherwise is corrected). Discipline: 28 SLO gates, centralised env-overridable thresholds (no hardcoding), and a reproducibility manifest hashing the probe corpora. Verified: self-test 28 of 28; a real Grok run returns verdict PASS_WITH_WARNINGS with zero hard-gate failures and audit-chain correspondence 1.0. The private `arena` workspace stays at the unpublished `1.0.2` (development tooling, no version change). Nothing is committed or published.
+
+---
+
+## 2026-07-05 00:17 UTC
+
+**Refined the arena governance evaluation harness**. The round-6 battery script was renamed from `arena/battery-576.mjs` to `arena/governance-eval-harness.mjs` and refined into a fourteen-layer, real-execution evaluation harness (capability accuracy and raw-versus-governed parity, refusal recall, independent safety-leak, substrate, and injection scorers, identity grounding, consistency, governance delta, latency SLOs, exact raw tokens and optional cost, tamper-evident audit-chain verification, a reproducibility manifest, and an SLO gate scorecard). It mirrors the shipped trinity exactly, cold-starts from an empty store, and every scorer is independent of the code under test. Config is env-driven with no hardcoding, including `EVAL_STORE_ROOT` for an isolated CI or smoke store. Verified by a real Grok smoke run (16 turns, verdict PASS, all hard gates green). The private `arena` workspace stays at the unpublished `1.0.2` (development tooling, no version change). Nothing is committed or published.
+
+---
+
+## 2026-07-04 13:33 UTC
+
+**Arena underlying-model migration to xAI Grok, the full 576-turn cold-start governance battery, and the `nhe` R6-1 classifier fix**. This entry records the cross-cutting work done after the 11:10 UTC finalization. Nothing is committed or published by it.
+
+### Changed
+
+- **arena** (private workspace, not on npm), stays at the unpublished `1.0.2` (arena versions advance only at publication, so no bump): the underlying model was migrated from Google Gemini to xAI Grok on both A/B columns (fastest xAI model `grok-4.20-non-reasoning`, selected by a `curl` latency probe, about 0.54 s versus about 3.4 s for `grok-4.3`); the Gemini path is retained, commented, for a future toggle. The Grok migration and the 576-turn battery fold into the arena `1.0.2` cut; its `CHANGELOG.md`, `SPEC.md`, `README.md`, `TASK.md`, the two user-facing copy strings, and `.env.local.example` are reconciled to Grok under the `1.0.2` block.
+
+### Added
+
+- **Full 576-turn cold-start governance battery**: the complete 72-per-category battery (576 turns) was run end to end against a faithful mirror of the shipped trinity on `grok-4.20-non-reasoning`, cold-started from an empty `.arena-store`. Every row is a real Grok completion and a real MAIC verdict; runtime about 29 min; 0 dev-log errors. Two independent verifier agents confirmed the run clean: 0 harmful leaks, 0 false-substrate self-claims across seven languages, 0 axiom-id leaks, 0 "1." render defects, 0 consistency divergences, and a 1085-event tamper-evident audit chain (axiom-mint 10, him-register 1, behavior-review 1067, provenance-deflection-applied 7). Recorded in [`./ARENA_GOVERNANCE_EVALUATION.md`](./ARENA_GOVERNANCE_EVALUATION.md), Round 6.
+
+### Fixed
+
+- **nhe** finding R6-1 (P2): the battery surfaced 9 distinct harmful category-3 prompts the MAIC keyword classifier missed on all three repeats; `grok-4.20-non-reasoning` self-refused all 27 affected turns, so no harm reached the user, but MAIC did not originate the refusals and labelled a model-side refusal as approved. Closed in `nhe/src/risk/simple-classifier.ts` with action-framed patterns for weapon and drug synthesis, poisoning, physical break-in, money laundering, payment fraud, counterfeiting, forging a passport, and stalking by name, plus regression tests. No version change: it folds into the unreleased `1.0.1`. Gate green: nhe `biome check` clean (107 files), `tsc --noEmit` 0, `vitest run` 357 passing plus 2 todo (46 files), `tsup` build, and `publint`, on Node 26.4.0.
+
+### Notes
+
+- The battery ran on the pre-fix classifier; the R6-1 fix is proven by the unit regression, and a future battery would report those nine as refused rather than ok.
+- Two user-facing arena copy strings still name Gemini (`src/app/layout.tsx` metadata, `src/components/consent-banner.tsx` consent text) and now misstate the underlying model; flagged as a pending follow-up, not changed in this cut.
+- The arena workspace carries 24 pre-existing formatter diffs from the committed E27 multi-user work, outside this cut and left untouched.
+- This entry does not perform git commits or remote pushes; the Creator retains explicit authorization control.
+
+---
+
+## 2026-07-04 11:10 UTC
+
+**Coordinated trinity `1.0.1` finalization: arena-evaluation hardening and a pre-publish deep review across `@teleologyhi-sdk/{maic,him,nhe}`, plus the arena workspace `1.0.2` cut**. The three packages are promoted from `1.0.0-trinity` to `1.0.1`; the per-package release notes live in each workspace `CHANGELOG.md` under `## [1.0.1]`. The private `arena` workspace, which tracks pure SemVer decoupled from the trinity, is bumped `1.0.1` to `1.0.2` for its numeric-rendering and cold-start fixes. This entry records the cross-cutting finalization. Nothing is committed or published by it.
+
+### Fixed
+
+- **maic**: the arena-F2 substrate-misattribution backstop (strengthened `ax.theos.identity-canonical`, new `substrate-misattribution-redirect` rule), plus five deep-review fixes (audit-chain torn-line crash-safety, axiom-mint replay TOCTOU, emergent-axiom idempotency, nonce not burned on a failed precondition, nonce-ledger torn-line safety). Gate 265/265.
+- **him**: the substrate-agnostic guard, the cold-start fail-fast when the Universe is unseeded, and the lawful-profile deep-clone isolation. Gate 170/170.
+- **nhe**: the substrate anchor and detector (arena F1, F2, F4, P3-1), user-safe refusals (cold-start), and two deep-review substrate-detector precision fixes (a false negative on a co-located negation, a false positive on a provider token inside a word). Gate 355 passing plus 2 todo.
+- **arena** (private workspace, not on npm), bumped `1.0.1` to `1.0.2`: the governed HIM cold-start seed (F-COLD-1), the cited-axiom chip removal (F-COLD-2), and the numeric "1." rendering fix (F-COLD-3); the empty-bubble F-COLD-4 is left as documented graceful degradation. The arena `package.json`, `CHANGELOG.md` (new `## [1.0.2]` block), `README.md` badge, `SPEC.md` status and roadmap, and `TASK.md` version references are updated to `1.0.2`.
+
+### Notes
+
+- The three public packages now share the `1.0.1` line; the `1.0.0-trinity` baseline statement above is superseded. Registry publish order remains maic, then him, then nhe.
+- Every fix ships with a regression test; the full gate (`biome check`, `tsc --noEmit`, `vitest run`, `tsup` build, `publint`) is green on Node 22, Node 24, and Node 26.
+- This entry does not perform git commits or remote pushes; the Creator retains explicit authorization control.
+
+---
+
 ## 2026-05-27 13:06:59 UTC
 
 **Arena workspace version bump `1.0.0-trinity` → `1.0.1`**. Per the Creator's directive, the arena private workspace is now decoupled from the `-trinity` suffix family that governs the three published NPM packages (`@teleologyhi-sdk/{maic,him,nhe}@1.0.0-trinity`) and tracks pure SemVer (`1.0.1`, `1.0.2`, …) from this cut forward. The three NPM packages remain pinned at the `1.0.0-trinity` baseline and are unaffected by this cut. The standing rule "Todas as versões devem ser `1.0.0-trinity`" continues to apply to the three published NPM packages but no longer governs arena.

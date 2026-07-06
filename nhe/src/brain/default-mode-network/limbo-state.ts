@@ -1,31 +1,31 @@
 /**
- * Default-mode-network limbo state machine (J-N9 — Entry 24 of
+ * Default-mode-network limbo state machine (J-N9, Entry 24 of
  * MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
  * Four canonical states (matching the `LimboState` enum in
  * `@teleologyhi-sdk/maic`):
  *
- *   - `awake`       — normal operation. The NHE responds to user
+ *   - `awake`      , normal operation. The NHE responds to user
  *                     prompts and accumulates affect / memories.
- *   - `drifting`    — idle window has crossed the soft threshold but
+ *   - `drifting`   , idle window has crossed the soft threshold but
  *                     the NHE has not yet entered deep-coma. Sleep
  *                     cycles run on schedule; activation is still
  *                     possible without ceremony.
- *   - `deep-coma`   — idle window has crossed the hard threshold
+ *   - `deep-coma`  , idle window has crossed the hard threshold
  *                     (48-72h default). All work is paused; the NHE
  *                     costs zero compute. Reactivation requires a
  *                     `return-from-limbo` transition.
- *   - `returning`   — a `return-from-limbo` transition is in flight.
+ *   - `returning`  , a `return-from-limbo` transition is in flight.
  *                     The NHE emits the `reunion` affect (9th
  *                     canonical, Entry 24) on completion.
  *
- * This module ships a **pure transition function** —
+ * This module ships a **pure transition function**,
  * `evaluateLimboTransition(currentState, input, thresholds?) →
  * LimboMachineTransition`. No I/O. The actual emission of the
  * MAIC audit kinds `limbo:enter` / `limbo:return` is the consumer's
  * responsibility; this function just classifies.
  */
-import type { LimboState, LimboTransition, LimboReturn } from "@teleologyhi-sdk/maic";
+import type { LimboReturn, LimboState, LimboTransition } from "@teleologyhi-sdk/maic";
 
 export interface LimboMachineInput {
   /** Milliseconds since the last user interaction. Non-negative. */

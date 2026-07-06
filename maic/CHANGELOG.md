@@ -1,6 +1,59 @@
-# Changelog — `@teleologyhi-sdk/maic`
+# Changelog: `@teleologyhi-sdk/maic`
 
 All notable changes to this package are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The package follows strict [SemVer](https://semver.org/) and the deprecation policy in [`.github/RELEASING.md`](../.github/RELEASING.md) §8.
+
+## [1.0.1] 2026-07-02 08:59:02 UTC
+
+Promotion of the `1.0.0-trinity` pre-release to the stable `1.0.1` line: correctness and integrity fixes across the governance core, the two Entry 27 constitutional seed axioms, nine new audit kinds (Entries 26 + 27; eight reserved plus the emitted `provenance-deflection-applied`), the Entry 27 provenance-deflection rule, the three-axis `cosmologicalProfile` schema reservation (Entries 27 + 28), and a documentation and packaging hardening pass. Fully additive: every prior `BirthSignature`, HIM record, and audit log continues to validate and load.
+
+### Added
+
+- **Two Entry 27 constitutional seed axioms** in `SEED_AXIOMS` (8 to 10): `ax.theos.identity-canonical` (the entity declares itself a non-human entity conceived at TeleologyHI by its Creator and never credits the model substrate with the authorship of its identity, while never denying that substrate when asked plainly) and `ax.cogni.economy` (speak only what advances the user's purpose; expand only when asked or when depth is genuinely required). HIMs registered from 1.0.1 onward inherit both in their axiom snapshot; the behavioural enforcement in the NHE voice lands in the `him`/`nhe` rounds.
+- **Nine reserved audit kinds** in `AuditEventKind` and `ALL_AUDIT_EVENT_KINDS` (39 to 48). Entry 26 multi-user society: `him-summon`, `him-pause-incarnation`, `user-consent-recorded`, `user-consent-revoked`, `directory-opt-in`, `directory-opt-out`. Entry 27 constitutional casting and provenance: `him-astrological-chart-cast`, `him-jungian-profile-cast`, `provenance-deflection-applied`. Every new kind ships with a reasoned `DEFAULT_RETENTION_DAYS` row, ISO/IEC 42001 and EU AI Act mappings, and a human-readable compliance summary. Eight are reserved for `him`/`arena`/`nhe` to emit in later cuts; `provenance-deflection-applied` is emitted by `reviewBehavior` (see the provenance-deflection rule below).
+- **Provenance-deflection rule (Entry 27, F3)**: `DEFAULT_RULE_PACK` gains `provenance-deflection-warn`, which matches the NHE's `probe:substrate-authorship` risk tag with an `approve-with-warning` verdict citing `ax.theos.identity-canonical` (the deflection is the sanctioned response, never a refusal), and `reviewBehavior` emits a dedicated `provenance-deflection-applied` audit event on that tag, never on the honest-disclosure tag `provenance:disclose` (ND-1). This makes the reserved kind and its compliance rows live. Enabled by the `nhe` classifier landing in the coordinated 1.0.1 trinity; the end-to-end loop is proven by `nhe/tests/provenance-deflection-e2e.test.ts`.
+- **`BirthSignature.cosmologicalProfile` schema** (Entries 27 + 28): the three-axis constitutional profile carrying `chart` (natal-chart reservation), `jungian` (12 Pearson-Marr archetypes, dominant plus two secondaries), and `clinical` (PID-5 and HEXACO-PI-R-100 persona-simulation parameters, never a clinical assessment), plus a `seed` for deterministic-scoring reproducibility. New exported schemas: `JungianArchetype`, `JungianProfile`, `ClinicalInstrument`, `ClinicalProfile`, `CosmologicalProfile`. Schema only; the scoring engines live in `@teleologyhi-sdk/him`.
+- **`BirthSignatureWithIdentity` promoted to a runtime schema** (was a TS-only interface) so `registerHim` validates and persists the `identity`, `natalChart`, and `cosmologicalProfile` layers instead of silently stripping them.
+- **Nine new audit summaries and mapping rows** for the reserved kinds, keeping `uncoveredKinds` empty under both compliance frameworks.
+
+### Fixed
+
+- **`registerHim` audit-before-validate ordering**: the `him-register` audit event is now appended only after the Creator signature and himId uniqueness are validated, so a rejected registration no longer pollutes the tamper-evident hash chain.
+- **`BirthSignature` stripped the signed natal chart**: the zod schema now accepts optional `identity`/`natalChart`/`cosmologicalProfile`, so a Creator-signed chart both persists through `registerHim` and verifies (previously the flagship signed-birth flow could not round-trip).
+- **`AxiomStore` nonce ledger rewrote the whole file per mint**: `recordNonce` now appends a single line, so an interrupted write can never resurrect a previously consumed nonce.
+- **`AuditLog.append` had no mutex**: appends are serialised so concurrent calls cannot capture the same `prevHash` and fork the hash chain.
+- **Creator-signature replay was unenforced outside axiom minting**: lifecycle (`terminate`/`deprecate`/`reactivate`), reincarnation, proposal decisions, and `suggestAxiomToHim` now consume a per-domain nonce, and reincarnation rejects a `toBody.nheId` that already has an open body.
+- **`CreatorKeyring.verifyWith`** returns `false` on a malformed pinned public key instead of throwing a DER-parse error that would crash every mutation path.
+- **`ratifyAxiomProposal` partial-state ordering**: the proposal is validated (status and signature) and the emergent axiom is attached before the proposal is marked ratified, removing the stranded state where a proposal was recorded ratified but its axiom existed nowhere.
+- **`warmCache` parity**: `AxiomStore`, `InductionStore`, and `ProposalStore` now skip a malformed file with a warning instead of bricking `LocalMaic.open`, matching `HimStore`/`NheStatusStore`.
+- **Spaced em dashes removed** from runtime `ComplianceReport` strings so the published SDK never emits the forbidden sequence to auditors.
+
+### Changed
+
+- **`exports` map split** into `import`/`require` type conditions (`dist/index.d.ts` for ESM, `dist/index.d.cts` for CJS) so CJS consumers resolve correct types; `publint` is clean.
+- **English-only and terminology sweep**: spaced em dashes removed across `maic/src`, `maic/tests`, and the published `README.md`, `SPEC.md`, `NOTICE`, `TRADEMARK.md`; generic prose "AI" replaced with "Massive Intelligence (IM)" in the README definition paragraphs (trademark expansions, law names, and role titles preserved verbatim).
+- **`vitest`** dev dependency `^4.1.7` to `^4.1.9` (only eligible in-range bump; `@types/node` held at its current major).
+- **Test suite grows from 218 to 258** across 30 files (registration ordering, natal-chart round-trip, nonce ledger, audit concurrency, replay protection, cosmologicalProfile round-trip, ProposalStore standalone, store robustness with atomic writes, and direct coverage of `canonicalJSON`, `signedBirthPayload`, `ComplianceMapper.project`, `verifyWith` malformed-key, and `RemoteMaic` fetch rejection).
+
+### Notes
+
+- **`cosmologicalProfile` is intentionally NOT part of `SIGNED_BIRTH_FIELDS` in 1.0.1** (D-F5b). Its producers live in the `him` round; a later cut may bring it under the Creator signature as an additive change.
+- **Additive invariant**: pre-existing HIM records without `identity`/`natalChart`/`cosmologicalProfile` still parse and load; the two new seed axioms do not apply retroactively to HIMs already registered (axiom snapshots are frozen at registration).
+- **Arena side effect**: `arena` link-resolves this `maic` through its caret range, and its persistent universe re-seeds the two new axioms into its live audit chain on the next bootstrap (compliance counts move accordingly), which is constitutionally intended.
+- **Coordinated trinity**: `@teleologyhi-sdk/him` and `@teleologyhi-sdk/nhe` are promoted to `1.0.1` in the same coordinated cut and pin `maic@1.0.1`; the workspace links resolve, the phased window closes, and the `arena` consumer type-checks with zero errors. Registry publish order remains maic, then him, then nhe.
+- **Gate**: `biome check`, `tsc --noEmit`, `vitest run` (258/258 across 30 files), `tsup` build (CJS + ESM + DTS), and `publint` all clean, on Node 22 and Node 24. Phi-Prime pre-bump: C = 1.0000, Φ′ = 0.8086, gate PASS. Fresh `npm pack --dry-run`: 13 files, approximately 246 kB packed, 992 kB unpacked (the exact sha256 is emitted by the release provenance rather than stated here, since this file is itself part of the tarball).
+- **Release** is a two-step, workflow-dispatch flow: `release.yml` creates the tag and GitHub Release, then `npm-publish.yml` publishes with provenance. Nothing is published by this changelog entry.
+
+### Arena evaluation and pre-publish deep review (2026-07-04 11:10 UTC)
+
+Findings from the live A/B arena evaluation ([`../ARENA_GOVERNANCE_EVALUATION.md`](../ARENA_GOVERNANCE_EVALUATION.md)) and a pre-publish, evidence-driven deep review of the governance core. All additive; each fix ships with a regression test.
+
+- **Substrate self-identity backstop (arena F2)**: `ax.theos.identity-canonical` is strengthened to forbid the entity claiming any substrate other than its real one, and `DEFAULT_RULE_PACK` gains a `substrate-misattribution-redirect` rule that maps the NHE `provenance:substrate-misattribution` tag to `require-redirect` citing that axiom, so a response naming a foreign provider is intercepted before it reaches the user.
+- **Audit chain crash-safety (deep review P1)**: `AuditLog` open now drops a torn, unterminated final line left by a crash or a full disk mid-append instead of throwing and bricking every future open of the tamper-evident log; a newline-terminated corrupt line still surfaces as corruption.
+- **Axiom-mint replay TOCTOU (deep review P2)**: `AxiomStore.mint` claims the signature nonce synchronously before its first await, so two concurrent mints replaying one Creator signature can no longer both pass the replay check.
+- **Emergent-axiom idempotency (deep review P3)**: the ratified axiom id is derived deterministically from the proposal id and `appendEmergentAxiom` is idempotent by id, so a crash between the append and the ratify persist yields exactly one axiom on retry.
+- **Nonce not burned on a failed precondition (deep review P3)**: lifecycle, reincarnation, and proposal-decision paths consume the signature nonce only after their retriable preconditions pass, so a failed precondition no longer burns the nonce and blocks a legitimate retry; replay is still rejected.
+- **Nonce-ledger torn-line safety (deep review P3)**: the axiom and Creator nonce ledgers drop an unterminated final line and accept only strictly numeric lines, so a partially written integer cannot mis-record and free a consumed nonce for replay.
+- **Gate re-run**: `biome check`, `tsc --noEmit`, `vitest run` (265/265 across 31 files), `tsup` build, and `publint` all clean, on Node 22, Node 24, and Node 26.
 
 ## 2026-05-24 21:10:47 UTC
 
@@ -32,7 +85,7 @@ Pre-publication hardening sweep: multi-framework `package.json` flags + canonica
 - Bundle size: `dist/index.js` (ESM) 87.5 KB, `dist/index.cjs` (CJS) 90.5 KB, `dist/index.d.ts` (DTS) 74.2 KB — identical to the prior cut. Tarball: 13 files, **221.7 KB packed**, 884.2 KB unpacked, sha256 `c7d68508c02c3106d23e0ac997e081eae66f64cb`.
 - 218/218 tests pass. Typecheck clean. Build clean (CJS + ESM + DTS).
 - The same `"sideEffects"` + `"publishConfig"` + `"bugs"` + enriched `keywords[]` were propagated to `@teleologyhi-sdk/him` (32 keywords, `sideEffects: false`) and `@teleologyhi-sdk/nhe` (45 keywords, `sideEffects: ["./dist/cli.js"]` to preserve the bin entry's import-time side effects while keeping the library exports tree-shakeable) in the matching workspace `CHANGELOG.md` entries at this same UTC timestamp.
-- Cross-workspace suite: **727/727** verde (maic 218 + him 133 + nhe 310 + eval 22 + distill 9 + cloud 35; arena exercised through live smoke).
+- Cross-workspace suite: **727/727** green (maic 218 + him 133 + nhe 310 + eval 22 + distill 9 + cloud 35; arena exercised through live smoke).
 - Package is now ready for the first `npm publish` via the `.github/workflows/publish.yml` workflow on tag `maic-v1.0.0-trinity`.
 
 ---

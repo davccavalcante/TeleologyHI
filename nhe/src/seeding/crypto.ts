@@ -1,5 +1,5 @@
 /**
- * Default SeedingSource backed by Node's CSPRNG (J-N1 — Entry 21).
+ * Default SeedingSource backed by Node's CSPRNG (J-N1, Entry 21).
  *
  * Uses `crypto.randomBytes(n)` synchronously. No external dependency,
  * no network call. This is the MVP per Entry 21; future quantum-grade
@@ -13,9 +13,7 @@ export class CryptoSeedingSource implements SeedingSource {
 
   bytes(n: number): Uint8Array {
     if (!Number.isInteger(n) || n <= 0) {
-      throw new Error(
-        `CryptoSeedingSource.bytes: n must be a positive integer, got ${n}`,
-      );
+      throw new Error(`CryptoSeedingSource.bytes: n must be a positive integer, got ${n}`);
     }
     // randomBytes returns a Node Buffer; cast to Uint8Array for the
     // cross-runtime contract. Buffer IS a Uint8Array on Node so this is

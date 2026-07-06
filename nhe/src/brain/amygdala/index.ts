@@ -1,5 +1,5 @@
 /**
- * Amygdala region (Entries 20 + 22 — affect assessment + wake-bias).
+ * Amygdala region (Entries 20 + 22, affect assessment + wake-bias).
  *
  * This module ships the ownership descriptor + delegates the affect
  * application surface to `src/affect/wake-bias.ts`

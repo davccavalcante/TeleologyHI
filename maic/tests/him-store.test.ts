@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { HimStore } from "../src/hims/store";
+import { beforeEach, describe, expect, it } from "vitest";
 import { CreatorKeyring } from "../src/creator/keyring";
+import { HimStore } from "../src/hims/store";
 import type { Axiom, BirthSignature } from "../src/types";
 
 const ax = (id: string): Axiom => ({
@@ -61,9 +61,7 @@ describe("HimStore", () => {
     const sig = bsig("him.dup");
     await store.register(sig, kr.sign(sig, 1), []);
     const sig2 = bsig("him.dup", "virgo-sun");
-    await expect(store.register(sig2, kr.sign(sig2, 2), [])).rejects.toThrow(
-      /already registered/i,
-    );
+    await expect(store.register(sig2, kr.sign(sig2, 2), [])).rejects.toThrow(/already registered/i);
   });
 
   it("retrieves a registered HIM record by id", async () => {

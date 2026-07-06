@@ -1,23 +1,23 @@
-import { describe, it, expect } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
 import {
-  BirthSignatureBuilder,
-  HimHandle,
-  evaluatePersonaStability,
   adapterSensitivity,
+  BirthSignatureBuilder,
+  evaluatePersonaStability,
+  HimHandle,
 } from "@teleologyhi-sdk/him";
-import { Nhe } from "../src/nhe";
+import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { Nhe } from "../src/nhe";
 
 /**
- * I3 — Persona stability across adapters.
+ * I3, Persona stability across adapters.
  *
  * The same HIM, wired against different adapter setups, must project the
  * same persona vector. The PersonaProjector is deterministic and adapter-
- * independent by design — this test guards that invariant against future
+ * independent by design, this test guards that invariant against future
  * changes (e.g. someone wiring adapter state into the projector).
  *
  * Phi-Prime's `P` component target: cosine ≥ 0.85 across adapter swaps.

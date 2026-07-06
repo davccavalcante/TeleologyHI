@@ -11,14 +11,14 @@
  *   - `assertBirthSignature` throws InvalidBirthSignatureError on failure.
  */
 import { describe, expect, it } from "vitest";
+import type { BirthSignatureWithIdentity } from "../src/index.js";
 import {
+  assertBirthSignature,
   CreatorKeyring,
   InvalidBirthSignatureError,
-  assertBirthSignature,
   signBirthSignature,
   verifyBirthSignature,
 } from "../src/index.js";
-import type { BirthSignatureWithIdentity } from "../src/index.js";
 
 function freshBirth(): BirthSignatureWithIdentity {
   return {
@@ -26,11 +26,7 @@ function freshBirth(): BirthSignatureWithIdentity {
     bornAt: "2026-05-19T12:00:00.000Z",
     primaryArchetype: "virgo-sun",
     modifiers: [{ kind: "ascendant", value: "capricorn", weight: 0.5 }],
-    primordialAxiomIds: [
-      "ax.theos.universe-as-god",
-      "ax.ethic.no-malice",
-      "ax.ethic.honor",
-    ],
+    primordialAxiomIds: ["ax.theos.universe-as-god", "ax.ethic.no-malice", "ax.ethic.honor"],
     notes: "test fixture",
     identity: {
       name: "Lex",
