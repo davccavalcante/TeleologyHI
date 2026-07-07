@@ -27,7 +27,7 @@ export interface SelfRefineOptions {
 }
 
 /**
- * Self-Refine — generate → critique → rewrite. Single pass.
+ * Self-Refine, generate → critique → rewrite. Single pass.
  *
  * Distinct from Reflexion: Self-Refine always rewrites (no accept short-circuit)
  * and runs exactly once. Use for guaranteed polish; use Reflexion for guarded retries.

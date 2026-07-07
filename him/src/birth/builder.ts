@@ -1,32 +1,28 @@
+import { BirthSignatureWithIdentity, IdentityLayer, NatalChart } from "@teleologyhi-sdk/maic";
 import { ulid } from "ulid";
-import {
-  IdentityLayer,
-  NatalChart,
-  type BirthSignatureWithIdentity,
-} from "@teleologyhi-sdk/maic";
-import { BirthSignature, type ArchetypeModifier } from "../types.js";
 import type { z } from "zod";
+import { type ArchetypeModifier, BirthSignature } from "../types.js";
 
 /**
- * BirthSignatureBuilder — fluent builder for `BirthSignature` and the
+ * BirthSignatureBuilder, fluent builder for `BirthSignature` and the
  * extended `BirthSignatureWithIdentity` shape (Entries 18 + 19).
  *
  * Per Entry 3 of the Creator's interview, a HIM is "born" with a date, time, and
  * foundational specifications analogous to an astrological natal chart. The
  * builder extends this with two opt-in cosmology surfaces:
  *
- *   - `withNatalChart(chart)` — the Creator-impressed astrological signature
+ *   - `withNatalChart(chart)`, the Creator-impressed astrological signature
  *     (Entry 19), one of the six fields covered by the Ed25519 BirthSignature
  *     signature (see `SIGNED_BIRTH_FIELDS`).
- *   - `withIdentity(identity)` — the editable identity surface (Entry 18,
+ *   - `withIdentity(identity)`, the editable identity surface (Entry 18,
  *     name + optional gender, pronouns, language, cultural elements). Not
  *     covered by the Ed25519 signature; parents may rename without breaking
  *     the natal-chart commitment.
  *
  * Two terminal methods:
  *
- *   - `build()` — returns the legacy `BirthSignature` (ignores natalChart + identity).
- *   - `buildWithIdentity()` — returns the extended `BirthSignatureWithIdentity`
+ *   - `build()`, returns the legacy `BirthSignature` (ignores natalChart + identity).
+ *   - `buildWithIdentity()`, returns the extended `BirthSignatureWithIdentity`
  *     suitable for `signBirthSignature(birth, keyring)` from `@teleologyhi-sdk/maic`.
  */
 export class BirthSignatureBuilder {
@@ -105,9 +101,7 @@ export class BirthSignatureBuilder {
 
   build(): BirthSignature {
     if (!this.primaryArchetype) {
-      throw new Error(
-        "BirthSignatureBuilder.build: primaryArchetype is required",
-      );
+      throw new Error("BirthSignatureBuilder.build: primaryArchetype is required");
     }
     return BirthSignature.parse({
       himId: this.himId,
@@ -124,14 +118,18 @@ export class BirthSignatureBuilder {
    * Suitable for `signBirthSignature(birth, keyring)` from
    * `@teleologyhi-sdk/maic`. Only the six `SIGNED_BIRTH_FIELDS` are covered
    * by the Ed25519 signature; the `identity` surface is editable.
+   *
+   * The result is validated through the `BirthSignatureWithIdentity` zod schema
+   * (F-6): since maic 1.0.1 that schema persists identity / natalChart /
+   * cosmologicalProfile instead of stripping them, so an invalid modifier list
+   * or malformed field is caught here at build time rather than surfacing later
+   * at `registerHim`.
    */
   buildWithIdentity(): BirthSignatureWithIdentity {
     if (!this.primaryArchetype) {
-      throw new Error(
-        "BirthSignatureBuilder.buildWithIdentity: primaryArchetype is required",
-      );
+      throw new Error("BirthSignatureBuilder.buildWithIdentity: primaryArchetype is required");
     }
-    return {
+    return BirthSignatureWithIdentity.parse({
       himId: this.himId,
       bornAt: this.bornAt,
       primaryArchetype: this.primaryArchetype,
@@ -140,6 +138,6 @@ export class BirthSignatureBuilder {
       ...(this.notes !== undefined ? { notes: this.notes } : {}),
       ...(this.identity !== undefined ? { identity: this.identity } : {}),
       ...(this.natalChart !== undefined ? { natalChart: this.natalChart } : {}),
-    };
+    });
   }
 }

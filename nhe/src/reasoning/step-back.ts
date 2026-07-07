@@ -1,7 +1,6 @@
 import {
-  makeStep,
   type GenerateRequest,
-  type LlmAdapter,
+  makeStep,
   type ReasoningResult,
   type ReasoningStrategy,
 } from "./types.js";
@@ -17,7 +16,7 @@ const DEFAULT_ABSTRACTION =
   "Before answering directly, step back and identify the most general question or principle at stake. Reply on one line in the form `PRINCIPLE: <one sentence>` and nothing else.";
 
 /**
- * Step-Back prompting (Zheng et al., 2023) — surface the abstract principle
+ * Step-Back prompting (Zheng et al., 2023), surface the abstract principle
  * behind the user's concrete question before answering. Common pattern in
  * complex reasoning where the model would otherwise solve the surface
  * problem with a brittle heuristic.
@@ -54,9 +53,7 @@ export function stepBack(opts: StepBackOptions = {}): ReasoningStrategy {
         ? `${input.system}\n\nGuiding principle (derived via Step-Back): ${principle}`
         : input.system,
       messages: input.messages,
-      ...(input.maxOutputTokens !== undefined
-        ? { maxOutputTokens: input.maxOutputTokens }
-        : {}),
+      ...(input.maxOutputTokens !== undefined ? { maxOutputTokens: input.maxOutputTokens } : {}),
     };
 
     const final = opts.finalizer
@@ -92,7 +89,7 @@ export function stepBack(opts: StepBackOptions = {}): ReasoningStrategy {
 
 /**
  * Parse the abstraction step's output. Accepts `PRINCIPLE: <one-line>` or
- * — if the model didn't follow the format — falls back to the first line.
+ *, if the model didn't follow the format, falls back to the first line.
  */
 export function extractPrinciple(text: string): string {
   const m = text.match(/PRINCIPLE:\s*(.+?)(?:\n|$)/i);

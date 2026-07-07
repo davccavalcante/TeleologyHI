@@ -32,7 +32,7 @@ interface MeResponse {
 }
 
 const CONSENT_LABEL =
-  "I understand that the arena sends my prompts to the underlying Gemini model on both columns, persists my interactions under my own user id for offline review, and applies MAIC governance to the right column. I keep the right to revoke this consent by signing out at any time.";
+  "I understand that the arena sends my prompts to the underlying Grok model on both columns, persists my interactions under my own user id for offline review, and applies MAIC governance to the right column. I keep the right to revoke this consent by signing out at any time.";
 
 export function ConsentBanner({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserIdentity | null | undefined>(undefined);
@@ -115,9 +115,8 @@ function SignInGate({ authError }: { authError: string | null }) {
           </h1>
           <p style={{ fontSize: 14, color: "#666", marginBottom: 20 }}>
             Sign in to begin. The arena runs the same prompt against raw
-            Gemini and Gemini under MAIC + HIM + NHE governance, side by
-            side, and saves every round under your account for offline
-            review.
+            Grok and Grok under MAIC + HIM + NHE governance, side by side,
+            and saves every round under your account for offline review.
           </p>
           {authError && (
             <p

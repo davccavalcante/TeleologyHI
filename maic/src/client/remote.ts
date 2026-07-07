@@ -1,9 +1,4 @@
-import type {
-  BehaviorReport,
-  DreamInductionTicket,
-  MaicVerdict,
-  NheStatus,
-} from "../types.js";
+import type { BehaviorReport, DreamInductionTicket, MaicVerdict, NheStatus } from "../types.js";
 import type { MaicClient } from "./maic-client.js";
 
 export interface RemoteMaicConfig {
@@ -18,7 +13,7 @@ export interface RemoteMaicConfig {
 }
 
 /**
- * `RemoteMaic` — HTTP client mirror of the read + behavior-review subset of
+ * `RemoteMaic`, HTTP client mirror of the read + behavior-review subset of
  * `LocalMaic`. Use when the canonical MAIC instance is hosted off-process
  * (e.g. `teleologyhi.com` or a self-hosted MAIC behind your own gateway)
  * and the NHE runs serverless / edge / in a browser-adjacent environment.
@@ -41,7 +36,7 @@ export interface RemoteMaicConfig {
  *   Auth: `Authorization: Bearer <apiKey>` when `apiKey` is set.
  *
  * Note: writes (axiom mint, HIM register, ratify proposal, etc.) are
- * deliberately NOT in this surface — they require the Creator's
+ * deliberately NOT in this surface, they require the Creator's
  * Ed25519 private key, which never travels over the network. Writes
  * stay on `LocalMaic` and are performed by the Creator's tooling.
  */
@@ -62,8 +57,8 @@ export class RemoteMaic implements MaicClient {
   }
 
   /**
-   * `reviewBehavior` is **fail-closed** (E4 — PROPOSED_DECISIONS.md). If the
-   * remote service is unreachable, throw — no governance, no response.
+   * `reviewBehavior` is **fail-closed** (E4, PROPOSED_DECISIONS.md). If the
+   * remote service is unreachable, throw, no governance, no response.
    * The NHE will surface this as a refusal upstream.
    */
   async reviewBehavior(report: BehaviorReport): Promise<MaicVerdict> {
@@ -136,11 +131,7 @@ export class RemoteMaic implements MaicClient {
     }
   }
 
-  private async request<T>(
-    method: "GET" | "POST",
-    path: string,
-    body?: unknown,
-  ): Promise<T> {
+  private async request<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     const headers: Record<string, string> = { accept: "application/json" };
     if (this.apiKey) headers.authorization = `Bearer ${this.apiKey}`;

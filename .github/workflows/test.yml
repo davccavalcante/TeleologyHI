@@ -65,7 +65,7 @@ jobs:
           # Exercise the published CLI shape: --help must exit 0 without
           # touching any LLM provider. Catches missing-file / broken-shebang
           # regressions before they reach consumers via `npx @teleologyhi-sdk/nhe`.
-          node nhe/dist/cli.js --help | grep -q "@teleologyhi-sdk/nhe — CLI"
+          node nhe/dist/cli.js --help | grep -q "@teleologyhi-sdk/nhe, CLI"
           node nhe/dist/cli.js help    | grep -q "Commands:"
 
       - name: Arena build (Next.js — private workspace, no automated tests)

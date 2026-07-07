@@ -13,13 +13,14 @@
  * can be edited by a parent-like configuration call at install time. The
  * spirit-level constitution is sealed; the body's name is not.
  */
-import { CreatorKeyring } from "./keyring.js";
+
 import type {
   BirthSignatureWithIdentity,
   SignedBirthField,
   SignedBirthSignature,
 } from "../types.js";
 import { SIGNED_BIRTH_FIELDS } from "../types.js";
+import { CreatorKeyring } from "./keyring.js";
 
 /**
  * Build the canonical signing payload from a BirthSignature.
@@ -43,7 +44,7 @@ export function signedBirthPayload(
 /**
  * Sign a BirthSignature with a CreatorKeyring private key.
  *
- * The nonce is the byte length of the canonicalised signing payload — a
+ * The nonce is the byte length of the canonicalised signing payload, a
  * deterministic non-negative integer derived from the signed fields. This
  * keeps every signature uniquely scoped to its payload without requiring
  * the caller to track a monotonic counter (the natal-chart commitment is
@@ -82,11 +83,7 @@ export function verifyBirthSignature(
   }
   if (signed.creatorSignature.publicKey !== expectedPublicKey) return false;
   const payload = signedBirthPayload(signed);
-  return CreatorKeyring.verifyWith(
-    expectedPublicKey,
-    payload,
-    signed.creatorSignature,
-  );
+  return CreatorKeyring.verifyWith(expectedPublicKey, payload, signed.creatorSignature);
 }
 
 /**

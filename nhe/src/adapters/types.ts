@@ -45,9 +45,9 @@ export interface GenerateResponse {
 
 /**
  * One event in a generation stream. `kind` discriminates:
- *   - `"delta"`     — partial text chunk; accumulate to reconstruct the full response.
- *   - `"tool-use"`  — model requested a tool invocation; orchestrator should fulfil it.
- *   - `"end"`       — final event; carries total token counts.
+ *   - `"delta"`    , partial text chunk; accumulate to reconstruct the full response.
+ *   - `"tool-use"` , model requested a tool invocation; orchestrator should fulfil it.
+ *   - `"end"`      , final event; carries total token counts.
  */
 export type StreamEvent =
   | { kind: "delta"; text: string }
@@ -55,17 +55,17 @@ export type StreamEvent =
   | { kind: "end"; tokensIn: number; tokensOut: number };
 
 /**
- * LlmAdapter — pluggable contract for generating text from an LLM provider.
+ * LlmAdapter, pluggable contract for generating text from an LLM provider.
  *
  * Required:
- *   - `id` — stable identifier surfaced in audit/metrics.
- *   - `generate(req)` — non-streaming completion; the universal path.
+ *   - `id`, stable identifier surfaced in audit/metrics.
+ *   - `generate(req)`, non-streaming completion; the universal path.
  *
  * Optional (D-N8):
- *   - `generateStream(req)` — yields `StreamEvent`s. Adapters that don't
+ *   - `generateStream(req)`, yields `StreamEvent`s. Adapters that don't
  *     ship streaming omit this; the reasoning orchestrator falls back to
  *     `generate` when absent.
- *   - `supportsTools` — `true` when `tools` in the request is honoured.
+ *   - `supportsTools`, `true` when `tools` in the request is honoured.
  *     Adapters that don't support function-calling simply set this to
  *     `false` (or omit) and the request's `tools` field is dropped.
  */

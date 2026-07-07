@@ -21,7 +21,7 @@ export interface AnthropicAdapterConfig {
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 
 /**
- * AnthropicAdapter — production adapter for Anthropic Claude.
+ * AnthropicAdapter, production adapter for Anthropic Claude.
  *
  * Requires an Anthropic API key. The recommended default model in the
  * TeleologyHI ecosystem is `claude-sonnet-4-6`; override via `model`.
@@ -41,9 +41,7 @@ export class AnthropicAdapter implements LlmAdapter {
   constructor(config: AnthropicAdapterConfig = {}) {
     const apiKey = config.apiKey ?? process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        "AnthropicAdapter: no API key provided and ANTHROPIC_API_KEY is not set",
-      );
+      throw new Error("AnthropicAdapter: no API key provided and ANTHROPIC_API_KEY is not set");
     }
     this.client = new Anthropic({ apiKey });
     this.model = config.model ?? DEFAULT_MODEL;

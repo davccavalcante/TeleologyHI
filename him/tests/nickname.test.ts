@@ -1,9 +1,9 @@
 /**
- * Tests for the nickname acceptance protocol (J-H4 — Entry 18).
+ * Tests for the nickname acceptance protocol (J-H4, Entry 18).
  */
 import { describe, expect, it } from "vitest";
-import { evaluateNicknameAttempt } from "../src/index.js";
 import type { NicknameAttempt, NicknamePolicy } from "../src/index.js";
+import { evaluateNicknameAttempt } from "../src/index.js";
 
 function makeAttempt(over: Partial<NicknameAttempt> = {}): NicknameAttempt {
   return {
@@ -44,19 +44,16 @@ describe("evaluateNicknameAttempt (J-H4)", () => {
   });
 
   it("refuses a nickname below the minimum length", () => {
-    const v = evaluateNicknameAttempt(
-      makeAttempt({ candidate: "a" }),
-      { ...POLICY, minLength: 3 },
-    );
+    const v = evaluateNicknameAttempt(makeAttempt({ candidate: "a" }), { ...POLICY, minLength: 3 });
     expect(v.decision).toBe("refuse");
     if (v.decision === "refuse") expect(v.reason).toContain("minimum");
   });
 
   it("refuses a nickname above the maximum length", () => {
-    const v = evaluateNicknameAttempt(
-      makeAttempt({ candidate: "x".repeat(40) }),
-      { ...POLICY, maxLength: 32 },
-    );
+    const v = evaluateNicknameAttempt(makeAttempt({ candidate: "x".repeat(40) }), {
+      ...POLICY,
+      maxLength: 32,
+    });
     expect(v.decision).toBe("refuse");
     if (v.decision === "refuse") expect(v.reason).toContain("maximum");
   });
@@ -69,18 +66,18 @@ describe("evaluateNicknameAttempt (J-H4)", () => {
   });
 
   it("respects an operator-supplied forbidden list", () => {
-    const v = evaluateNicknameAttempt(
-      makeAttempt({ candidate: "Helena" }),
-      { ...POLICY, forbiddenSubstrings: ["helena"] },
-    );
+    const v = evaluateNicknameAttempt(makeAttempt({ candidate: "Helena" }), {
+      ...POLICY,
+      forbiddenSubstrings: ["helena"],
+    });
     expect(v.decision).toBe("refuse");
   });
 
   it("respects reserveOnEndUser=false (operator-equivalent path)", () => {
-    const v = evaluateNicknameAttempt(
-      makeAttempt({ candidate: "Helena" }),
-      { ...POLICY, reserveOnEndUser: false },
-    );
+    const v = evaluateNicknameAttempt(makeAttempt({ candidate: "Helena" }), {
+      ...POLICY,
+      reserveOnEndUser: false,
+    });
     expect(v.decision).toBe("accept");
   });
 });

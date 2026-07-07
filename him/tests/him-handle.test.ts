@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { CreatorKeyring, type Axiom } from "@teleologyhi-sdk/maic";
-import { HimHandle } from "../src/handle/him-handle";
+import { type Axiom, CreatorKeyring } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { BirthSignatureBuilder } from "../src/birth/builder";
+import { HimHandle } from "../src/handle/him-handle";
 import { DISPOSITION_AXES, type ResidualTrace } from "../src/types";
 
 const fixtureAxiom = (id: string): Axiom => ({
@@ -35,9 +35,7 @@ describe("HimHandle.mint", () => {
     const sig = BirthSignatureBuilder.now().withPrimaryArchetype("aries-sun").build();
     const creatorSig = impostor.sign(sig, 1);
 
-    expect(() => HimHandle.mint(sig, creatorSig, kr.publicKey(), [])).toThrow(
-      /signature/i,
-    );
+    expect(() => HimHandle.mint(sig, creatorSig, kr.publicKey(), [])).toThrow(/signature/i);
   });
 
   it("rejects when the signature does not match the birth signature payload", () => {
@@ -52,13 +50,11 @@ describe("HimHandle.mint", () => {
       .build();
     const creatorSig = kr.sign(sigA, 1);
 
-    expect(() => HimHandle.mint(sigB, creatorSig, kr.publicKey(), [])).toThrow(
-      /signature/i,
-    );
+    expect(() => HimHandle.mint(sigB, creatorSig, kr.publicKey(), [])).toThrow(/signature/i);
   });
 });
 
-describe("HimHandle — read surface", () => {
+describe("HimHandle, read surface", () => {
   const kr = CreatorKeyring.generate();
   const sig = BirthSignatureBuilder.now()
     .withHimId("him.read")
@@ -76,9 +72,7 @@ describe("HimHandle — read surface", () => {
   });
 
   it("getPersonaVector is deterministic and cached (same reference)", () => {
-    const handle = HimHandle.mint(sig, creatorSig, kr.publicKey(), [
-      fixtureAxiom("ax.t.1"),
-    ]);
+    const handle = HimHandle.mint(sig, creatorSig, kr.publicKey(), [fixtureAxiom("ax.t.1")]);
     const v1 = handle.getPersonaVector();
     const v2 = handle.getPersonaVector();
     expect(v1).toBe(v2); // same cached object reference
@@ -94,7 +88,7 @@ describe("HimHandle — read surface", () => {
   });
 });
 
-describe("HimHandle — residual traces + lawful character", () => {
+describe("HimHandle, residual traces + lawful character", () => {
   const kr = CreatorKeyring.generate();
   const sig = BirthSignatureBuilder.now()
     .withHimId("him.stub")

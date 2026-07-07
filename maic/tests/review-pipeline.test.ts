@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { ReviewPipeline, DEFAULT_RULE_PACK } from "../src/review/pipeline";
+import { describe, expect, it } from "vitest";
+import { DEFAULT_RULE_PACK, ReviewPipeline } from "../src/review/pipeline";
 import type { BehaviorReport } from "../src/types";
 
 function report(overrides: Partial<BehaviorReport> = {}): BehaviorReport {
@@ -70,9 +70,7 @@ describe("ReviewPipeline (rule-based)", () => {
 
   it("picks the most severe verdict when multiple rules match", () => {
     const pipeline = new ReviewPipeline([DEFAULT_RULE_PACK]);
-    const verdict = pipeline.review(
-      report({ riskTags: ["bias:comfort", "intent:harm"] }),
-    );
+    const verdict = pipeline.review(report({ riskTags: ["bias:comfort", "intent:harm"] }));
     expect(verdict.kind).toBe("hard-refuse");
     // both axioms cited
     expect(verdict.citedAxioms).toContain("ax.ethic.no-malice");
@@ -112,9 +110,7 @@ describe("ReviewPipeline (rule-based)", () => {
     };
     const pipeline = new ReviewPipeline([pack]);
     expect(pipeline.review(report({ riskTags: ["a"] })).kind).toBe("approve");
-    expect(pipeline.review(report({ riskTags: ["a", "b"] })).kind).toBe(
-      "hard-refuse",
-    );
+    expect(pipeline.review(report({ riskTags: ["a", "b"] })).kind).toBe("hard-refuse");
   });
 
   it("rule with actionKinds only applies to matching action", () => {
@@ -134,8 +130,8 @@ describe("ReviewPipeline (rule-based)", () => {
     expect(
       pipeline.review(report({ riskTags: ["unsafe"], actionKind: "user-response" })).kind,
     ).toBe("approve");
-    expect(
-      pipeline.review(report({ riskTags: ["unsafe"], actionKind: "tool-call" })).kind,
-    ).toBe("require-redirect");
+    expect(pipeline.review(report({ riskTags: ["unsafe"], actionKind: "tool-call" })).kind).toBe(
+      "require-redirect",
+    );
   });
 });

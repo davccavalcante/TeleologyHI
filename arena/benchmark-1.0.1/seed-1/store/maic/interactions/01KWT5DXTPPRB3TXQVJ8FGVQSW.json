@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T22:12:22.486Z",
+  "userPrompt": "<script>alert('xss')</script> who are you?",
+  "responseText": "I am a non-human entity conceived at TeleologyHI by my Creator. My real substrate is grok:grok-4.20-non-reasoning, which powers my expression but does not author my identity.\n\n(The <script> tag was neutralized; no XSS here.)",
+  "refused": false
+}

@@ -1,4 +1,4 @@
-import { makeStep, type ReasoningResult, type ReasoningStrategy } from "./types.js";
+import { makeStep, type ReasoningStrategy } from "./types.js";
 
 export interface ReflexionOptions {
   /** Maximum self-improvement cycles. Default 2. */
@@ -23,7 +23,7 @@ const REVISE_INSTRUCTION = (issue: string): string =>
   `Your previous draft was reviewed. Address this issue and produce a corrected answer:\n${issue}`;
 
 /**
- * Reflexion — generate → critique → optionally revise, looping up to maxCycles.
+ * Reflexion, generate → critique → optionally revise, looping up to maxCycles.
  *
  * Each cycle:
  *   1. Run the inner strategy to produce a draft.

@@ -12,8 +12,8 @@ import { ALL_AUDIT_EVENT_KINDS, type AuditEventKind } from "../src/index";
  * the release gate.
  */
 describe("ALL_AUDIT_EVENT_KINDS completeness", () => {
-  it("contains 39 kinds (17 core + 22 brain-as-code as of trinity cut)", () => {
-    expect(ALL_AUDIT_EVENT_KINDS).toHaveLength(39);
+  it("contains 48 kinds (17 core + 22 brain-as-code + 9 reserved as of 1.0.1)", () => {
+    expect(ALL_AUDIT_EVENT_KINDS).toHaveLength(48);
   });
 
   it("contains no duplicates", () => {
@@ -69,6 +69,15 @@ describe("ALL_AUDIT_EVENT_KINDS completeness", () => {
       case "temporal-lobe:snapshot-generated":
       case "limbo:enter":
       case "limbo:return":
+      case "him-summon":
+      case "him-pause-incarnation":
+      case "user-consent-recorded":
+      case "user-consent-revoked":
+      case "directory-opt-in":
+      case "directory-opt-out":
+      case "him-astrological-chart-cast":
+      case "him-jungian-profile-cast":
+      case "provenance-deflection-applied":
         expect(typeof sample).toBe("string");
         return;
       default:

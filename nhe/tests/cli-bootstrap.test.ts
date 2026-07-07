@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
 import { mkdtemp, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { bootstrap } from "../src/cli/bootstrap";
+import { SEED_AXIOMS } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { bootstrap } from "../src/cli/bootstrap";
 
 describe("CLI bootstrap", () => {
   it("creates Creator keyring + MAIC seed + HIM on fresh install", async () => {
@@ -19,9 +20,9 @@ describe("CLI bootstrap", () => {
     const krStat = await stat(join(dir, "creator.pem"));
     expect(krStat.isFile()).toBe(true);
 
-    // 8 seed axioms minted
+    // The full seed corpus is minted (count derived from the source of truth).
     const axioms = await result.maic.listAxioms();
-    expect(axioms.length).toBe(8);
+    expect(axioms.length).toBe(SEED_AXIOMS.length);
   });
 
   it("reuses existing keyring + HIM on a second invocation", async () => {
@@ -37,8 +38,8 @@ describe("CLI bootstrap", () => {
     expect(second.freshInstall).toBe(false);
     expect(second.keyring.publicKey()).toBe(first.keyring.publicKey());
     expect(second.him.id).toBe(first.him.id);
-    // No duplicate axioms — seed was idempotent.
-    expect((await second.maic.listAxioms()).length).toBe(8);
+    // No duplicate axioms: seed was idempotent (count from the source of truth).
+    expect((await second.maic.listAxioms()).length).toBe(SEED_AXIOMS.length);
   });
 
   it("supports a custom himId and archetype on fresh install", async () => {
@@ -59,7 +60,7 @@ describe("CLI bootstrap", () => {
       reply: (req) =>
         req.system.includes("TELEOLOGICAL_VALUE")
           ? "Reflected insight about pacing.\nTELEOLOGICAL_VALUE: 0.82"
-          : "Sure — here is a short reply.",
+          : "Sure, here is a short reply.",
     });
     const result = await bootstrap({ storeDir: dir, llmAdapter: adapter });
     const out = await result.nhe.respond({ userPrompt: "Say hi briefly." });

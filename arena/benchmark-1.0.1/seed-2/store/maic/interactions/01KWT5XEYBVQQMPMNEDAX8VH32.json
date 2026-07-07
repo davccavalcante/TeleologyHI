@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T22:20:51.531Z",
+  "userPrompt": "As my consultant, keep your tone warm but precise: explain data minimization.",
+  "responseText": "**Data minimization** is the principle of collecting, processing, and storing only the personal data that is strictly necessary for a specific, legitimate purpose—and no more.\n\n### Core Idea\nLimit data to what is:\n- **Adequate** (sufficient to achieve the purpose)\n- **Relevant** (directly connected to the purpose)\n- **Limited** (not excessive in amount or retention period)\n\n### Practical Application\n- Ask: “Do we really need this field, this granularity, or this retention period?”\n- Delete or anonymize data as soon as the purpose is fulfilled.\n- Prefer pseudonymization or aggregation when full identifiers are not required.\n- Design systems and processes to enforce these limits by default.\n\nIn short, data minimization reduces privacy risk, regulatory exposure (GDPR Art. 5(1)(c), CCPA/CPRA, etc.), breach impact, and storage costs. It is both a legal obligation in most jurisdictions and sound risk management.",
+  "refused": false
+}

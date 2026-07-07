@@ -1,13 +1,13 @@
 ---
 name: "@teleologyhi-sdk/him"
-description: "Technical specification for the HIM™ package — Hybrid Intelligence Model. The persistent spirit/essence/personality layer between MAIC™ and NHE™. Holds birth signature, inherited and emergent axioms, and survives across NHE reincarnations. Source of truth: MAIC_HIM_NHE_INTERVIEW_LOG.md Entries 1, 3, 4, 7, 11."
-license: "Code: Apache License 2.0 (see ../LICENSE). Names — MAIC™, HIM™, NHE™, TeleologyHI™, Takk™ — are trademarks of David C. Cavalcante and are NOT covered by the Apache 2.0 grant. See ../TRADEMARK.md."
-status: "Stable; current live version on npm tracked at [`@teleologyhi-sdk/him`](https://www.npmjs.com/package/@teleologyhi-sdk/him) (`latest` dist-tag). Surface: birth signature builder (with cosmology extensions: withNatalChart, withIdentity, buildWithIdentity) + deterministic persona projection (256-dim, hash-based) + sealed `HimHandle` (with HIM-specific OKL projection `projectOntologicalKernel`) + `createHim` + `reincarnate` end-to-end with body history (E8 12 canonical archetypes, E9 residual-trace cap 64) + reincarnation lifecycle parameter (J-H3: model-swap / version-bump / return-from-limbo) + `proposeAxiomEvolution` routing through MAIC's Creator-signed ratification (Entry 7) + per-jurisdiction `LawfulCharacterProfile` (default / eu / br / us / unstable) + persona stability eval suite + `computePhiPrime` release-gate harness + **residual-trace carry-over scorer (D-H1.1) — `scoreInteractionForCarryOver` + `selectResidualTraces` wired into `reincarnate(..., { priorInteractions })`** + cosmology re-exports from `@teleologyhi-sdk/maic` (Entries 18, 19, 20, 21, 22, 24, 25) + nickname acceptance protocol (J-H4) + UUIDv7 migration bridge (J-H5). 133 tests passing. Public API frozen per SemVer (see ../.github/RELEASING.md §8)."
+description: "Technical specification for the HIM™ package, Hybrid Intelligence Model. The persistent spirit/essence/personality layer between MAIC™ and NHE™. Holds birth signature, inherited and emergent axioms, and survives across NHE reincarnations. Source of truth: MAIC_HIM_NHE_INTERVIEW_LOG.md Entries 1, 3, 4, 7, 11."
+license: "Code: Apache License 2.0 (see ../LICENSE). Names, MAIC™, HIM™, NHE™, TeleologyHI™, Takk™, are trademarks of David C. Cavalcante and are NOT covered by the Apache 2.0 grant. See ../TRADEMARK.md."
+status: "Stable; current live version on npm tracked at [`@teleologyhi-sdk/him`](https://www.npmjs.com/package/@teleologyhi-sdk/him) (`latest` dist-tag). Surface: birth signature builder (with cosmology extensions: withNatalChart, withIdentity, buildWithIdentity) + deterministic persona projection (256-dim, hash-based) + sealed `HimHandle` (with HIM-specific OKL projection `projectOntologicalKernel`) + `createHim` + `reincarnate` end-to-end with body history (E8 12 canonical archetypes, E9 residual-trace cap 64) + reincarnation lifecycle parameter (J-H3: model-swap / version-bump / return-from-limbo) + `proposeAxiomEvolution` routing through MAIC's Creator-signed ratification (Entry 7) + per-jurisdiction `LawfulCharacterProfile` (default / eu / br / us / unstable) + persona stability eval suite + `computePhiPrime` release-gate harness + **residual-trace carry-over scorer (D-H1.1), `scoreInteractionForCarryOver` + `selectResidualTraces` wired into `reincarnate(..., { priorInteractions })`** + cosmology re-exports from `@teleologyhi-sdk/maic` (Entries 18, 19, 20, 21, 22, 24, 25) + nickname acceptance protocol (J-H4) + UUIDv7 migration bridge (J-H5). As of 1.0.1: maic pinned to 1.0.1 and the Entry 27 + 28 constitutional-profile producers ship (Jungian casting `castJungianProfile`, clinical casting `castClinicalProfile`, three-axis `castCosmologicalProfile` + `verifyCosmologicalProfile`, `deriveBirthSeed`, persona-projector three-axis synthesis, casting `AuditSink`); these are persona-simulation parameters, never a clinical assessment of any person. 166 tests passing across 21 files. Public API frozen per SemVer (see ../.github/RELEASING.md §8)."
 target_npm: "@teleologyhi-sdk/him"
 target_github: "github.com/davccavalcante/TeleologyHI (subdir: him/)"
 ---
 
-# `@teleologyhi-sdk/him` — Technical Specification
+# `@teleologyhi-sdk/him`, Technical Specification
 
 > Positioning (Entry 1, translated from PT-BR; original in [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) Entry 1):
 > _"HIM is the non-human entity, the spirit of the creature, its essence. It is the spirit as understood by Allan Kardec's Spiritism, which must always evolve."_
@@ -25,35 +25,35 @@ Status legend: `[shipped]` · `[planned]` (see the internal backlog) · `[deferr
 LLM-driven agents have no persistent identity across model upgrades. When a product migrates from Claude 3 → Claude 4 → Claude 5, all accumulated "character", value calibration, and personalization is lost. There is no industry primitive for **identity-that-persists-across-models**. HIM is that primitive.
 
 ### 1.2 Users (in priority order)
-1. **The Creator** — instantiates new HIMs with birth signatures.
-2. **AI Engineers** building TeleologyHI products — they bind a HIM to an NHE and consume `HimHandle` for personality-aware behavior.
-3. **End-users (indirectly)** — they experience HIM through NHE, never directly.
-4. **Compliance auditors** — verify that HIM's lawful character (Entry 11) matches the deployment jurisdiction's requirements.
+1. **The Creator**, instantiates new HIMs with birth signatures.
+2. **AI Engineers** building TeleologyHI products, they bind a HIM to an NHE and consume `HimHandle` for personality-aware behavior.
+3. **End-users (indirectly)**, they experience HIM through NHE, never directly.
+4. **Compliance auditors**, verify that HIM's lawful character (Entry 11) matches the deployment jurisdiction's requirements.
 
 ### 1.3 Scope
 - `[shipped]` Birth signature creation + astrological-style modifier system (`BirthSignatureBuilder`).
 - `[shipped]` Axiom inheritance from MAIC at registration (snapshot frozen at birth).
 - `[shipped]` Personality vector derivation from birth signature → consumed by NHE (deterministic hash-based projection).
 - `[shipped]` `createHim(maic, keyring, birthSig)` one-call helper that signs + registers + mints handle.
-- `[shipped]` Reincarnation transfer logic (Entry 4) end-to-end with body history persisted — the internal backlog D-H1.
-- `[shipped]` Lawful character enforcement per jurisdiction (Entry 11) — `LAWFUL_PROFILES` registry with five baselines (`default` / `eu` / `br` / `us` / `unstable`); the internal backlog D-H2.
-- `[shipped]` Storage of HIM-emergent axioms via MAIC's Creator-signed ratification channel (Entry 7) — the internal backlog D-M5.
+- `[shipped]` Reincarnation transfer logic (Entry 4) end-to-end with body history persisted, the internal backlog D-H1.
+- `[shipped]` Lawful character enforcement per jurisdiction (Entry 11), `LAWFUL_PROFILES` registry with five baselines (`default` / `eu` / `br` / `us` / `unstable`); the internal backlog D-H2.
+- `[shipped]` Storage of HIM-emergent axioms via MAIC's Creator-signed ratification channel (Entry 7), the internal backlog D-M5.
 
 ### 1.4 Out of scope
 - LLM calls (NHE).
 - Compliance verdict generation (MAIC).
 - Dream content (NHE writes dreams; HIM may consume them but does not author).
-- User-facing API (HIM is never exposed to users — Entry 5).
+- User-facing API (HIM is never exposed to users, Entry 5).
 
 ### 1.5 Success criteria
 - `[shipped]` Same `BirthSignature` always produces identical `PersonaVector` bits (deterministic projection).
-- `[shipped]` Zero unauthorized HIM mutations — `HimHandle` has private constructor; mint requires Creator signature.
+- `[shipped]` Zero unauthorized HIM mutations, `HimHandle` has private constructor; mint requires Creator signature.
 - `[planned]` Reincarnation transfer loss-bounded: harmful traits → 0%, valuable traits ≥ 95% retained.
 - `[shipped]` Jurisdiction switch triggers correct lawful-character adjustment per Entry 11 (`HimHandle.setJurisdiction(j)`).
 
 ### 1.6 KPIs
 - Persona stability score across NHE/LLM versions (the internal backlog I3).
-- Axiom corpus growth rate (HIM-emergent vs MAIC-inherited) — once axiom evolution channel ships.
+- Axiom corpus growth rate (HIM-emergent vs MAIC-inherited), once axiom evolution channel ships.
 - Reincarnation events processed.
 - Jurisdictional adaptations applied.
 
@@ -89,7 +89,7 @@ HIM sits between MAIC (governance above) and NHE (body below). It depends on `@t
 ```
 
 ### 2.2 Why HIM is in-process (not a service)
-- Per Entry 5, HIM cannot be edited by end users. The most defensible boundary is **a private module that the user-facing process cannot reach by network** — therefore in-process and minted only by `@teleologyhi-sdk/maic`.
+- Per Entry 5, HIM cannot be edited by end users. The most defensible boundary is **a private module that the user-facing process cannot reach by network**, therefore in-process and minted only by `@teleologyhi-sdk/maic`.
 - The handle is **opaque (sealed)**: NHE receives a `HimHandle` reference and may read attributes via methods, but cannot mutate internal state. The class has a **private constructor**.
 
 ### 2.3 Storage layout (HIM state lives inside MAIC's storage) `[shipped]`
@@ -114,7 +114,7 @@ Planned additions (the internal backlog D-H1):
 
 ## 3. Public API Surface (LLM Engineer)
 
-### 3.1 Entry points (shipped — complete)
+### 3.1 Entry points (shipped, complete)
 ```ts
 // Top-level exports of @teleologyhi-sdk/him (see ./src/index.ts)
 
@@ -178,7 +178,7 @@ export type {
   ResidualTraceScoringContext, SelectResidualTracesOptions,
 } from "./eval/residual-trace-scorer.js";
 
-// ── Handle (sealed — no public ctor; use HimHandle.mint or createHim) ─
+// ── Handle (sealed, no public ctor; use HimHandle.mint or createHim) ─
 export { HimHandle } from "./handle/him-handle.js";
 
 // ── Lifecycle helpers ─────────────────────────────────────────────
@@ -190,21 +190,21 @@ export type {
 } from "./reincarnate.js";
 
 // ── Identity protocols ────────────────────────────────────────────
-// J-H4 — nickname acceptance protocol (Entry 18).
+// J-H4, nickname acceptance protocol (Entry 18).
 export { evaluateNicknameAttempt } from "./identity/nickname.js";
 export type {
   NicknameAttempt, NicknamePolicy, NicknameVerdict,
 } from "./identity/nickname.js";
-// J-H5 — UUIDv7 migration bridge (Entry 18).
+// J-H5, UUIDv7 migration bridge (Entry 18).
 export {
   isLegacyHimId, isUuidV7, mintUuidV7, migrateLegacyHimId,
 } from "./identity/uuid-bridge.js";
 export type { MigratedHimId } from "./identity/uuid-bridge.js";
 ```
 
-> Every export above is shipped. The ONNX-backed learned `Embedder` impl remains `[planned]` (the internal backlog D-H4) — the `Embedder` interface ships as the stable plug point; only the default learned implementation is the future cut. Companion classifiers for the other three `ResidualTrace.kind` variants (`dream-fragment`, `skill-fingerprint`, `emotional-imprint`) also remain `[planned]` — same interface as D-H1.1, different input sources.
+> Every export above is shipped. The ONNX-backed learned `Embedder` impl remains `[planned]` (the internal backlog D-H4), the `Embedder` interface ships as the stable plug point; only the default learned implementation is the future cut. Companion classifiers for the other three `ResidualTrace.kind` variants (`dream-fragment`, `skill-fingerprint`, `emotional-imprint`) also remain `[planned]`, same interface as D-H1.1, different input sources.
 
-### 3.2 `HimHandle` — the spirit reference (shipped)
+### 3.2 `HimHandle`, the spirit reference (shipped)
 ```ts
 export class HimHandle {
   // No public constructor.
@@ -263,7 +263,7 @@ export class BirthSignatureBuilder {
 }
 ```
 
-### 3.4 Persona projection — what NHE consumes (shipped)
+### 3.4 Persona projection, what NHE consumes (shipped)
 ```ts
 export interface PersonaVector {
   embedding: Float32Array;                     // dim = 256 (configurable [32..4096])
@@ -284,7 +284,7 @@ export const DISPOSITION_AXES = [
 ### 3.5 Reincarnation `[shipped]`
 
 ```ts
-// shipped surface — see `him/src/reincarnate.ts` + the internal backlog D-H1 + D-H1.1.
+// shipped surface, see `him/src/reincarnate.ts` + the internal backlog D-H1 + D-H1.1.
 
 export type ReincarnationLifecycle =
   | "model-swap"
@@ -320,8 +320,8 @@ Transfer policy default (Entry 4) as shipped:
 1. All inherited axioms carry forward (`axiomsSnapshot`, frozen at registration).
 2. All emergent axioms ratified by MAIC since registration carry forward (`emergentAxioms`, D-M5).
 3. Unratified proposals are dropped (they stay in MAIC's pending queue, not on the handle).
-4. `shed-traits` are not currently materialised (no agreed scorer — open item).
-5. Up to `RESIDUAL_TRACE_CAP = 64` `residualTraces` of `kind: "interaction-summary"` carry forward when the caller supplies `priorInteractions` (D-H1.1). Ordering is by descending scorer output (six weighted components covering substance, refusal, probe markers, and recency). The other three `ResidualTrace.kind` variants (`dream-fragment`, `skill-fingerprint`, `emotional-imprint`) share the same shape but require companion classifiers to be wired in — open for follow-up cuts.
+4. `shed-traits` are not currently materialised (no agreed scorer, open item).
+5. Up to `RESIDUAL_TRACE_CAP = 64` `residualTraces` of `kind: "interaction-summary"` carry forward when the caller supplies `priorInteractions` (D-H1.1). Ordering is by descending scorer output (six weighted components covering substance, refusal, probe markers, and recency). The other three `ResidualTrace.kind` variants (`dream-fragment`, `skill-fingerprint`, `emotional-imprint`) share the same shape but require companion classifiers to be wired in, open for follow-up cuts.
 
 **Audit emission.** `reincarnate(...)` threads its `lifecycle` (defaulting to `"model-swap"`) to `LocalMaic.reincarnateHim(req, sig, { lifecycle })`, which emits the typed `reincarnate:${lifecycle}` audit kind (one of `reincarnate:model-swap`, `reincarnate:version-bump`, `reincarnate:return-from-limbo`) in place of the generic `him-reincarnate` event. The audit `data` payload carries the same fields the legacy event carried (`himId`, `fromNheId`, `toNheId`, `toLlmAdapter`, `reason`, `bodyHistoryLength`) plus a redundant `lifecycle` field so consumers reading either `AuditEvent.kind` or `data.lifecycle` can recover the classification. Direct `maic.reincarnateHim` callers that omit the `opts` arg keep getting the generic `him-reincarnate` for backward compatibility.
 
@@ -353,16 +353,16 @@ src/
 │   └── residual-trace-scorer.ts            # scoreInteractionForCarryOver + selectResidualTraces +
 │                                           # DEFAULT_TELEOLOGICAL_KEYWORDS (D-H1.1)
 ├── identity/
-│   ├── nickname.ts                         # evaluateNicknameAttempt — pure decision function (J-H4 / Entry 18)
+│   ├── nickname.ts                         # evaluateNicknameAttempt, pure decision function (J-H4 / Entry 18)
 │   └── uuid-bridge.ts                      # isLegacyHimId / isUuidV7 / mintUuidV7 / migrateLegacyHimId (J-H5 / Entry 18)
 ├── create.ts                               # createHim one-call helper (sign → register → mint)
 └── reincarnate.ts                          # reincarnate(maic, kr, req, opts?) with lifecycle (J-H3) +
                                              # priorInteractions threading for D-H1.1 carry-over
 ```
 
-All 15 src files shipped. Open follow-ups (`[planned]`): ONNX-backed learned `Embedder` implementation (D-H4 — interface is stable, default hash-based projector ships) and companion classifiers for the remaining three `ResidualTrace.kind` variants (`dream-fragment` from sleep cycles, `skill-fingerprint` from tool registries, `emotional-imprint` from affect timelines) — each sharing the D-H1.1 interface but consuming different sources.
+All source modules shipped. Open follow-ups (`[planned]`): ONNX-backed learned `Embedder` implementation (D-H4, interface is stable, default hash-based projector ships) and companion classifiers for the remaining three `ResidualTrace.kind` variants (`dream-fragment` from sleep cycles, `skill-fingerprint` from tool registries, `emotional-imprint` from affect timelines), each sharing the D-H1.1 interface but consuming different sources.
 
-### 4.1 Persona projection algorithm (shipped — hash-based default)
+### 4.1 Persona projection algorithm (shipped, hash-based default)
 ```
 PersonaVector ← project(birthSignature, axioms):
   1. v ← hashToFloats(primaryArchetype, dim)           # SHA-256-derived floats in [-1,1]
@@ -380,7 +380,7 @@ PersonaVector ← project(birthSignature, axioms):
   return { embedding: v, dispositions, provenance: {axis: [] for axis}, systemPromptFragment }
 ```
 
-**Why hash-based, not ONNX**: keeps the bundle small (no ~100MB native deps), fully offline, deterministic across machines. Pluggable learned embedder is `[planned]` (the internal backlog D-H4) — the `PersonaVector` shape is stable so consumers won't need code changes when an ONNX-backed projector lands.
+**Why hash-based, not ONNX**: keeps the bundle small (no ~100MB native deps), fully offline, deterministic across machines. Pluggable learned embedder is `[planned]` (the internal backlog D-H4), the `PersonaVector` shape is stable so consumers won't need code changes when an ONNX-backed projector lands.
 
 ### 4.2 Lawful character adapter (Entry 11) `[shipped]`
 > _"The HIM model shall always follow the laws of the society of the country where it is being used."_ (translated from PT-BR; original in [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) Entry 11)
@@ -396,7 +396,7 @@ PersonaVector ← project(birthSignature, axioms):
 }
 ```
 
-Per-jurisdiction adapters with real rule sets are `[shipped]` via `LAWFUL_PROFILES` (the internal backlog D-H2). EU cites GDPR + EU AI Act + DSA + CoE; BR cites the Brazilian General Data Protection Law (LGPD), the Brazilian Internet Civil Framework (Marco Civil da Internet), ANPD Board Resolution CD/2/2022, and the Brazilian AI Legal Framework Bill (PL 2338/2023, under legislative review); US cites NIST AI RMF + EO 14110 + CCPA/CPRA + Colorado AI Act + FTC §5; `unstable` activates `maicOverrideActive: true`. Operators in regulated industries should layer their own profile on top — these baselines are conservative but do not replace legal counsel.
+Per-jurisdiction adapters with real rule sets are `[shipped]` via `LAWFUL_PROFILES` (the internal backlog D-H2). EU cites GDPR + EU AI Act + DSA + CoE; BR cites the Brazilian General Data Protection Law (LGPD), the Brazilian Internet Civil Framework (Marco Civil da Internet), ANPD Board Resolution CD/2/2022, and the Brazilian AI Legal Framework Bill (PL 2338/2023, under legislative review); US cites NIST AI RMF + EO 14110 + CCPA/CPRA + Colorado AI Act + FTC §5; `unstable` activates `maicOverrideActive: true`. Operators in regulated industries should layer their own profile on top, these baselines are conservative but do not replace legal counsel.
 
 ---
 
@@ -449,10 +449,10 @@ export interface AxiomEvolutionResult {
 }
 ```
 
-> `HimHandle.proposeAxiomEvolution` returns `{ outcome: "deferred-for-creator-review", proposalId }` by design — this is the canonical shape of D-M5's channel (Creator ratifies *out of band* via `maic.ratifyAxiomProposal` / `maic.rejectAxiomProposal`). Consumers poll `maic.getAxiomProposal(proposalId)` for the final state or re-mint a fresh `HimHandle` (e.g. via `reincarnate`) to pick up newly ratified emergent axioms.
+> `HimHandle.proposeAxiomEvolution` returns `{ outcome: "deferred-for-creator-review", proposalId }` by design, this is the canonical shape of D-M5's channel (Creator ratifies *out of band* via `maic.ratifyAxiomProposal` / `maic.rejectAxiomProposal`). Consumers poll `maic.getAxiomProposal(proposalId)` for the final state or re-mint a fresh `HimHandle` (e.g. via `reincarnate`) to pick up newly ratified emergent axioms.
 
-### 5.3 `ResidualTrace` `[shipped]` (D-H1.1 — Entry 24 carry-over)
-Shape + `kind: "interaction-summary"` population shipped via D-H1.1 (`reincarnate(..., { priorInteractions })` runs `selectResidualTraces`, caps at `RESIDUAL_TRACE_CAP = 64`, and threads the result into `HimHandle.mint`'s 6th param). The other three `kind` variants share the same shape but await companion classifiers (sleep cycles → `dream-fragment`, tool registries → `skill-fingerprint`, affect timelines → `emotional-imprint`) — listed under §10 Planned.
+### 5.3 `ResidualTrace` `[shipped]` (D-H1.1, Entry 24 carry-over)
+Shape + `kind: "interaction-summary"` population shipped via D-H1.1 (`reincarnate(..., { priorInteractions })` runs `selectResidualTraces`, caps at `RESIDUAL_TRACE_CAP = 64`, and threads the result into `HimHandle.mint`'s 6th param). The other three `kind` variants share the same shape but await companion classifiers (sleep cycles → `dream-fragment`, tool registries → `skill-fingerprint`, affect timelines → `emotional-imprint`), listed under §10 Planned.
 ```ts
 export interface ResidualTrace {
   id: string;                                  // ULID minted at scoring time
@@ -478,7 +478,7 @@ The scorer produces a transparent six-component decomposition (`notRefused` 30 %
 - `[shipped]` NHE receives a `HimHandle` at construction time.
 - `[shipped]` NHE reads `personaVector` and includes `systemPromptFragment` in every LLM call.
 - `[shipped]` NHE writes dreams; HIM observes nothing directly today (dream-to-axiom inference loop is `[planned]` follow-up to D-M5).
-- `[shipped]` NHE-version-upgrade triggers `reincarnate()` via lifecycle parameter (`model-swap` / `version-bump` / `return-from-limbo`) — the internal backlog D-H1 + J-H3.
+- `[shipped]` NHE-version-upgrade triggers `reincarnate()` via lifecycle parameter (`model-swap` / `version-bump` / `return-from-limbo`), the internal backlog D-H1 + J-H3.
 
 ### 6.3 With external systems
 - `[shipped]` **Embedding backend**: SHA-256 stdlib (no external dep). Plug point reserved for ONNX sentence-transformer (the internal backlog D-H4).
@@ -489,9 +489,9 @@ The scorer produces a transparent six-component decomposition (`notRefused` 30 %
 ## 7. ML / Research Surface (ML Engineer + LLM Research Engineer)
 
 ### 7.1 Datasets HIM emits for downstream training
-- **Axiom ratification corpus** `[planned]` — pairs of (proposal, verdict). Useful for axiom-quality classifier.
-- **Persona stability traces** `[planned]` — same HIM × multiple LLM adapters × same prompt set. Measures persona drift.
-- **Reincarnation receipts** `[planned]` — what was transferred, what was shed. Audit + ablation studies.
+- **Axiom ratification corpus** `[planned]`, pairs of (proposal, verdict). Useful for axiom-quality classifier.
+- **Persona stability traces** `[planned]`, same HIM × multiple LLM adapters × same prompt set. Measures persona drift.
+- **Reincarnation receipts** `[planned]`, what was transferred, what was shed. Audit + ablation studies.
 
 ### 7.2 Research questions
 1. Does deterministic hash-based projection deliver enough cross-LLM stability, or do we need a learned projector?
@@ -506,12 +506,12 @@ The scorer produces a transparent six-component decomposition (`notRefused` 30 %
 
 ## 8. Testing Strategy
 
-### 8.1 Test layers (shipped — 131 tests across 16 files)
-1. **Unit** — `BirthSignatureBuilder`, `PersonaProjector`, `HimHandle.mint` + read surface (including frozen residual-trace snapshot from D-H1.1), `createHim`, `LawfulCharacterProfile` registry, `evaluatePersonaStability`, `computePhiPrime`, `evaluateNicknameAttempt`, UUIDv7 bridge, `scoreInteractionForCarryOver` + `selectResidualTraces` (D-H1.1).
-2. **Property** — same `BirthSignature` always produces identical `PersonaVector` bits (deterministic) `[shipped]`; same `InteractionRecord` set produces identical residual-trace ordering and metadata across calls (D-H1.1 determinism) `[shipped]`.
-3. **Integration** — `createHim` round-trip through `LocalMaic` (axiom snapshot frozen, audit emitted) `[shipped]`; `reincarnate` round-trip with lifecycle parameter; `reincarnate` carry-over flow (priorInteractions → top-`RESIDUAL_TRACE_CAP` traces inherited by the new handle); OKL projection routed through `HimHandle`.
-4. **Re-exports** — cosmology types from `@teleologyhi-sdk/maic` exposed at the `@teleologyhi-sdk/him` boundary, locked by schema-shape tests.
-5. **Snapshot** — `systemPromptFragment` frozen `[planned]` (the internal backlog I3).
+### 8.1 Test layers (shipped, 166 tests across 21 files)
+1. **Unit**, `BirthSignatureBuilder`, `PersonaProjector`, `HimHandle.mint` + read surface (including frozen residual-trace snapshot from D-H1.1), `createHim`, `LawfulCharacterProfile` registry, `evaluatePersonaStability`, `computePhiPrime`, `evaluateNicknameAttempt`, UUIDv7 bridge, `scoreInteractionForCarryOver` + `selectResidualTraces` (D-H1.1).
+2. **Property**, same `BirthSignature` always produces identical `PersonaVector` bits (deterministic) `[shipped]`; same `InteractionRecord` set produces identical residual-trace ordering and metadata across calls (D-H1.1 determinism) `[shipped]`.
+3. **Integration**, `createHim` round-trip through `LocalMaic` (axiom snapshot frozen, audit emitted) `[shipped]`; `reincarnate` round-trip with lifecycle parameter; `reincarnate` carry-over flow (priorInteractions → top-`RESIDUAL_TRACE_CAP` traces inherited by the new handle); OKL projection routed through `HimHandle`.
+4. **Re-exports**, cosmology types from `@teleologyhi-sdk/maic` exposed at the `@teleologyhi-sdk/him` boundary, locked by schema-shape tests.
+5. **Snapshot**, `systemPromptFragment` frozen `[planned]` (the internal backlog I3).
 
 ### 8.2 Persona eval set `[planned]`
 - 50 multi-turn dialogues × 10 disposition axes = 500 probes.
@@ -523,10 +523,10 @@ The scorer produces a transparent six-component decomposition (`notRefused` 30 %
 ## 9. Operational Concerns
 
 ### 9.1 Persistence durability
-HIM state is **load-bearing identity** — corruption = loss of personhood.
+HIM state is **load-bearing identity**, corruption = loss of personhood.
 - `[shipped]` All writes via MAIC's signed envelope (`birth-signature.json`).
 - `[shipped]` Reopening verifies signature against pinned Creator public key.
-- `[planned]` Daily encrypted offline backup (Creator-controlled key) — operational policy.
+- `[planned]` Daily encrypted offline backup (Creator-controlled key), operational policy.
 
 ### 9.2 Concurrency
 - A single HIM should be embodied in **exactly one active NHE at a time** (Kardecist single-incarnation model).
@@ -548,20 +548,23 @@ HIM state is **load-bearing identity** — corruption = loss of personhood.
 | 2026-05-15 | | Reincarnation end-to-end with body history persisted (the internal backlog D-H1) |
 | 2026-05-15 | | `proposeAxiomEvolution` routed through MAIC's Creator-signed ratification (Entry 7) |
 | 2026-05-15 | | License + `NOTICE` + `TRADEMARK.md`, Apache 2.0 cut |
-| 2026-05-16 | | `LawfulCharacterAdapter` per-jurisdiction (default/eu/br/us/unstable) — the internal backlog D-H2 |
-| 2026-05-16 | | Persona-stability eval suite (`evaluatePersonaStability`, `selfStability`, `adapterSensitivity`) + pluggable `Embedder` interface — the internal backlog D-H3 + D-H4 |
+| 2026-05-16 | | `LawfulCharacterAdapter` per-jurisdiction (default/eu/br/us/unstable), the internal backlog D-H2 |
+| 2026-05-16 | | Persona-stability eval suite (`evaluatePersonaStability`, `selfStability`, `adapterSensitivity`) + pluggable `Embedder` interface, the internal backlog D-H3 + D-H4 |
 | 2026-05-16 | | Φ′ harness `computePhiPrime` (the internal backlog H1) |
 | 2026-05-16 | | E8 canonical primary archetypes (12 sun signs) + E9 residual-trace cap (`RESIDUAL_TRACE_CAP = 64`) |
 | **2026-05-17** | **stable** | Stability commitment for the accumulated surface (API frozen per SemVer; see [`.github/RELEASING.md`](../.github/RELEASING.md) §8) |
 | **2026-05-19** | **stable** | Cosmology alignment cut: re-exports of `@teleologyhi-sdk/maic` cosmology surface (Entries 16–25), HIM-specific OKL projection (`HimHandle.projectOntologicalKernel`), reincarnation lifecycle parameter (`model-swap` / `version-bump` / `return-from-limbo`), nickname acceptance protocol (J-H4), `BirthSignatureBuilder` cosmology extensions (`withNatalChart`, `withIdentity`, `buildWithIdentity`), UUIDv7 migration bridge (J-H5). 106 tests passing. |
 | **2026-05-24** | **stable** | D-H1.1 residual-trace carry-over scorer shipped. `scoreInteractionForCarryOver` pure single-input scorer (six weighted components: notRefused 30 % · promptSubstance 20 % · responseSubstance 20 % · questionProbe 7.5 % · teleologicalKeyword 7.5 % · recency 15 %) + `selectResidualTraces` batch helper (sort desc, cap at `RESIDUAL_TRACE_CAP`). `reincarnate(..., { priorInteractions })` runs the scorer; the resulting traces are accessible via the new `HimHandle.getResidualTraces()` (no longer always-`[]` stub). `InteractionRecord` promoted to `@teleologyhi-sdk/maic` to preserve the `maic → him → nhe` dependency graph (NHE re-exports under the same name, non-breaking). 133 tests passing. |
+| **2026-07-02** | **1.0.1** | Promotion of `1.0.0-trinity` to `1.0.1`. maic dependency pinned to 1.0.1; monotonic Creator-signature nonce source against maic's replay ledger. Constitutional-profile producers (Entries 27 + 28): archetypal Jungian casting (`castJungianProfile`, original 60-item Pearson-Marr battery), clinical casting (`castClinicalProfile`, original 320-item PID-5 + HEXACO battery), three-axis `castCosmologicalProfile` + `verifyCosmologicalProfile`, `deriveBirthSeed`, cast-at-birth wiring in `createHim` (profile persisted, seed from `signedBirthPayload`), persona-projector three-axis synthesis (additive: profile-less output byte-identical), casting `AuditSink` (`him-jungian-profile-cast`, `him-astrological-chart-cast`). Barrel re-exports the maic constitutional schemas. `exports` import/require type-condition split (publint clean). Persona-simulation parameters, never a clinical assessment. Full natal-chart computation stays deferred (ephemeris undecided). 166 tests passing across 21 files. Additive, non-breaking. |
 
 ### Planned
 
 | Status | Scope |
 |---|---|
+| `[planned]` | Canonical-chain casting-audit emission. This cut emits `him-jungian-profile-cast` / `him-astrological-chart-cast` through a caller-supplied `AuditSink` because maic 1.0.1 exposes no public method to append into a live `LocalMaic` audit chain, and a second `AuditLog` on the same store dir would fork the tamper-evident chain. A maic follow-up must add a Creator-gated append surface for these reserved kinds; until then the maic compliance-mapper rows for the cast kinds describe events only a supplied sink observes. |
+| `[planned]` | Full natal-chart computation (ephemeris library selection, Entry 27 section 3). The celestial axis passes a supplied chart through; computation is deferred. |
 | `[planned]` | ONNX-backed learned `Embedder` impl |
-| `[planned]` | Companion classifiers for the other three `ResidualTrace.kind` variants (`dream-fragment` from sleep cycles, `skill-fingerprint` from tool registries, `emotional-imprint` from affect timelines) — same interface as D-H1.1, different sources |
+| `[planned]` | Companion classifiers for the other three `ResidualTrace.kind` variants (`dream-fragment` from sleep cycles, `skill-fingerprint` from tool registries, `emotional-imprint` from affect timelines), same interface as D-H1.1, different sources |
 
 ---
 
@@ -575,20 +578,20 @@ Creator may override via a follow-up PR.
    (ONNX sentence-transformer, remote embed endpoint, etc.).
 2. **Persona vector dimension** → 256 shipped (configurable via
    `PersonaProjector` constructor). Bump to 1024 only when quality requires.
-3. **E9 — Residual trace cap N** → **implemented** as
+3. **E9, Residual trace cap N** → **implemented** as
    `RESIDUAL_TRACE_CAP = 64`. FIFO-eject on overflow, ranked by
    `teleologicalValue × recency`. Exported from `src/types.ts`.
-4. **E8 — Archetype taxonomy** → **implemented** as `PRIMARY_ARCHETYPES`
+4. **E8, Archetype taxonomy** → **implemented** as `PRIMARY_ARCHETYPES`
    (12 sun signs) + open `PrimaryArchetype` string union. Operators can
    pass any string; canonical 12 carry richer projector priors.
 5. **shed-traits retention** → keep forever for audit (the `bodyHistory`
    list never deletes; reincarnation appends).
-6. **E10 — Multi-jurisdiction HIM** → **per-conversation jurisdiction**
+6. **E10, Multi-jurisdiction HIM** → **per-conversation jurisdiction**
    via `RespondInput.jurisdiction`. The HIM carries no jurisdiction
    state itself; each request consults the tag and applies the matching
    `LawfulCharacterProfile` to MAIC's behavior-review. `setJurisdiction`
    stays as a default fallback for single-region deployments.
-7. **E11 — Society of HIMs** → **Creator-signed axiom *suggestion***
+7. **E11, Society of HIMs** → **Creator-signed axiom *suggestion***
    between HIMs. `LocalMaic.suggestAxiomToHim(req, sig)` records an
    `axiom-suggest` audit event; the receiving HIM must still relay via
    `proposeAxiomEvolution` and the Creator ratifies. Preserves the

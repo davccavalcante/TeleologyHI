@@ -1,18 +1,18 @@
 import {
-  CreatorKeyring,
-  META_AXIOM_ID,
-  projectOntologicalKernel,
   type Axiom,
   type AxiomEvolutionResult,
   type BirthSignature,
+  CreatorKeyring,
   type CreatorSignature,
   type EmergentAxiomProposal,
   type LocalMaic,
+  META_AXIOM_ID,
   type OntologicalKernel,
   type ProjectKernelOptions,
+  projectOntologicalKernel,
 } from "@teleologyhi-sdk/maic";
-import { PersonaProjector } from "../persona/projector.js";
 import { resolveLawfulProfile } from "../lawful/profiles.js";
+import { PersonaProjector } from "../persona/projector.js";
 import type {
   LawfulCharacterProfile,
   LawfulJurisdiction,
@@ -22,11 +22,12 @@ import type {
 } from "../types.js";
 
 /**
- * HimHandle — opaque, sealed reference to a HIM instance.
+ * HimHandle, opaque, sealed reference to a HIM instance.
  *
  * **There is no public constructor.** A handle is minted only via `HimHandle.mint`
- * after a valid Creator signature over the BirthSignature has been verified. In
- * production, `@teleologyhi-sdk/maic`'s `registerHim` calls `HimHandle.mint` internally.
+ * after a valid Creator signature over the BirthSignature has been verified. The
+ * `createHim` helper (and `reincarnate`) call `HimHandle.mint` after registering
+ * the HIM with MAIC; maic itself does not depend on him.
  *
  * Surface:
  *   - read-only accessors: id, birthSignature, bodyHistory, getAxioms, getPersonaVector
@@ -82,16 +83,8 @@ export class HimHandle {
     bodyHistory: readonly NheBodyRef[] = [],
     residualTraces: readonly ResidualTrace[] = [],
   ): HimHandle {
-    if (
-      !CreatorKeyring.verifyWith(
-        expectedCreatorPublicKey,
-        birthSignature,
-        signature,
-      )
-    ) {
-      throw new Error(
-        "HimHandle.mint: invalid Creator signature for the given birth signature",
-      );
+    if (!CreatorKeyring.verifyWith(expectedCreatorPublicKey, birthSignature, signature)) {
+      throw new Error("HimHandle.mint: invalid Creator signature for the given birth signature");
     }
     return new HimHandle(
       birthSignature.himId,
@@ -164,7 +157,7 @@ export class HimHandle {
    * axiom corpus the HIM was minted with. The meta-axiom
    * `META_AXIOM_ID` is always retained regardless of the narrowing so
    * the projection remains valid per Entry 13 ("MAIC expands continuously
-   * — it is a Conscious Entity"; the meta-axiom is its anchor).
+   *, it is a Conscious Entity"; the meta-axiom is its anchor).
    *
    * The returned kernel is tagged with `himId = this.id` so downstream
    * tooling (compliance auditors, Φ′ runner, `@teleologyhi-sdk/nhe` brain
@@ -173,15 +166,11 @@ export class HimHandle {
    * @param opts Optional `jurisdiction` filter; `himId` is ignored
    *             because the HimHandle owns its own id.
    */
-  projectOntologicalKernel(
-    opts: Omit<ProjectKernelOptions, "himId"> = {},
-  ): OntologicalKernel {
+  projectOntologicalKernel(opts: Omit<ProjectKernelOptions, "himId"> = {}): OntologicalKernel {
     const primordialIds = this.birthSignature.primordialAxiomIds;
     const narrowed =
       primordialIds.length > 0
-        ? this._axioms.filter(
-            (a) => primordialIds.includes(a.id) || a.id === META_AXIOM_ID,
-          )
+        ? this._axioms.filter((a) => primordialIds.includes(a.id) || a.id === META_AXIOM_ID)
         : this._axioms;
     return projectOntologicalKernel(narrowed, { ...opts, himId: this.id });
   }
@@ -197,8 +186,14 @@ export class HimHandle {
    * `unstable`. Unknown keys fall back to `default` with the supplied key
    * recorded on the returned profile so the NHE audit shows what the
    * operator asked for. Operators in regulated industries SHOULD layer
-   * their own profile on top — the baselines are conservative but do not
+   * their own profile on top, the baselines are conservative but do not
    * replace legal counsel.
+   *
+   * Note (HD-6): this method is `async` although resolution is synchronous
+   * today. The Promise shape is preserved to keep the 1.0.1 surface backward
+   * compatible with the published 1.0.0-trinity API; collapsing it to a
+   * synchronous return would be a breaking change and is deferred to a future
+   * major.
    */
   async setJurisdiction(j: LawfulJurisdiction): Promise<LawfulCharacterProfile> {
     this._jurisdiction = j;

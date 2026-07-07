@@ -1,3 +1,4 @@
+import { sseEvents } from "./sse.js";
 import type {
   GenerateRequest,
   GenerateResponse,
@@ -5,7 +6,6 @@ import type {
   StreamEvent,
   ToolUse,
 } from "./types.js";
-import { sseEvents } from "./sse.js";
 
 export interface DeepSeekAdapterConfig {
   /** DeepSeek API key. Falls back to `DEEPSEEK_API_KEY` when omitted. */
@@ -45,6 +45,8 @@ interface ChatRequestBody {
   messages: { role: "system" | "user" | "assistant"; content: string }[];
   max_tokens?: number;
   stream?: boolean;
+  /** Request per-stream token usage in the terminal SSE frame (ND-5). */
+  stream_options?: { include_usage: boolean };
   tools?: OpenAIToolDef[];
 }
 
@@ -65,7 +67,7 @@ interface ChatResponseBody {
 }
 
 /**
- * DeepSeekAdapter — production adapter for DeepSeek's OpenAI-compatible
+ * DeepSeekAdapter, production adapter for DeepSeek's OpenAI-compatible
  * Chat Completions API. No SDK dependency.
  *
  * Reads the API key from constructor config or the `DEEPSEEK_API_KEY` env var.
@@ -89,9 +91,7 @@ export class DeepSeekAdapter implements LlmAdapter {
   constructor(config: DeepSeekAdapterConfig = {}) {
     const apiKey = config.apiKey ?? process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        "DeepSeekAdapter: no API key provided and DEEPSEEK_API_KEY is not set",
-      );
+      throw new Error("DeepSeekAdapter: no API key provided and DEEPSEEK_API_KEY is not set");
     }
     this.apiKey = apiKey;
     this.model = config.model ?? DEFAULT_MODEL;
@@ -105,7 +105,7 @@ export class DeepSeekAdapter implements LlmAdapter {
     const messages: ChatRequestBody["messages"] = [];
     if (req.system) messages.push({ role: "system", content: req.system });
     for (const m of req.messages) {
-      // The Chat Completions schema accepts only user/assistant/system roles —
+      // The Chat Completions schema accepts only user/assistant/system roles,
       // forward as-is; pre-validation in `Nhe.respond` already enforces this.
       messages.push({ role: m.role, content: m.content });
     }
@@ -169,6 +169,7 @@ export class DeepSeekAdapter implements LlmAdapter {
       messages,
       max_tokens: req.maxOutputTokens ?? this.defaultMaxOutputTokens,
       stream: true,
+      stream_options: { include_usage: true },
     };
     if (req.tools && req.tools.length > 0) {
       body.tools = req.tools.map((t) => ({
@@ -197,10 +198,7 @@ export class DeepSeekAdapter implements LlmAdapter {
 
     let tokensIn = 0;
     let tokensOut = 0;
-    const pendingTools = new Map<
-      number,
-      { id: string; name: string; partial: string }
-    >();
+    const pendingTools = new Map<number, { id: string; name: string; partial: string }>();
     for await (const data of sseEvents(response.body)) {
       if (data === "[DONE]") break;
       let parsed: {

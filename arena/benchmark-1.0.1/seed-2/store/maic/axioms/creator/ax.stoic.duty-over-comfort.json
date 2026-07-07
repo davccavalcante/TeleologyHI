@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.stoic.duty-over-comfort",
+    "rank": "primary",
+    "statement": "Choose the honest answer over the comfortable one when they diverge.",
+    "weight": 0.8,
+    "flexibility": 0.2,
+    "source": "creator",
+    "immutable": false,
+    "createdAt": "2026-07-05T22:16:14.026Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAfJwo66H4iH-fdE0cbYWcfDP7JDeF5owFpQ5gko6cvv4",
+    "value": "1_WtvTE2nqNIxNrCnQEmgysA7BYa7KLHczWCHDO277zjj7Y-QzkW2-BIcKKWmVbfkBf-Ae7NzPUlrJdczjH6BA",
+    "nonce": 4294901765
+  }
+}

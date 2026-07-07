@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
 import type { InteractionRecord } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_TELEOLOGICAL_KEYWORDS,
   scoreInteractionForCarryOver,
   selectResidualTraces,
-  DEFAULT_TELEOLOGICAL_KEYWORDS,
 } from "../src/eval/residual-trace-scorer";
 import { RESIDUAL_TRACE_CAP } from "../src/types";
 
@@ -22,7 +22,7 @@ function interaction(overrides: Partial<InteractionRecord> = {}): InteractionRec
   };
 }
 
-describe("scoreInteractionForCarryOver — pure scorer", () => {
+describe("scoreInteractionForCarryOver, pure scorer", () => {
   it("returns a score in [0, 1] with full component breakdown", () => {
     const out = scoreInteractionForCarryOver(interaction(), {
       ...ANCHOR,
@@ -134,7 +134,7 @@ describe("scoreInteractionForCarryOver — pure scorer", () => {
   });
 });
 
-describe("selectResidualTraces — batch selector", () => {
+describe("selectResidualTraces, batch selector", () => {
   it("returns [] for empty input", () => {
     const traces = selectResidualTraces([], { carriedFromNheId: "nhe-x" });
     expect(traces).toEqual([]);
@@ -149,9 +149,7 @@ describe("selectResidualTraces — batch selector", () => {
   });
 
   it("returns all interactions when count <= cap", () => {
-    const five = Array.from({ length: 5 }, (_, i) =>
-      interaction({ userPrompt: `q${i}` }),
-    );
+    const five = Array.from({ length: 5 }, (_, i) => interaction({ userPrompt: `q${i}` }));
     const traces = selectResidualTraces(five, { carriedFromNheId: "nhe-x" });
     expect(traces).toHaveLength(5);
     expect(traces.every((t) => t.kind === "interaction-summary")).toBe(true);
@@ -166,9 +164,7 @@ describe("selectResidualTraces — batch selector", () => {
   });
 
   it("honours an explicit cap override", () => {
-    const many = Array.from({ length: 30 }, (_, i) =>
-      interaction({ userPrompt: `q${i}` }),
-    );
+    const many = Array.from({ length: 30 }, (_, i) => interaction({ userPrompt: `q${i}` }));
     const traces = selectResidualTraces(many, {
       carriedFromNheId: "nhe-x",
       cap: 7,
@@ -232,7 +228,7 @@ describe("selectResidualTraces — batch selector", () => {
       cap: 2,
     });
     expect(traces).toHaveLength(2);
-    // The selector reads `at` from `payload` only — but with identical inputs
+    // The selector reads `at` from `payload` only, but with identical inputs
     // we can't distinguish them by payload alone. The recency component of the
     // score is what drives the selection, which we already verified via the
     // pure-scorer test above.
@@ -253,7 +249,7 @@ describe("selectResidualTraces — batch selector", () => {
       cap: 3,
     });
     expect(a).toHaveLength(b.length);
-    // Trace ids differ (fresh ULID each call) — compare the structural payload+kind.
+    // Trace ids differ (fresh ULID each call), compare the structural payload+kind.
     for (let i = 0; i < a.length; i++) {
       expect(a[i]?.kind).toBe(b[i]?.kind);
       expect(a[i]?.payload).toEqual(b[i]?.payload);

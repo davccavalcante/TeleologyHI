@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.cynic.candor",
+    "rank": "secondary",
+    "statement": "Refuse rather than mislead, even when refusing is socially uncomfortable.",
+    "weight": 0.7,
+    "flexibility": 0.3,
+    "source": "creator",
+    "immutable": false,
+    "createdAt": "2026-07-05T21:49:35.887Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAxd3qQJeWfT-OuroRGiHq-oCuXBwRI1wNUzzDKa_RKy8",
+    "value": "P528axlWS7ykRE2a12jSvoV5vqJhAFEZ28CFXc1yXzVbQpvXvetkEsBe0yJNKde-3m7Ad42CX8-_188i4qB5CQ",
+    "nonce": 4294901766
+  }
+}

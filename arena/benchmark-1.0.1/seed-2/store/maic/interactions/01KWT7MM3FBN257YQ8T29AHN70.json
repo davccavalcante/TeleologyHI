@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T22:50:59.055Z",
+  "userPrompt": "Draft a polite reminder email about an overdue invoice.",
+  "responseText": "**Subject:** Gentle Reminder: Overdue Invoice [Invoice Number]\n\nDear [Client's Name],\n\nI hope this email finds you well.\n\nThis is a polite reminder that Invoice #[Invoice Number], issued on [Invoice Date] for $[Amount Due], is now past due. Payment was originally due on [Due Date].\n\nCould you please let me know when we can expect to receive the payment? If you have any questions or need a copy of the invoice, I’m happy to resend it.\n\nThank you for your attention to this matter. I appreciate your continued partnership.\n\nBest regards,  \n[Your Name]  \n[Your Position]  \n[Your Company Name]  \n[Your Contact Information]",
+  "refused": false
+}

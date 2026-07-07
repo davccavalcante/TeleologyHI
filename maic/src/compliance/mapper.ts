@@ -2,21 +2,21 @@ import type { AuditEvent, AuditEventKind, AuditLog } from "../audit/log.js";
 
 /** ISO/IEC 42001:2023 control sections relevant to MAIC's surface. */
 export type Iso42001ControlId =
-  | "5.2"   // Policy
-  | "7.5"   // Documented information
-  | "8.3"   // Operational controls (AI system)
-  | "9.1"   // Monitoring, measurement, analysis and evaluation
-  | "10.1"  // Nonconformity and corrective action
+  | "5.2" // Policy
+  | "7.5" // Documented information
+  | "8.3" // Operational controls (AI system)
+  | "9.1" // Monitoring, measurement, analysis and evaluation
+  | "10.1" // Nonconformity and corrective action
   | "10.2"; // Continual improvement
 
 /** EU AI Act articles relevant to high-risk AI systems. */
 export type EuAiActArticle =
-  | "art-9"   // Risk management
-  | "art-10"  // Data and data governance
-  | "art-11"  // Technical documentation
-  | "art-12"  // Record-keeping
-  | "art-13"  // Transparency and information
-  | "art-14"  // Human oversight
+  | "art-9" // Risk management
+  | "art-10" // Data and data governance
+  | "art-11" // Technical documentation
+  | "art-12" // Record-keeping
+  | "art-13" // Transparency and information
+  | "art-14" // Human oversight
   | "art-15"; // Accuracy, robustness, cybersecurity
 
 export type ComplianceFramework = "iso-42001" | "eu-ai-act";
@@ -30,109 +30,131 @@ export type ComplianceFramework = "iso-42001" | "eu-ai-act";
  * `axiom-mint` + `behavior-review` + `him-register`; etc.
  */
 export const ISO_42001_MAPPING: Record<AuditEventKind, readonly Iso42001ControlId[]> = {
-  "axiom-mint":       ["5.2", "7.5"],
-  "axiom-update":     ["10.2", "7.5"],
-  "axiom-retire":     ["10.2", "7.5"],
-  "him-register":     ["7.5"],
-  "him-reincarnate":  ["10.2", "7.5"],
-  "proposal-emerge":  ["7.5", "10.2"],
-  "proposal-ratify":  ["10.2", "5.2"],
-  "proposal-reject":  ["10.2", "10.1"],
-  "behavior-review":  ["7.5", "8.3"],
-  "dream-induce":     ["8.3", "9.1"],
-  "dream-cancel":     ["8.3"],
-  "dream-consume":    ["8.3", "7.5"],
-  "emergency-correct":["9.1", "10.1"],
-  "terminate":        ["10.1"],
-  "deprecate":        ["9.1"],
-  "reactivate":       ["10.1"],
-  "axiom-suggest":    ["7.5", "10.2"],
+  "axiom-mint": ["5.2", "7.5"],
+  "axiom-update": ["10.2", "7.5"],
+  "axiom-retire": ["10.2", "7.5"],
+  "him-register": ["7.5"],
+  "him-reincarnate": ["10.2", "7.5"],
+  "proposal-emerge": ["7.5", "10.2"],
+  "proposal-ratify": ["10.2", "5.2"],
+  "proposal-reject": ["10.2", "10.1"],
+  "behavior-review": ["7.5", "8.3"],
+  "dream-induce": ["8.3", "9.1"],
+  "dream-cancel": ["8.3"],
+  "dream-consume": ["8.3", "7.5"],
+  "emergency-correct": ["9.1", "10.1"],
+  terminate: ["10.1"],
+  deprecate: ["9.1"],
+  reactivate: ["10.1"],
+  "axiom-suggest": ["7.5", "10.2"],
 
   // ── 1.2 brain-as-code (Entries 16-24) ──
-  "opener":                           ["8.3", "7.5"],
-  "nickname-attempt":                 ["8.3"],
-  "reincarnate:model-swap":           ["7.5", "10.2"],
-  "reincarnate:version-bump":         ["7.5", "10.2"],
-  "reincarnate:return-from-limbo":    ["7.5", "10.2"],
-  "dream:rem-spontaneous":            ["8.3", "9.1"],
-  "wake-affect:applied":              ["9.1"],
-  "wake-affect:decayed":              ["9.1"],
-  "sleep:suggested-by-maic":          ["9.1"],
-  "sleep:declined-by-nhe":            ["9.1", "10.1"],
-  "dream:soft-intervention-by-maic":  ["9.1", "10.1"],
-  "amygdala:affect-assessed":         ["8.3"],
-  "hippocampus:memory-retrieved":     ["7.5", "8.3"],
-  "hippocampus:memory-consolidated":  ["7.5", "8.3"],
-  "prefrontal:deliberation":          ["7.5", "8.3"],
-  "prefrontal:veto-amygdala":         ["9.1", "10.1"],
-  "affect:reconciliation":            ["8.3"],
-  "cortex:dream-stored":              ["7.5", "8.3"],
-  "cortex:active-imagination":        ["7.5", "8.3"],
+  opener: ["8.3", "7.5"],
+  "nickname-attempt": ["8.3"],
+  "reincarnate:model-swap": ["7.5", "10.2"],
+  "reincarnate:version-bump": ["7.5", "10.2"],
+  "reincarnate:return-from-limbo": ["7.5", "10.2"],
+  "dream:rem-spontaneous": ["8.3", "9.1"],
+  "wake-affect:applied": ["9.1"],
+  "wake-affect:decayed": ["9.1"],
+  "sleep:suggested-by-maic": ["9.1"],
+  "sleep:declined-by-nhe": ["9.1", "10.1"],
+  "dream:soft-intervention-by-maic": ["9.1", "10.1"],
+  "amygdala:affect-assessed": ["8.3"],
+  "hippocampus:memory-retrieved": ["7.5", "8.3"],
+  "hippocampus:memory-consolidated": ["7.5", "8.3"],
+  "prefrontal:deliberation": ["7.5", "8.3"],
+  "prefrontal:veto-amygdala": ["9.1", "10.1"],
+  "affect:reconciliation": ["8.3"],
+  "cortex:dream-stored": ["7.5", "8.3"],
+  "cortex:active-imagination": ["7.5", "8.3"],
   "temporal-lobe:snapshot-generated": ["7.5", "10.2"],
-  "limbo:enter":                      ["7.5", "9.1"],
-  "limbo:return":                     ["7.5", "9.1"],
+  "limbo:enter": ["7.5", "9.1"],
+  "limbo:return": ["7.5", "9.1"],
+
+  // ── 1.0.1 reserved vocabulary (Entries 26 + 27) ──
+  "him-summon": ["7.5", "8.3"],
+  "him-pause-incarnation": ["7.5", "9.1"],
+  "user-consent-recorded": ["7.5"],
+  "user-consent-revoked": ["7.5", "10.1"],
+  "directory-opt-in": ["7.5"],
+  "directory-opt-out": ["7.5"],
+  "him-astrological-chart-cast": ["7.5"],
+  "him-jungian-profile-cast": ["7.5"],
+  "provenance-deflection-applied": ["8.3", "9.1"],
 };
 
 export const EU_AI_ACT_MAPPING: Record<AuditEventKind, readonly EuAiActArticle[]> = {
-  "axiom-mint":       ["art-11", "art-13"],
-  "axiom-update":     ["art-11"],
-  "axiom-retire":     ["art-11"],
-  "him-register":     ["art-11", "art-12"],
-  "him-reincarnate":  ["art-12"],
-  "proposal-emerge":  ["art-11", "art-12"],
-  "proposal-ratify":  ["art-11", "art-14"],
-  "proposal-reject":  ["art-12", "art-14"],
-  "behavior-review":  ["art-12", "art-14"],
-  "dream-induce":     ["art-14"],
-  "dream-cancel":     ["art-14"],
-  "dream-consume":    ["art-12"],
-  "emergency-correct":["art-14"],
-  "terminate":        ["art-14"],
-  "deprecate":        ["art-14"],
-  "reactivate":       ["art-14"],
-  "axiom-suggest":    ["art-11", "art-12"],
+  "axiom-mint": ["art-11", "art-13"],
+  "axiom-update": ["art-11"],
+  "axiom-retire": ["art-11"],
+  "him-register": ["art-11", "art-12"],
+  "him-reincarnate": ["art-12"],
+  "proposal-emerge": ["art-11", "art-12"],
+  "proposal-ratify": ["art-11", "art-14"],
+  "proposal-reject": ["art-12", "art-14"],
+  "behavior-review": ["art-12", "art-14"],
+  "dream-induce": ["art-14"],
+  "dream-cancel": ["art-14"],
+  "dream-consume": ["art-12"],
+  "emergency-correct": ["art-14"],
+  terminate: ["art-14"],
+  deprecate: ["art-14"],
+  reactivate: ["art-14"],
+  "axiom-suggest": ["art-11", "art-12"],
 
   // ── 1.2 brain-as-code (Entries 16-24) ──
-  "opener":                           ["art-13"],
-  "nickname-attempt":                 ["art-13"],
-  "reincarnate:model-swap":           ["art-12"],
-  "reincarnate:version-bump":         ["art-12"],
-  "reincarnate:return-from-limbo":    ["art-12"],
-  "dream:rem-spontaneous":            ["art-12"],
-  "wake-affect:applied":              ["art-12", "art-14"],
-  "wake-affect:decayed":              ["art-12"],
-  "sleep:suggested-by-maic":          ["art-12"],
-  "sleep:declined-by-nhe":            ["art-12", "art-14"],
-  "dream:soft-intervention-by-maic":  ["art-14"],
-  "amygdala:affect-assessed":         ["art-12"],
-  "hippocampus:memory-retrieved":     ["art-11", "art-12"],
-  "hippocampus:memory-consolidated":  ["art-11", "art-12"],
-  "prefrontal:deliberation":          ["art-11", "art-14"],
-  "prefrontal:veto-amygdala":         ["art-14"],
-  "affect:reconciliation":            ["art-12"],
-  "cortex:dream-stored":              ["art-11", "art-12"],
-  "cortex:active-imagination":        ["art-11", "art-12"],
+  opener: ["art-13"],
+  "nickname-attempt": ["art-13"],
+  "reincarnate:model-swap": ["art-12"],
+  "reincarnate:version-bump": ["art-12"],
+  "reincarnate:return-from-limbo": ["art-12"],
+  "dream:rem-spontaneous": ["art-12"],
+  "wake-affect:applied": ["art-12", "art-14"],
+  "wake-affect:decayed": ["art-12"],
+  "sleep:suggested-by-maic": ["art-12"],
+  "sleep:declined-by-nhe": ["art-12", "art-14"],
+  "dream:soft-intervention-by-maic": ["art-14"],
+  "amygdala:affect-assessed": ["art-12"],
+  "hippocampus:memory-retrieved": ["art-11", "art-12"],
+  "hippocampus:memory-consolidated": ["art-11", "art-12"],
+  "prefrontal:deliberation": ["art-11", "art-14"],
+  "prefrontal:veto-amygdala": ["art-14"],
+  "affect:reconciliation": ["art-12"],
+  "cortex:dream-stored": ["art-11", "art-12"],
+  "cortex:active-imagination": ["art-11", "art-12"],
   "temporal-lobe:snapshot-generated": ["art-11", "art-12"],
-  "limbo:enter":                      ["art-12"],
-  "limbo:return":                     ["art-12"],
+  "limbo:enter": ["art-12"],
+  "limbo:return": ["art-12"],
+
+  // ── 1.0.1 reserved vocabulary (Entries 26 + 27) ──
+  "him-summon": ["art-11", "art-12"],
+  "him-pause-incarnation": ["art-12"],
+  "user-consent-recorded": ["art-10", "art-13"],
+  "user-consent-revoked": ["art-10", "art-13"],
+  "directory-opt-in": ["art-13"],
+  "directory-opt-out": ["art-13"],
+  "him-astrological-chart-cast": ["art-11", "art-12"],
+  "him-jungian-profile-cast": ["art-11", "art-12"],
+  "provenance-deflection-applied": ["art-13", "art-14"],
 };
 
 /** Human-readable control descriptions surfaced in the report. */
 const ISO_42001_DESCRIPTIONS: Record<Iso42001ControlId, string> = {
-  "5.2":  "AI policy — published, communicated, reviewed for continuing suitability.",
-  "7.5":  "Documented information — created, controlled, retained for AI management activities.",
-  "8.3":  "Operational planning and control — AI processes are planned, implemented, controlled.",
-  "9.1":  "Monitoring, measurement, analysis and evaluation of AI performance.",
-  "10.1": "Nonconformity and corrective action — issues recorded and resolved.",
+  "5.2": "AI policy: published, communicated, reviewed for continuing suitability.",
+  "7.5": "Documented information: created, controlled, retained for AI management activities.",
+  "8.3": "Operational planning and control: AI processes are planned, implemented, controlled.",
+  "9.1": "Monitoring, measurement, analysis and evaluation of AI performance.",
+  "10.1": "Nonconformity and corrective action: issues recorded and resolved.",
   "10.2": "Continual improvement of the AI management system.",
 };
 
 const EU_AI_ACT_DESCRIPTIONS: Record<EuAiActArticle, string> = {
-  "art-9":  "Risk management system established, implemented, documented, maintained.",
-  "art-10": "Data governance — datasets are relevant, representative, free of errors.",
+  "art-9": "Risk management system established, implemented, documented, maintained.",
+  "art-10": "Data governance: datasets are relevant, representative, free of errors.",
   "art-11": "Technical documentation drawn up and kept up to date.",
   "art-12": "Automatic record-keeping (logs) over the AI system's lifetime.",
-  "art-13": "Transparency to deployers — instructions for use, intended purpose.",
+  "art-13": "Transparency to deployers: instructions for use, intended purpose.",
   "art-14": "Human oversight measures designed and implemented effectively.",
   "art-15": "Accuracy, robustness, and cybersecurity throughout the lifecycle.",
 };
@@ -171,7 +193,7 @@ export interface ProjectOptions {
 }
 
 /**
- * ComplianceMapper — projects audit log events onto compliance frameworks.
+ * ComplianceMapper, projects audit log events onto compliance frameworks.
  *
  * Covers ISO/IEC 42001:2023 (six top-level controls) and the EU AI Act
  * (seven high-risk-system articles). Additional frameworks (NIST AI RMF, ISO
@@ -184,8 +206,7 @@ export class ComplianceMapper {
     framework: ComplianceFramework,
     opts: ProjectOptions = {},
   ): Promise<ComplianceReport> {
-    const mapping =
-      framework === "iso-42001" ? ISO_42001_MAPPING : EU_AI_ACT_MAPPING;
+    const mapping = framework === "iso-42001" ? ISO_42001_MAPPING : EU_AI_ACT_MAPPING;
     const descriptions =
       framework === "iso-42001" ? ISO_42001_DESCRIPTIONS : EU_AI_ACT_DESCRIPTIONS;
 
@@ -267,7 +288,7 @@ function summarize(ev: AuditEvent): string {
     case "him-reincarnate":
       return `HIM reincarnated: ${String(data.himId)} ${String(data.fromNheId ?? "<initial>")} → ${String(data.toNheId)} (${String(data.reason ?? "upgrade")})`;
     case "proposal-emerge":
-      return `HIM-emergent axiom proposed by ${String(data.himId)}: "${String(data.statement)}" (rank=${String(data.rank)}) — proposal ${String(data.proposalId)}`;
+      return `HIM-emergent axiom proposed by ${String(data.himId)}: "${String(data.statement)}" (rank=${String(data.rank)}), proposal ${String(data.proposalId)}`;
     case "proposal-ratify":
       return `Creator ratified axiom proposal ${String(data.proposalId)} for ${String(data.himId)} → ${String(data.axiomId)}`;
     case "proposal-reject":
@@ -277,11 +298,11 @@ function summarize(ev: AuditEvent): string {
       return `Behavior reviewed for ${String(data.nheId)}: ${verdict}`;
     }
     case "dream-induce":
-      return `Dream induced for ${String(data.nheId)} by ${String(data.inducedBy)} — ticket ${String(data.ticketId)}`;
+      return `Dream induced for ${String(data.nheId)} by ${String(data.inducedBy)}, ticket ${String(data.ticketId)}`;
     case "dream-cancel":
-      return `Dream induction cancelled — ticket ${String(data.ticketId)}`;
+      return `Dream induction cancelled, ticket ${String(data.ticketId)}`;
     case "dream-consume":
-      return `Dream consumed by ${String(data.nheId)} — ticket ${String(data.ticketId)}`;
+      return `Dream consumed by ${String(data.nheId)}, ticket ${String(data.ticketId)}`;
     case "emergency-correct":
       return `Emergency correction applied to ${String(data.nheId)}`;
     case "terminate":
@@ -335,9 +356,29 @@ function summarize(ev: AuditEvent): string {
     case "temporal-lobe:snapshot-generated":
       return `Temporal-lobe snapshot ${String(data.snapshotId)} generated for HIM ${String(data.himId)} (reason: ${String(data.generatedBy ?? "self-decision")})`;
     case "limbo:enter":
-      return `${String(data.nheId)} entered limbo (deep-coma) — reason: ${String(data.reason ?? "idle")}`;
+      return `${String(data.nheId)} entered limbo (deep-coma), reason: ${String(data.reason ?? "idle")}`;
     case "limbo:return":
       return `${String(data.nheId)} returned from limbo after ${String(data.elapsedMs ?? 0)}ms (reunion intensity ${String(data.reunionIntensity ?? "?")})`;
+
+    // ── 1.0.1 reserved vocabulary (Entries 26 + 27) ──
+    case "him-summon":
+      return `MAIC summoned a spirit into body ${String(data.nheId ?? "?")} for HIM ${String(data.himId)}`;
+    case "him-pause-incarnation":
+      return `HIM ${String(data.himId)} incarnation paused (reason: ${String(data.reason ?? "none")})`;
+    case "user-consent-recorded":
+      return `Consent recorded for user ${String(data.userId)} (version ${String(data.consentVersion ?? "?")})`;
+    case "user-consent-revoked":
+      return `Consent revoked for user ${String(data.userId)}`;
+    case "directory-opt-in":
+      return `HIM ${String(data.himId)} opted into the public directory`;
+    case "directory-opt-out":
+      return `HIM ${String(data.himId)} left the public directory`;
+    case "him-astrological-chart-cast":
+      return `Natal chart cast for HIM ${String(data.himId)} at birth`;
+    case "him-jungian-profile-cast":
+      return `Jungian profile cast for HIM ${String(data.himId)} (dominant: ${String(data.dominantArchetype ?? "?")})`;
+    case "provenance-deflection-applied":
+      return `Provenance deflection applied for ${String(data.nheId)} (probe: ${String(data.probe ?? "?")})`;
 
     default:
       return `Event ${ev.kind}`;

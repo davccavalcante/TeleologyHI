@@ -1,5 +1,5 @@
 /**
- * WakeAffectBias application (J-N11 — Entries 20 + 22 of
+ * WakeAffectBias application (J-N11, Entries 20 + 22 of
  * MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
  * After a sleep cycle, the dream-derived `WakeAffectBias` (from
@@ -10,15 +10,15 @@
  * This module ships **pure functions** that compute the LLM-side
  * effects:
  *
- *   1. `applyAffectBias(config, bias)` — returns a partial
+ *   1. `applyAffectBias(config, bias)`, returns a partial
  *      `LlmCallConfig` with `temperature` / `topP` modulated and an
  *      optional `systemPromptMoodLine` to prepend.
  *
- *   2. `affectRefusalDensity(bias)` — returns a multiplier in [0.5, 2.0]
+ *   2. `affectRefusalDensity(bias)`, returns a multiplier in [0.5, 2.0]
  *      that callers apply to their refusal-threshold logic (raise for
  *      anxiety-class affects, lower for serenity-class).
  *
- *   3. `decayAffectBias(bias, elapsedMs)` — returns a new bias with the
+ *   3. `decayAffectBias(bias, elapsedMs)`, returns a new bias with the
  *      intensity decayed per the half-life. Pure; doesn't mutate.
  *
  * No I/O. Determinism guaranteed by the inputs.
@@ -113,10 +113,7 @@ export function affectRefusalDensity(bias: WakeAffectBiasShape): number {
  *
  *   intensity(t) = intensity(0) * 0.5 ^ (elapsedMs / halfLifeMs)
  */
-export function decayAffectBias(
-  bias: WakeAffectBiasShape,
-  elapsedMs: number,
-): WakeAffectBiasShape {
+export function decayAffectBias(bias: WakeAffectBiasShape, elapsedMs: number): WakeAffectBiasShape {
   if (elapsedMs <= 0) return bias;
   const halfLifeMs = bias.decayHalfLife * 60 * 1000;
   if (halfLifeMs <= 0) return bias;

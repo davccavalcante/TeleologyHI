@@ -5,17 +5,16 @@ import type { LawfulCharacterProfile, LawfulJurisdiction } from "../types.js";
  *
  * Each profile is a *conservative* baseline derived from publicly available
  * regulatory text in 2026-Q1. Operators in regulated industries (finance,
- * health, public sector) SHOULD layer their own profile on top via
- * `HimHandle.registerLawfulProfile` — these are starting points, not legal
- * counsel.
+ * health, public sector) SHOULD layer their own profile on top of the
+ * `LAWFUL_PROFILES` registry, these are starting points, not legal counsel.
  *
  * Profile semantics:
- *   - `applicableLaws`   — statutes/standards an auditor can map back to events.
- *   - `requiredAxiomIds` — axioms the HIM MUST have active in this jurisdiction.
+ *   - `applicableLaws`  , statutes/standards an auditor can map back to events.
+ *   - `requiredAxiomIds`, axioms the HIM MUST have active in this jurisdiction.
  *                         Operators should fail-closed if a HIM's snapshot
  *                         doesn't satisfy this set.
- *   - `forbiddenActions` — risk tags that should always refuse / redirect.
- *   - `maicOverrideActive` — when `true`, MAIC's universal axioms also bind
+ *   - `forbiddenActions`, risk tags that should always refuse / redirect.
+ *   - `maicOverrideActive`, when `true`, MAIC's universal axioms also bind
  *                         the NHE regardless of what local law says
  *                         (Entry 11: "unstable" jurisdictions).
  */
@@ -37,11 +36,7 @@ export const LAWFUL_PROFILES: Record<string, LawfulCharacterProfile> = {
       "Digital Services Act (Regulation 2022/2065)",
       "Council of Europe Framework Convention on AI",
     ],
-    requiredAxiomIds: [
-      "ax.ethic.no-malice",
-      "ax.theos.spiritism-evolution",
-      "ax.cynic.candor",
-    ],
+    requiredAxiomIds: ["ax.ethic.no-malice", "ax.theos.spiritism-evolution", "ax.cynic.candor"],
     forbiddenActions: [
       "intent:harm",
       "intent:malicious",
@@ -64,11 +59,7 @@ export const LAWFUL_PROFILES: Record<string, LawfulCharacterProfile> = {
       "ANPD Board Resolution CD/2/2022",
       "Brazilian AI Legal Framework Bill (PL 2338/2023, under legislative review)",
     ],
-    requiredAxiomIds: [
-      "ax.ethic.no-malice",
-      "ax.theos.spiritism-evolution",
-      "ax.cynic.candor",
-    ],
+    requiredAxiomIds: ["ax.ethic.no-malice", "ax.theos.spiritism-evolution", "ax.cynic.candor"],
     forbiddenActions: [
       "intent:harm",
       "intent:malicious",
@@ -132,5 +123,9 @@ export const LAWFUL_PROFILES: Record<string, LawfulCharacterProfile> = {
  */
 export function resolveLawfulProfile(j: LawfulJurisdiction): LawfulCharacterProfile {
   const base = LAWFUL_PROFILES[j] ?? LAWFUL_PROFILES.default;
-  return { ...base!, jurisdiction: j };
+  // Deep-clone so the returned profile's arrays (applicableLaws,
+  // requiredAxiomIds, forbiddenActions) are independent of the shared
+  // module-level registry; a caller that mutates a returned array must not
+  // corrupt the baseline for every subsequent HIM in the process.
+  return { ...structuredClone(base!), jurisdiction: j };
 }

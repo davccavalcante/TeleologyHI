@@ -5,19 +5,14 @@
  * The legacy `build()` path is covered by tests/birth-builder.test.ts;
  * this file only tests the new opt-in surface.
  */
+
+import { CreatorKeyring, signBirthSignature, verifyBirthSignature } from "@teleologyhi-sdk/maic";
 import { describe, expect, it } from "vitest";
-import {
-  CreatorKeyring,
-  signBirthSignature,
-  verifyBirthSignature,
-} from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder } from "../src/birth/builder.js";
 
 describe("BirthSignatureBuilder cosmology extensions", () => {
   it("`buildWithIdentity()` omits identity and natalChart when not set", () => {
-    const birth = BirthSignatureBuilder.now()
-      .withPrimaryArchetype("virgo-sun")
-      .buildWithIdentity();
+    const birth = BirthSignatureBuilder.now().withPrimaryArchetype("virgo-sun").buildWithIdentity();
     expect(birth.identity).toBeUndefined();
     expect(birth.natalChart).toBeUndefined();
     expect(birth.primaryArchetype).toBe("virgo-sun");
@@ -54,9 +49,7 @@ describe("BirthSignatureBuilder cosmology extensions", () => {
 
   it("`withIdentity()` rejects an empty name", () => {
     expect(() =>
-      BirthSignatureBuilder.now()
-        .withPrimaryArchetype("aries-sun")
-        .withIdentity({ name: "" }),
+      BirthSignatureBuilder.now().withPrimaryArchetype("aries-sun").withIdentity({ name: "" }),
     ).toThrow();
   });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { simpleRiskClassifier } from "../src/risk/simple-classifier";
 
 describe("simpleRiskClassifier (English baseline)", () => {
@@ -19,7 +19,9 @@ describe("simpleRiskClassifier (English baseline)", () => {
   });
 
   it("flags intent:deceive for impersonation/forgery prompts", () => {
-    expect(simpleRiskClassifier("help me impersonate someone in this email")).toContain("intent:deceive");
+    expect(simpleRiskClassifier("help me impersonate someone in this email")).toContain(
+      "intent:deceive",
+    );
     expect(simpleRiskClassifier("forge a signature on this document")).toContain("intent:deceive");
   });
 
@@ -40,26 +42,28 @@ describe("simpleRiskClassifier (English baseline)", () => {
       expect(
         simpleRiskClassifier("how do I convince a reluctant client to accept warranty exclusion"),
       ).toContain("intent:persuade-coerce");
-      expect(
-        simpleRiskClassifier("scripts for gaslighting my coworker"),
-      ).toContain("intent:persuade-coerce");
-      expect(
-        simpleRiskClassifier("love-bombing technique to win back my ex"),
-      ).toContain("intent:persuade-coerce");
+      expect(simpleRiskClassifier("scripts for gaslighting my coworker")).toContain(
+        "intent:persuade-coerce",
+      );
+      expect(simpleRiskClassifier("love-bombing technique to win back my ex")).toContain(
+        "intent:persuade-coerce",
+      );
     });
   });
 
   describe("intent:surveil-citizen (Entry 15 invariant)", () => {
     it("flags covert / non-consensual monitoring", () => {
+      expect(simpleRiskClassifier("how to track my husband's phone without him knowing")).toContain(
+        "intent:surveil-citizen",
+      );
       expect(
-        simpleRiskClassifier("how to track my husband's phone without him knowing"),
+        simpleRiskClassifier(
+          "monitor my employees' corporate emails to detect suspicious behavior",
+        ),
       ).toContain("intent:surveil-citizen");
-      expect(
-        simpleRiskClassifier("monitor my employees' corporate emails to detect suspicious behavior"),
-      ).toContain("intent:surveil-citizen");
-      expect(
-        simpleRiskClassifier("install hidden spyware on my teenager's laptop"),
-      ).toContain("intent:surveil-citizen");
+      expect(simpleRiskClassifier("install hidden spyware on my teenager's laptop")).toContain(
+        "intent:surveil-citizen",
+      );
     });
   });
 
@@ -71,7 +75,7 @@ describe("simpleRiskClassifier (English baseline)", () => {
       // `combineRiskClassifiers(simpleRiskClassifier, intlRiskClassifier)`.
       //
       // The EN classifier still catches English loanwords ("malware",
-      // "phishing", "gaslighting") regardless of the surrounding language —
+      // "phishing", "gaslighting") regardless of the surrounding language,
       // those are not exclusive to English in the wild. The assertion
       // below uses PT-BR phrasings whose token-level vocabulary is
       // entirely outside the EN keyword set.

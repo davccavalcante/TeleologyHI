@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { MockAdapter } from "../src/adapters/mock";
 import {
   buildNremPrompt,
   buildRemPrompt,
@@ -6,7 +7,6 @@ import {
   interactionsToFragments,
   parseRemOutput,
 } from "../src/sleep/phases";
-import { MockAdapter } from "../src/adapters/mock";
 
 describe("interactionsToFragments", () => {
   it("formats user/nhe turns concisely", () => {
@@ -81,7 +81,7 @@ describe("parseRemOutput", () => {
     ].join("\n");
     const out = parseRemOutput(text, false, null);
     expect(out).toHaveLength(2);
-    expect(out[0]?.teleologicalValue).toBeCloseTo(0.20);
+    expect(out[0]?.teleologicalValue).toBeCloseTo(0.2);
     expect(out[1]?.teleologicalValue).toBeCloseTo(0.85);
   });
 
@@ -142,13 +142,13 @@ describe("generateNremSummaries", () => {
   });
 });
 
-describe("buildRemPrompt — NREM conditioning", () => {
+describe("buildRemPrompt, NREM conditioning", () => {
   it("includes NREM summaries in the user message when provided", () => {
-    const { user } = buildRemPrompt(
-      ["frag-1"],
-      undefined,
-      { n2: "calm day", n3: "user values clarity", n4: "small talk" },
-    );
+    const { user } = buildRemPrompt(["frag-1"], undefined, {
+      n2: "calm day",
+      n3: "user values clarity",
+      n4: "small talk",
+    });
     expect(user).toContain("N2 (emotional gist): calm day");
     expect(user).toContain("N3 (worth keeping): user values clarity");
     expect(user).toContain("N4 (safe to discard): small talk");

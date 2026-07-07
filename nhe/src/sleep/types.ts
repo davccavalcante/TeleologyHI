@@ -4,10 +4,10 @@ import { z } from "zod";
  * `InteractionRecord` is canonical in `@teleologyhi-sdk/maic` so all three
  * packages share one wire shape; `@teleologyhi-sdk/him` consumes it on
  * reincarnation to score residual-trace carry-over (D-H1.1). NHE is the
- * producer of these records (Entry 21 — the body emits interaction turns
+ * producer of these records (Entry 21, the body emits interaction turns
  * the soul consolidates), so we keep the long-standing `from
  * "./sleep/types.js"` import path used throughout this package working as
- * a *type-only* re-export — no source change required at call sites, no
+ * a *type-only* re-export, no source change required at call sites, no
  * duplicated runtime schema surface (the canonical zod parser lives in
  * MAIC and consumers wanting runtime validation import it from there).
  */
@@ -50,10 +50,10 @@ export const PhaseContent = z.discriminatedUnion("kind", [
     kind: z.literal("summary"),
     /**
      * One-sentence LLM summary produced during a NREM phase (N2/N3/N4). Each
-     * phase has a distinct prompt — emotional gist (N2), identity-vs-transient
-     * triage (N3), discard candidates (N4) — but the storage shape is shared.
+     * phase has a distinct prompt, emotional gist (N2), identity-vs-transient
+     * triage (N3), discard candidates (N4), but the storage shape is shared.
      */
-     summary: z.string(),
+    summary: z.string(),
   }),
   z.object({
     kind: z.literal("dreams"),
@@ -108,4 +108,3 @@ export interface MemoryEntry {
   insight: string;
   filePath: string;
 }
-

@@ -1,13 +1,8 @@
 /**
- * Tests for the UUIDv7 migration bridge (J-H5 — Entry 18).
+ * Tests for the UUIDv7 migration bridge (J-H5, Entry 18).
  */
 import { describe, expect, it } from "vitest";
-import {
-  isLegacyHimId,
-  isUuidV7,
-  migrateLegacyHimId,
-  mintUuidV7,
-} from "../src/index.js";
+import { isLegacyHimId, isUuidV7, migrateLegacyHimId, mintUuidV7 } from "../src/index.js";
 
 describe("isLegacyHimId (J-H5)", () => {
   it("recognises the legacy slug shape", () => {
@@ -47,7 +42,7 @@ describe("mintUuidV7 + isUuidV7 (J-H5)", () => {
 
   it("isUuidV7 rejects malformed strings", () => {
     expect(isUuidV7("not-a-uuid")).toBe(false);
-    expect(isUuidV7("018f7a1d-3a4b-4c2d-8e1f-2a3b4c5d6e7f")).toBe(false); // UUIDv4 — should be rejected by the UUIDv7 validator
+    expect(isUuidV7("018f7a1d-3a4b-4c2d-8e1f-2a3b4c5d6e7f")).toBe(false); // UUIDv4, should be rejected by the UUIDv7 validator
     expect(isUuidV7("")).toBe(false);
   });
 });

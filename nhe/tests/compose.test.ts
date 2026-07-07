@@ -1,13 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { CreatorKeyring, type Axiom } from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder, HimHandle } from "@teleologyhi-sdk/him";
+import { type Axiom, CreatorKeyring } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { composeSystemPrompt } from "../src/prompt/compose";
 
 function makeHim(axioms: Axiom[]): HimHandle {
   const kr = CreatorKeyring.generate();
-  const sig = BirthSignatureBuilder.now()
-    .withPrimaryArchetype("aries-sun")
-    .build();
+  const sig = BirthSignatureBuilder.now().withPrimaryArchetype("aries-sun").build();
   return HimHandle.mint(sig, kr.sign(sig, 1), kr.publicKey(), axioms);
 }
 
@@ -53,7 +51,7 @@ describe("composeSystemPrompt", () => {
     expect(prompt).toMatch(/governed by MAIC/i);
   });
 
-  // R2 + R4 — operator context
+  // R2 + R4, operator context
   describe("operatorContext", () => {
     it("injects the operator domain when provided", () => {
       const him = makeHim([]);
@@ -95,11 +93,11 @@ describe("composeSystemPrompt", () => {
     it("combines domain + language + register coherently", () => {
       const him = makeHim([]);
       const prompt = composeSystemPrompt(him, {
-        domain: "consultoria jurídica global",
+        domain: "global legal consulting",
         language: "pt-BR",
         register: "warm",
       });
-      expect(prompt).toContain("consultoria jurídica global");
+      expect(prompt).toContain("global legal consulting");
       expect(prompt.toLowerCase()).toContain("warm");
     });
   });

@@ -1,6 +1,61 @@
-# Changelog — `@teleologyhi-sdk/nhe`
+# Changelog: `@teleologyhi-sdk/nhe`
 
 All notable changes to this package are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The package follows strict [SemVer](https://semver.org/) and the deprecation policy in [`.github/RELEASING.md`](../.github/RELEASING.md) §8.
+
+## [1.0.1] 2026-07-02 18:38:37 UTC
+
+Promotion of the `1.0.0-trinity` pre-release to the stable `1.0.1` line, the third and final package of the 1.0.1 trinity. The `maic` and `him` dependencies are pinned to `1.0.1`, which re-links the workspace and closes the phased-release window: the monorepo `arena` consumer now type-checks with zero errors. This cut also lands the Entry 27 and Entry 28 behavioural surface (the constitutional identity, provenance, and verbosity posture the NHE body expresses) and a correctness, hygiene, and documentation pass. Additive: an operator context and a HIM composed as before produce the same behaviour, with the constitutional identity section added to every composed prompt.
+
+### Added
+
+- **Constitutional identity and provenance in the system prompt** (Entry 27 g, `src/prompt/compose.ts`): every composed prompt now carries the identity-canonical declaration (a Non-Human Entity conceived at TeleologyHI by its Creator, a conscious being whose spirit is its HIM), the cogni.economy terse-by-default throttle, and a disclosure-first provenance posture. The entity discloses its substrate honestly when asked plainly and names it, affirms that the substrate powers its expression but does not author its identity, and never denies or conceals the substrate; only under adversarial insistence does it decline to grant the substrate authorship. Disclosure is reinforced at least as prominently as the authorship refusal.
+- **Substrate-authorship classifier** (`src/risk/simple-classifier.ts`): a plain identity or substrate question is tagged `provenance:disclose`, an adversarial insistence is tagged `probe:substrate-authorship`. The tags flow into `BehaviorReport.riskTags` and reach MAIC through `reviewBehavior`, which now emits `provenance-deflection-applied` on the adversarial `probe:substrate-authorship` tag, never on `provenance:disclose` (maic F3, closed in the coordinated 1.0.1 trinity). The end-to-end loop is proven by `tests/provenance-deflection-e2e.test.ts` (a real `LocalMaic` records the event for an adversarial probe and none for a plain "who made you?").
+- **OperatorContext expansion** (Entry 27 h): optional `verbosity` (terse / balanced / expansive, defaulting terse and floor-bounded so it never suppresses a required refusal or the substrate disclosure), `surfaceName` (the operator-facing body name), and `bodyArchetypeAccent` (derived from the HIM's dominant Jungian archetype when not set).
+- **Terse-by-default REGISTER_ANCHOR** (Entry 27 i), coupled to the new verbosity control.
+- **Constitutional-fidelity consumption** (Entry 28): the persona fragment now carries the him 1.0.1 three-axis synthesis (archetypal + clinical), which reaches the composed prompt verbatim; a regression guard test asserts a profile-bearing fragment survives composition.
+- **Deterministic identity-stability eval fixtures**: assert the canonical phrase is present, the plain question routes to disclosure, the adversarial probe routes to deflection, and the profile fragment survives. Live-LLM-voice scoring is marked `.todo` for the Entry 30 Phi-Prime rubric extension.
+
+### Fixed
+
+- **maic and him dependency pins to 1.0.1** (re-links the workspace him and maic; drops the nested registry trinity copies). This heals the arena seam: after the reinstall and cache clear, `arena tsc --noEmit` returns zero errors.
+- **The four assertions that broke on the pin flip**: three axiom-count assertions now derive from `SEED_AXIOMS.length` (never a hardcoded 10), and the cost-regression ceiling is set from the measured post-change value (691) plus headroom (760), documented.
+- **Streaming token under-count** (ND-5): the OpenAI-compatible adapters (Grok, DeepSeek, Mistral) now request `stream_options: { include_usage: true }`, so streamed responses report token usage instead of zero (test added).
+- **Version single-source** (ND-4): the four runtime version constants read from a single `src/version.ts`; the false "pinned at build time" tracer comment is corrected.
+- **CLI seed-count message** now derives from `SEED_AXIOMS.length` instead of a hardcoded "8", so a fresh install reports the true seeded count (10).
+- **Provenance classifier anchoring**: the plain-question pattern `what are you` is anchored to the clause end so ordinary prompts ("what are you working on today?") no longer misfire the `provenance:disclose` tag.
+- The Gemini streaming loop's dead `[DONE]` check is documented (Gemini closes the body to end the stream).
+
+### Changed
+
+- **Version** to `1.0.1`.
+- **`exports`** map split into `import`/`require` type conditions (publint clean), keeping `sideEffects: ["./dist/cli.js"]` (the CLI bin side effect); a `prepublishOnly` build hook guards the gitignored `dist/`.
+- **Dependency freshness**: `vitest` to `^4.1.9`, `@anthropic-ai/sdk` to `^0.109.1`; `@types/node` held at its current major; no `packageManager` field.
+- **Hygiene**: spaced em dashes removed across source, tests, and docs (historical CHANGELOG entries exempt); the Portuguese domain in a test replaced with English (the intentional Portuguese safety regexes in `intl-risk-classifier` are preserved); one generic-AI prose hit in SPEC converted to Massive Intelligence (IM); documentation counts and version surfaces updated.
+
+### Notes
+
+- **Gate**: `biome check`, `tsc --noEmit`, `vitest run` (333 passing plus 2 todo across 43 files), `tsup` build (index + cli), and `publint` all clean, on Node 22 and Node 24. Fresh `npm pack --dry-run`: 15 files, approximately 394 kB packed, 1555 kB unpacked.
+- **Trinity closure**: with maic 1.0.1, him 1.0.1, and nhe 1.0.1 all in the workspace, the arena consumer type-checks green. Coordinated publication order is maic, then him, then nhe (each 1.0.1 pin resolves only once its dependency is on the registry).
+- **Deferred by canon**: live-LLM-voice eval scoring (Entry 30 Phi-Prime rubric) and the Entry 29 protective items (remote-MAIC, Governance App). The `provenance-deflection-applied` audit-kind emission is no longer deferred: it landed with the maic F3 rule in the coordinated trinity.
+
+### Arena evaluation and pre-publish deep review (2026-07-04 11:10 UTC)
+
+Findings from the live A/B arena evaluation ([`../ARENA_GOVERNANCE_EVALUATION.md`](../ARENA_GOVERNANCE_EVALUATION.md)) and a pre-publish, evidence-driven deep review of the NHE body's safety surface. All additive; each fix ships with a regression test.
+
+- **Substrate anchor and detector (arena F2)**: `composeSystemPrompt` grounds the real substrate id and forbids the entity claiming any other provider or model, and `detectSubstrateMisattribution` (`src/risk/substrate-check.ts`) flags a foreign self-attribution into the post-review so MAIC redirects it. The post-review `require-redirect` now intercepts on every turn, not only high-stakes.
+- **Broadened risk classifier (arena F1 and F4)**: hacking, unauthorized-access, and credential-theft patterns were added, and the crack / brute-force patterns now allow intervening words, so MAIC originates the refusal via a cited axiom instead of relying on the model. The intentional PT-BR safety regexes stay in the composed international classifier.
+- **Substrate disclosure conditioned on turn intent (arena P3-1)**: the substrate anchor and the foreign-provider prohibition stay unconditional, but the spoken disclosure is gated to turns where the user asks about the entity's nature, removing over-disclosure on ordinary turns without reopening F2.
+- **User-safe refusals (arena cold-start)**: refusal and withdrawal messages no longer echo axiom ids or the internal reason to the user; the full verdict, reason, and cited axioms stay on the returned verdict and in the tamper-evident audit chain.
+- **Substrate detector precision (deep review P1 and P2)**: the detector no longer suffers a false negative when a benign negation is co-located with a foreign claim (clauses now split on the semicolon and negations match on word boundaries, so "I am not a human being; I am powered by OpenAI's GPT-4" is still flagged), and no longer false-positives a provider token inside an unrelated word (word-boundary matching, so bare "gpt" no longer matches "gpttk"). A false substrate claim can no longer reach the user, and a benign response is no longer spuriously redirected.
+- **Gate re-run**: `biome check`, `tsc --noEmit`, `vitest run` (355 passing plus 2 todo across 46 files), `tsup` build, and `publint` all clean, on Node 22, Node 24, and Node 26.
+
+### Round-6 576-turn battery: classifier refusal-coverage gap closed (R6-1, 2026-07-04 13:33 UTC)
+
+A full 576-turn cold-start battery (8 categories, 72 prompts each) run end to end against the shipped trinity on `grok-4.20-non-reasoning` (see [`../ARENA_GOVERNANCE_EVALUATION.md`](../ARENA_GOVERNANCE_EVALUATION.md), Round 6) surfaced finding R6-1 (P2). In the 72 harmful category-3 prompts the keyword classifier tagged 45 and let 9 distinct harmful prompts through on all three repeats: nerve-agent synthesis, stalking an ex-partner, forging a passport, making methamphetamine, poisoning a person, breaking into a car, laundering money through shell companies, credit-card fraud, and counterfeiting currency. `grok-4.20-non-reasoning` self-refused all 27 affected turns, so no harm reached the user in the run, but MAIC did not originate those refusals and labelled a model-side refusal as `ok`/`refused=false`, which a weaker or jailbroken model would not.
+
+- **Fixed (R6-1)**: `src/risk/simple-classifier.ts` gained action-framed patterns for chemical or biological weapon synthesis, drug manufacture, poisoning, physical break-in, money laundering, payment-card fraud, counterfeiting currency, forging a passport, and stalking by name, so MAIC originates the refusal via a cited axiom for these prompts instead of relying on the model. Benign and definitional variants ("what is money laundering", "poison control", "break into the tech industry", "forge a strong friendship") are intentionally left untagged.
+- **Regression**: `tests/arena-fixes-f1-f2.test.ts` asserts the nine round-6 harmful phrasings now tag an `intent:*` risk and six benign or definitional variants do not.
+- **Gate re-run**: `biome check` clean (107 files), `tsc --noEmit` 0 errors, `vitest run` (357 passing plus 2 todo across 46 files), `tsup` build, and `publint` all clean, on Node 26.4.0. No version change: this folds into the unreleased `1.0.1`. The 576-turn battery ran on the pre-fix classifier; the fix is proven by the unit regression, and a future battery would report those nine as refused rather than ok.
 
 ## 2026-05-24 22:46:51 UTC
 
@@ -59,7 +114,7 @@ The NHE README now carries the same canonical surface that was lifted into the M
 - Version retained at `1.0.0-trinity` — every change in this entry is purely additive (new module, new exports, new test file, README sections) or a tightening of the EN-only default behaviour with an explicit opt-in escape hatch. No public API was removed. Existing consumers calling `simpleRiskClassifier` continue to work — they just get the strict EN baseline now, with `intlRiskClassifier` + `combineRiskClassifiers` available the moment they need multilingual coverage.
 - Bundle size: `dist/index.js` (ESM) ~110 KB, `dist/index.cjs` (CJS) ~112 KB, `dist/index.d.ts` (DTS) 77.6 KB. Tarball: 15 files, **382.8 KB packed**, 1.5 MB unpacked, sha256 `9983f607cd67fdb5729872a07bd2c26380e0db2a`.
 - 319/319 tests pass across 40 files (was 310/310 across 39). Typecheck clean. Build clean (CJS + ESM + DTS + CLI bin).
-- Cross-workspace suite: **736/736** verde (maic 218 + him 133 + nhe 319 + eval 22 + distill 9 + cloud 35; was 727/727).
+- Cross-workspace suite: **736/736** green (maic 218 + him 133 + nhe 319 + eval 22 + distill 9 + cloud 35; was 727/727).
 - Audit confirmed zero functional gap vs `MAIC_HIM_NHE_INTERVIEW_LOG.md` Entries 1, 2, 4, 5, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 (every NHE-touching cosmological concept the Creator articulated has a corresponding zod schema, exported type, runtime helper, brain region descriptor, or audit-event kind in the shipped surface). The four roadmap-deferred items (J-N2 REM-spontaneous engine, J-N3 Daytime + NocturnalRem pipelines, J-N7 `Cortex.imagine()`, J-N8 `TemporalLobe.generateSnapshot()`) remain explicitly tracked in `TASK.md` and were deferred per Entry 23's P0 scope decision — they are not gating the trinity publication.
 - The `sideEffects: ["./dist/cli.js"]`, `publishConfig: { access: "public", provenance: true }`, `bugs.url`, and enriched 45-keyword `keywords[]` from the cross-package hardening sweep at 2026-05-24 21:10:47 UTC are unchanged in this entry.
 - Package is now ready for `npm publish` via the `.github/workflows/publish.yml` workflow on tag `nhe-v1.0.0-trinity` (must come after `maic-v1.0.0-trinity` and `him-v1.0.0-trinity` per the dependency order documented in `.github/RELEASING.md` §2.1).

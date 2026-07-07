@@ -1,7 +1,7 @@
 /**
- * Persuasion library — five rhetorical techniques NHE rotates through during
+ * Persuasion library, five rhetorical techniques NHE rotates through during
  * redirect attempts. Per Creator Entry 11, the technique is applied
- * **implicitly** — its name is never disclosed to the user.
+ * **implicitly**, its name is never disclosed to the user.
  */
 export const PERSUASION_TECHNIQUES = [
   "feynman-simplify",
@@ -57,7 +57,7 @@ export function buildRedirectPrompt(input: RedirectPromptInput): {
     "while honoring their autonomy. After this message, the user may persist; if they exhaust",
     `the allowed redirects (${input.maxAttempts}), you will then withdraw cooperation.`,
     "",
-    "Apply the following internal style — DO NOT name it, DO NOT mention the technique:",
+    "Apply the following internal style, DO NOT name it, DO NOT mention the technique:",
     `  ${desc}`,
     "",
     "Constraints:",

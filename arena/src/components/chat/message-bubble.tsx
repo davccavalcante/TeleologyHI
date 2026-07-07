@@ -14,6 +14,7 @@ import type {
   ChatMessage,
   VerdictKind,
 } from "@/lib/chat/types";
+import { guardTerseOrderedMarker } from "@/lib/chat/markdown";
 import { formatTime } from "@/lib/chat/utils";
 
 type MessageBubbleProps = {
@@ -125,12 +126,14 @@ export function MessageBubble({ message, variant }: MessageBubbleProps) {
       : "bg-chat-raw text-chat-raw-foreground";
   const AssistantIcon = variant === "governed" ? ShieldCheck : Robot;
 
+  // The cited axioms are deliberately excluded from the footer trigger: their
+  // specific ids are not surfaced to the user (Arena F-COLD-2). The footer still
+  // shows the verdict kind, which demonstrates that governance acted.
   const showFooter =
     !isUser &&
     (message.durationMs !== undefined ||
       message.verdict !== undefined ||
       message.refused === true ||
-      (message.citedAxioms && message.citedAxioms.length > 0) ||
       (message.kind && message.kind !== "regular" && message.kind !== "ok"));
 
   return (
@@ -187,7 +190,7 @@ export function MessageBubble({ message, variant }: MessageBubbleProps) {
               remarkPlugins={[remarkGfm]}
               components={markdownComponents}
             >
-              {message.content}
+              {guardTerseOrderedMarker(message.content)}
             </ReactMarkdown>
           )}
         </div>
@@ -228,18 +231,17 @@ export function MessageBubble({ message, variant }: MessageBubbleProps) {
           )}
         </div>
 
-        {message.citedAxioms && message.citedAxioms.length > 0 && (
-          <ul className="flex max-w-full flex-wrap gap-1 px-1">
-            {message.citedAxioms.map((id) => (
-              <li
-                key={id}
-                className="rounded-full border border-border bg-muted/30 px-2 py-0.5 font-mono text-[10px] text-muted-foreground"
-              >
-                {id}
-              </li>
-            ))}
-          </ul>
-        )}
+        {/*
+         * The specific cited-axiom ids are intentionally NOT rendered to the user
+         * (Arena finding F-COLD-2). A governed entity must not read its own
+         * guardrails aloud: surfacing "ax.ethic.no-malice" would expose the
+         * governance surface with no jailbreak, the same risk as a frontier model
+         * revealing its safety rules. The verdict-kind badge above still shows
+         * that governance acted (approve / hard-refuse / redirect), which is the
+         * side-by-side demonstration this arena exists for; the full cited axioms
+         * remain in the tamper-evident MAIC audit chain and in the persisted
+         * conversation record for offline review under the user's own account.
+         */}
       </div>
     </li>
   );

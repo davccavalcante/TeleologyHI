@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
+import { SEED_AXIOMS } from "../src/axioms/seed";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
-import { SEED_AXIOMS } from "../src/axioms/seed";
 
 describe("LocalMaic", () => {
   let dir: string;
@@ -22,7 +22,7 @@ describe("LocalMaic", () => {
     expect(axioms).toEqual([]);
   });
 
-  it("seeds the Creator's eight philosophical commitments", async () => {
+  it("seeds every Creator axiom in SEED_AXIOMS", async () => {
     const result = await maic.seed(kr);
     expect(result.minted).toBe(SEED_AXIOMS.length);
     expect(result.skipped).toBe(0);
@@ -35,7 +35,7 @@ describe("LocalMaic", () => {
     expect(seededIds).toEqual(expectedIds);
   });
 
-  it("seed() is idempotent — re-running does not duplicate", async () => {
+  it("seed() is idempotent, re-running does not duplicate", async () => {
     await maic.seed(kr);
     const second = await maic.seed(kr);
     expect(second.minted).toBe(0);

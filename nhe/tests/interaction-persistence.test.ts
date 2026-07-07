@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
 import { mkdtemp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder, HimHandle } from "@teleologyhi-sdk/him";
-import { Nhe } from "../src/nhe";
+import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { Nhe } from "../src/nhe";
 
 async function freshContext() {
   const maicDir = await mkdtemp(join(tmpdir(), "nhe-persist-maic-"));
@@ -62,7 +62,7 @@ describe("NHE interaction persistence (D-N4)", () => {
       llmAdapter: new MockAdapter({ reply: "ack" }),
       storeDir: nheDir,
     });
-    // Buffer is empty before first respond — warming is lazy.
+    // Buffer is empty before first respond, warming is lazy.
     expect(second.recentInteractionsBuffer).toHaveLength(0);
 
     await second.respond({ userPrompt: "third" });

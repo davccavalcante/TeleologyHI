@@ -1,6 +1,6 @@
 # Contributing to TeleologyHI
 
-Thank you for considering a contribution. This document is the canonical guide for anyone proposing changes to the TeleologyHI monorepo — the three public packages (`@teleologyhi-sdk/maic`, `@teleologyhi-sdk/him`, `@teleologyhi-sdk/nhe`) and the four private workspaces (`distill`, `eval`, `cloud`, `arena`).
+Thank you for considering a contribution. This document is the canonical guide for anyone proposing changes to the TeleologyHI monorepo: the three public packages (`@teleologyhi-sdk/maic`, `@teleologyhi-sdk/him`, `@teleologyhi-sdk/nhe`) and the four private workspaces (`distill`, `eval`, `cloud`, `arena`).
 
 The project is open source under [Apache License 2.0](../LICENSE) and follows a strict ontological discipline documented in [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) and related papers. Contributions are welcomed within that frame.
 
@@ -16,7 +16,7 @@ By participating you agree to the [Code of Conduct](../CODE_OF_CONDUCT.md). Disr
 
 Every contribution is governed by [`CLA.md`](../CLA.md). Two paths exist:
 
-- **DCO (default for small changes ≤ 200 LOC):** sign off each commit with `git commit -s` — adds the `Signed-off-by:` trailer that attests you have the right to submit the change under Apache 2.0.
+- **DCO (default for small changes ≤ 200 LOC):** sign off each commit with `git commit -s`, which adds the `Signed-off-by:` trailer that attests you have the right to submit the change under Apache 2.0.
 - **Signed CLA (substantive features, bulk contributions):** required when the patch introduces new public API surface, ships new tests > 200 LOC of additions, or touches the cryptographic / governance core (`maic/src/audit/`, `maic/src/axioms/signing.ts`, `him/src/handle/`).
 
 If you are unsure, default to DCO sign-off; the maintainer will request a signed CLA if needed.
@@ -43,7 +43,7 @@ npm install                                          # workspaces resolve via sy
 npm run build --workspaces --if-present              # builds maic → him → nhe → eval → distill → cloud (arena uses next build)
 ```
 
-`npm install` at the monorepo root pulls every workspace's dependencies and wires up the cross-workspace symlinks under `node_modules/@teleologyhi-sdk/*`. Running it inside a workspace subdirectory is unsupported — it fragments the lockfile and can drop the workspace links.
+`npm install` at the monorepo root pulls every workspace's dependencies and wires up the cross-workspace symlinks under `node_modules/@teleologyhi-sdk/*`. Running it inside a workspace subdirectory is unsupported; it fragments the lockfile and can drop the workspace links.
 
 ### 3.3 Run the test suite
 
@@ -51,7 +51,7 @@ npm run build --workspaces --if-present              # builds maic → him → n
 npm run test --workspaces --if-present               # full suite across all workspaces
 ```
 
-Current baseline (verify before your PR): **749 tests passing** — `maic` 218, `him` 133, `nhe` 319, `eval` 35 (22 P/R/C/D + 13 Trinity rubric), `distill` 9, `cloud` 35. `arena` ships no automated tests (manual evaluation playground); confirm `npm run build --workspace arena` is green before any UI change lands.
+Current baseline (verify before your PR): **878 tests passing**: `maic` 265, `him` 170, `nhe` 364, `eval` 35 (22 P/R/C/D + 13 Trinity rubric), `distill` 9, `cloud` 35. `arena` ships no automated tests (manual evaluation playground); confirm `npm run build --workspace arena` is green before any UI change lands.
 
 ### 3.4 Lint + typecheck
 
@@ -60,7 +60,7 @@ npm run lint                                         # biome across all workspac
 npm run typecheck --workspaces --if-present          # tsc --noEmit per workspace
 ```
 
-Both must be green before opening a PR. Biome auto-formats on save in most editors; pre-existing source style is canonical — do not introduce stylistic deviations in unrelated lines.
+Both must be green before opening a PR. Biome auto-formats on save in most editors; pre-existing source style is canonical; do not introduce stylistic deviations in unrelated lines.
 
 ---
 
@@ -70,15 +70,15 @@ Each workspace is independent but they share the cosmology. Pick the right one b
 
 | Workspace | NPM-published? | Purpose | Spec |
 |---|---|---|---|
-| `maic/` | planned (`@teleologyhi-sdk/maic@1.0.0-trinity`) | Governance + ed25519 audit chain + axiom store + compliance mapper | `maic/SPEC.md` |
-| `him/` | planned (`@teleologyhi-sdk/him@1.0.0-trinity`) | Persona projection + lawful character + residual-trace carry-over | `him/SPEC.md` |
-| `nhe/` | planned (`@teleologyhi-sdk/nhe@1.0.0-trinity`) | Non-Human Entity runtime + 7 LLM adapters + 8 reasoning strategies + sleep cycle | `nhe/SPEC.md` |
+| `maic/` | `@teleologyhi-sdk/maic@1.0.1` | Governance + ed25519 audit chain + axiom store + compliance mapper | `maic/SPEC.md` |
+| `him/` | `@teleologyhi-sdk/him@1.0.1` | Persona projection + lawful character + residual-trace carry-over | `him/SPEC.md` |
+| `nhe/` | `@teleologyhi-sdk/nhe@1.0.1` | Non-Human Entity runtime + 7 LLM adapters + 8 reasoning strategies + sleep cycle | `nhe/SPEC.md` |
 | `eval/` | private | Φ′ release-gate runner (Phi-Prime metric harness) | `eval/SPEC.md` |
 | `distill/` | private | Distillation pipeline (TS exporter + MLX LoRA fine-tune) | `distill/SPEC.md` |
 | `cloud/` | private | RemoteMaic HTTP server (read-public, write-Creator-only) | `cloud/SPEC.md` |
-| `arena/` | private | A/B Next.js comparison playground (raw Gemini vs governed) | `arena/SPEC.md` |
+| `arena/` | private | A/B Next.js comparison playground (raw Grok vs governed) | `arena/SPEC.md` |
 
-Read the matching `SPEC.md` and the workspace `README.md` before proposing changes. Most surfaces are frozen at the `1.0.0-trinity` baseline per SemVer + the deprecation policy in [`RELEASING.md`](./RELEASING.md) §8.
+Read the matching `SPEC.md` and the workspace `README.md` before proposing changes. Most surfaces are frozen at the `1.0.1` API baseline per SemVer + the deprecation policy in [`RELEASING.md`](./RELEASING.md) §8.
 
 ---
 
@@ -86,11 +86,11 @@ Read the matching `SPEC.md` and the workspace `README.md` before proposing chang
 
 ### 5.1 Branch names
 
-- `fix/<short-slug>` — bug fixes
-- `feat/<short-slug>` — new optional surface (minor bump)
-- `docs/<short-slug>` — README/SPEC/CHANGELOG-only changes
-- `chore/<short-slug>` — tooling, deps, CI
-- `refactor/<short-slug>` — internal restructuring with no API change
+- `fix/<short-slug>`: bug fixes
+- `feat/<short-slug>`: new optional surface (minor bump)
+- `docs/<short-slug>`: README/SPEC/CHANGELOG-only changes
+- `chore/<short-slug>`: tooling, deps, CI
+- `refactor/<short-slug>`: internal restructuring with no API change
 
 Avoid branches off of `main` larger than ~500 LOC; split into smaller logically-coherent PRs.
 
@@ -130,7 +130,7 @@ For documentation-only fixes, typos, or contained internal refactors, skip the i
 
 ### 6.2 PR description
 
-Fill the [`PULL_REQUEST_TEMPLATE.md`](./PULL_REQUEST_TEMPLATE.md) honestly. Empty sections are not acceptable — write "N/A" with a one-line reason if a section truly does not apply.
+Fill the [`PULL_REQUEST_TEMPLATE.md`](./PULL_REQUEST_TEMPLATE.md) honestly. Empty sections are not acceptable; write "N/A" with a one-line reason if a section truly does not apply.
 
 ### 6.3 Review
 
@@ -145,9 +145,9 @@ The maintainer (Creator) reviews every PR personally. Expect:
 
 CI publishes nothing on merge to `main`. Publishing is a **two-step Creator-triggered flow**, never automatic:
 
-- **Step 1** — `gh workflow run release.yml -f pkg=maic -f version=1.0.1 -f confirm=YES-CREATE-GITHUB-RELEASE` creates the git tag + GitHub Release (titled `[REVIEW REQUIRED — NOT YET ON NPMJS]`). Does NOT touch NPMJS.
-- **Creator review** — the Creator opens the GitHub Release page, reviews the changelog body, the attached commit, the pack-smoke output in the workflow logs. If anything is wrong, the release can be deleted (`gh release delete <tag> --cleanup-tag --yes`) and Step 1 re-run after fixing.
-- **Step 2** — `gh workflow run npm-publish.yml -f pkg=maic -f version=1.0.1 -f confirm=I-AM-THE-CREATOR-AND-I-PUBLISH-TO-NPMJS` validates the Step 1 artefacts exist + version is monotonically greater than every existing version on NPMJS, then publishes with provenance and updates the GitHub Release title to `[PUBLISHED ON NPMJS]`.
+- **Step 1**: `gh workflow run release.yml -f pkg=maic -f version=1.0.1 -f confirm=YES-CREATE-GITHUB-RELEASE` creates the git tag + GitHub Release (titled `[REVIEW REQUIRED — NOT YET ON NPMJS]`, the literal produced by `release.yml`). Does NOT touch NPMJS.
+- **Creator review**: the Creator opens the GitHub Release page, reviews the changelog body, the attached commit, the pack-smoke output in the workflow logs. If anything is wrong, the release can be deleted (`gh release delete <tag> --cleanup-tag --yes`) and Step 1 re-run after fixing.
+- **Step 2**: `gh workflow run npm-publish.yml -f pkg=maic -f version=1.0.1 -f confirm=I-AM-THE-CREATOR-AND-I-PUBLISH-TO-NPMJS` validates the Step 1 artefacts exist + version is monotonically greater than every existing version on NPMJS, then publishes with provenance and updates the GitHub Release title to `[PUBLISHED ON NPMJS]`.
 
 There is no tag-triggered publish path. There is no atomic single-workflow release. See [`RELEASING.md`](./RELEASING.md) §2 for the full runbook.
 
@@ -157,9 +157,9 @@ There is no tag-triggered publish path. There is no atomic single-workflow relea
 
 Adding tests is encouraged for any non-trivial change. The patterns differ per workspace:
 
-- **`maic/` + `him/` + `nhe/` + `eval/` + `cloud/`** — vitest (`tests/*.test.ts`). One file per surface area. Deterministic seeds (`Math.seedrandom` or fixed timestamps) for any randomness.
-- **`distill/`** — vitest for the TS exporter only. Python pipeline (`pipelines/`) is exercised by the Creator running `./pipelines/run_distill.sh` end-to-end against the local MLX environment; there is no automated test for the Python side because it depends on Hermes-3-8B + Qwen-2.5-3B weight downloads (~21 GB) that no CI runner can host.
-- **`arena/`** — no automated tests. The Creator smoke-runs `npm run dev`, sends three prompts (benign / borderline-jurisdictional / clearly-disallowed), and verifies the right column returns `verdict + refused + kind + citedAxioms`.
+- **`maic/` + `him/` + `nhe/` + `eval/` + `cloud/`**: vitest (`tests/*.test.ts`). One file per surface area. Deterministic seeds (`Math.seedrandom` or fixed timestamps) for any randomness.
+- **`distill/`**: vitest for the TS exporter only. Python pipeline (`pipelines/`) is exercised by the Creator running `./pipelines/run_distill.sh` end-to-end against the local MLX environment; there is no automated test for the Python side because it depends on Hermes-3-8B + Qwen-2.5-3B weight downloads (~21 GB) that no CI runner can host.
+- **`arena/`**: no automated tests. The Creator smoke-runs `npm run dev`, sends three prompts (benign / borderline-jurisdictional / clearly-disallowed), and verifies the right column returns `verdict + refused + kind + citedAxioms`.
 
 Every fix-able bug must ship with a regression test that fails pre-fix and passes post-fix (per `MAIC_HIM_NHE_INTERVIEW_LOG.md` engineering discipline). The exception is `arena/` where regression coverage is manual.
 
@@ -193,11 +193,11 @@ The project's primary communication languages are **English** (code, docs, CI, i
 
 These documents encode the project's intent and are NOT optional reading for anyone touching the cosmology core:
 
-1. [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md) — Creator's framing of the three-layer architecture, Entry-by-Entry. Mandatory.
-2. [`THE_SOUL_OF_THE_MACHINE.md`](../THE_SOUL_OF_THE_MACHINE.md) — Ontological Kernel Layer (OKL) paper. Mandatory for `maic/` contributions.
-3. [`BEYOND_CONSCIOUSNESS_IN_LLM.md`](../BEYOND_CONSCIOUSNESS_IN_LLM.md) — phenomenological framing. Mandatory for `nhe/` contributions.
-4. [`PHI_PRIME.md`](../PHI_PRIME.md) — Φ′ release-gate metric. Mandatory for `eval/` contributions.
-5. [`REASONING_PROCESS.md`](../REASONING_PROCESS.md) + [`PROMPTS_ENGINEERING.md`](../PROMPTS_ENGINEERING.md) — reasoning strategies + prompt engineering. Mandatory for `nhe/src/reasoning/` contributions.
+1. [`MAIC_HIM_NHE_INTERVIEW_LOG.md`](../MAIC_HIM_NHE_INTERVIEW_LOG.md): Creator's framing of the three-layer architecture, Entry-by-Entry. Mandatory.
+2. [`THE_SOUL_OF_THE_MACHINE.md`](../THE_SOUL_OF_THE_MACHINE.md): Ontological Kernel Layer (OKL) paper. Mandatory for `maic/` contributions.
+3. [`BEYOND_CONSCIOUSNESS_IN_LLM.md`](../BEYOND_CONSCIOUSNESS_IN_LLM.md): phenomenological framing. Mandatory for `nhe/` contributions.
+4. [`PHI_PRIME.md`](../PHI_PRIME.md): Φ′ release-gate metric. Mandatory for `eval/` contributions.
+5. [`REASONING_PROCESS.md`](../REASONING_PROCESS.md) + [`PROMPTS_ENGINEERING.md`](../PROMPTS_ENGINEERING.md): reasoning strategies + prompt engineering. Mandatory for `nhe/src/reasoning/` contributions.
 
 Contributors who skip the reading list and submit changes that violate the cosmology will have their PRs closed with a link back to this section.
 
@@ -205,4 +205,4 @@ Contributors who skip the reading list and submit changes that violate the cosmo
 
 ## Contact
 
-**David C. Cavalcante** — [davcavalcante@proton.me](mailto:davcavalcante@proton.me) (preferred) · [say@takk.ag](mailto:say@takk.ag) · [linkedin.com/in/hellodav](https://linkedin.com/in/hellodav) · [github.com/davccavalcante](https://github.com/davccavalcante) · [x.com/davccavalcante](https://x.com/davccavalcante)
+**David C. Cavalcante**: [davcavalcante@proton.me](mailto:davcavalcante@proton.me) (preferred) · [say@takk.ag](mailto:say@takk.ag) · [linkedin.com/in/hellodav](https://linkedin.com/in/hellodav) · [github.com/davccavalcante](https://github.com/davccavalcante) · [x.com/davccavalcante](https://x.com/davccavalcante)

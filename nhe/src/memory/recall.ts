@@ -1,11 +1,11 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { MemoryClass, MemoryEntry } from "../sleep/types.js";
 import { bm25 } from "./bm25.js";
 
 /**
  * Optional embedder hook for embedding-based retrieval (D-N3 step 2).
- * Anything that produces a numeric vector for a string satisfies this —
+ * Anything that produces a numeric vector for a string satisfies this,
  * `@huggingface/transformers` (ONNX sentence-transformers), `@xenova/transformers`,
  * a remote `/embed` endpoint, etc. When supplied, recall uses cosine
  * similarity instead of BM25.
@@ -29,9 +29,9 @@ export interface RecallOptions {
   classes?: MemoryClass[];
   /**
    * Override the retrieval algorithm:
-   *   - `"bm25"`     — Okapi BM25 (default; replaces the legacy keyword count).
-   *   - `"keyword"`  — legacy substring-count ranking (kept for back-compat).
-   *   - `"embedding"` — cosine similarity. Requires `embedder` to also be set.
+   *   - `"bm25"`    , Okapi BM25 (default; replaces the legacy keyword count).
+   *   - `"keyword"` , legacy substring-count ranking (kept for back-compat).
+   *   - `"embedding"`, cosine similarity. Requires `embedder` to also be set.
    */
   scorer?: "bm25" | "keyword" | "embedding";
   /** Embedder used when `scorer: "embedding"`. */
@@ -41,7 +41,7 @@ export interface RecallOptions {
 /**
  * Rank consolidated temporal-lobe memories against a free-form query.
  *
- * **Default**: Okapi BM25 — proper term-frequency saturation +
+ * **Default**: Okapi BM25, proper term-frequency saturation +
  * document-length normalisation + IDF over the corpus of stored memories.
  * Strictly better than the legacy keyword-count ranker.
  *
@@ -74,7 +74,7 @@ export async function recallFromTemporalLobe(
     throw err;
   }
 
-  // Load + parse + filter by class — common across all scorers.
+  // Load + parse + filter by class, common across all scorers.
   const entries: MemoryEntry[] = [];
   for (const fname of files) {
     const fpath = join(brainDir, fname);
@@ -88,9 +88,7 @@ export async function recallFromTemporalLobe(
 
   if (scorer === "embedding") {
     if (!opts.embedder) {
-      throw new Error(
-        "recallFromTemporalLobe: scorer 'embedding' requires opts.embedder",
-      );
+      throw new Error("recallFromTemporalLobe: scorer 'embedding' requires opts.embedder");
     }
     return recallByEmbedding(entries, query, opts.embedder, limit);
   }
@@ -124,12 +122,11 @@ async function recallByEmbedding(
   return scored.slice(0, limit).map((s) => s.entry);
 }
 
-function recallByKeyword(
-  entries: MemoryEntry[],
-  query: string,
-  limit: number,
-): MemoryEntry[] {
-  const tokens = query.toLowerCase().split(/\s+/).filter((t) => t.length > 0);
+function recallByKeyword(entries: MemoryEntry[], query: string, limit: number): MemoryEntry[] {
+  const tokens = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 0);
   const scored: Array<{ entry: MemoryEntry; score: number }> = [];
   for (const e of entries) {
     const hay = e.insight.toLowerCase();
@@ -151,8 +148,7 @@ function parseTemporalLobe(raw: string, filePath: string): MemoryEntry | null {
   const body = fmMatch[2]!;
   const insight = extractSection(body, "Insight") ?? body.trim();
   const filename = filePath.split("/").pop() ?? filePath;
-  const id =
-    /temporal-lobe-([0-9A-HJKMNP-TV-Z]{26})\.md$/i.exec(filename)?.[1] ?? "";
+  const id = /temporal-lobe-([0-9A-HJKMNP-TV-Z]{26})\.md$/i.exec(filename)?.[1] ?? "";
   return {
     id,
     nheId: fm.nheId ?? "",

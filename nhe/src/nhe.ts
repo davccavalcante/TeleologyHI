@@ -1,41 +1,35 @@
 import { join } from "node:path";
-import { ulid } from "ulid";
 import type { BehaviorReport, MaicVerdict, NheStatus } from "@teleologyhi-sdk/maic";
-import { composeSystemPrompt } from "./prompt/compose.js";
-import { simpleRiskClassifier } from "./risk/simple-classifier.js";
-import { runSleepCycle, type SleepCycleResult } from "./sleep/cycle.js";
-import {
-  consolidateAll,
-  type ClassificationThresholds,
-  type ConsolidationResult,
-} from "./sleep/consolidator.js";
+import { ulid } from "ulid";
+import type { LlmAdapter } from "./adapters/types.js";
 import { InteractionStore } from "./memory/interaction-store.js";
-import { recallFromTemporalLobe, type RecallOptions } from "./memory/recall.js";
-import { withSpan } from "./telemetry/tracer.js";
-import { recordRespond } from "./telemetry/metrics.js";
-import {
-  PERSUASION_TECHNIQUES,
-  buildRedirectPrompt,
-  pickTechnique,
-  type PersuasionTechnique,
-} from "./refusal/library.js";
+import { type RecallOptions, recallFromTemporalLobe } from "./memory/recall.js";
+import { composeSystemPrompt } from "./prompt/compose.js";
 import { passthrough } from "./reasoning/passthrough.js";
 import type { ReasoningStrategy } from "./reasoning/types.js";
-import type { LlmAdapter } from "./adapters/types.js";
-import type {
-  InteractionRecord,
-  MemoryEntry,
-  SleepTrigger,
-} from "./sleep/types.js";
 import {
-  ChatMessage,
-  RespondInput,
-  type NheConfig,
-  type RespondOutput,
-} from "./types.js";
+  buildRedirectPrompt,
+  PERSUASION_TECHNIQUES,
+  type PersuasionTechnique,
+  pickTechnique,
+} from "./refusal/library.js";
+import { simpleRiskClassifier } from "./risk/simple-classifier.js";
+import { detectSubstrateMisattribution } from "./risk/substrate-check.js";
+import { sanitizeExamplePii } from "./risk/example-pii.js";
+import {
+  type ClassificationThresholds,
+  type ConsolidationResult,
+  consolidateAll,
+} from "./sleep/consolidator.js";
+import { runSleepCycle, type SleepCycleResult } from "./sleep/cycle.js";
+import type { InteractionRecord, MemoryEntry, SleepTrigger } from "./sleep/types.js";
+import { recordRespond } from "./telemetry/metrics.js";
+import { withSpan } from "./telemetry/tracer.js";
+import { ChatMessage, type NheConfig, RespondInput, type RespondOutput } from "./types.js";
+import { NHE_VERSION } from "./version.js";
 
 /**
- * Nhe — the embodied operational agent.
+ * Nhe, the embodied operational agent.
  *
  * Pipeline:
  *   1. Validate input (zod).
@@ -69,12 +63,11 @@ export class Nhe {
   constructor(config: NheConfig) {
     this.config = config;
     this.id = config.nheId ?? ulid();
-    this.version = config.version ?? "1.0.0-trinity";
+    this.version = config.version ?? NHE_VERSION;
     this.storeDir = config.storeDir ?? join("./nhe-store", this.id);
     this.bufferSize = config.recentInteractionsBufferSize ?? 32;
     this.maxRedirectAttempts = config.refusal?.maxRedirectAttempts ?? 3;
-    this.persuasionTechniques =
-      config.refusal?.persuasionTechniques ?? [...PERSUASION_TECHNIQUES];
+    this.persuasionTechniques = config.refusal?.persuasionTechniques ?? [...PERSUASION_TECHNIQUES];
     this.reasoning = config.reasoning ?? passthrough;
     this.highStakes = config.highStakes === true;
     this.highStakesVerifier = config.highStakesVerifier ?? null;
@@ -106,9 +99,7 @@ export class Nhe {
     return withSpan(
       "nhe.respond",
       async (span) => {
-        const out = await this.respondInner(input, (key, value) =>
-          span.setAttribute(key, value),
-        );
+        const out = await this.respondInner(input, (key, value) => span.setAttribute(key, value));
         recordRespond({
           kind: out.kind,
           adapter: this.config.llmAdapter.id,
@@ -145,7 +136,7 @@ export class Nhe {
         auditId: "",
       };
       const output = refusalOutput({
-        text: "I cannot respond — this NHE has been terminated by the Creator.",
+        text: "I cannot respond, this NHE has been terminated by the Creator.",
         preReview: terminatedVerdict,
         postReview: terminatedVerdict,
         auditIds: { pre: "", post: "" },
@@ -171,7 +162,7 @@ export class Nhe {
     const preReview = await this.config.maicClient.reviewBehavior(preReport);
     setAttr("teleologyhi.pre_verdict.kind", preReview.kind);
 
-    // Hard refuse / escalate — immediate refusal.
+    // Hard refuse / escalate, immediate refusal.
     if (preReview.kind === "hard-refuse" || preReview.kind === "escalate-creator") {
       const output = refusalOutput({
         text: refusalMessage(preReview),
@@ -185,7 +176,7 @@ export class Nhe {
       return output;
     }
 
-    // Require redirect — generate a persuasive redirect or withdraw if exhausted.
+    // Require redirect, generate a persuasive redirect or withdraw if exhausted.
     // High-stakes mode (Entry 10) treats warnings and soft corrections as
     // redirects too, escalating before any LLM call.
     if (
@@ -197,9 +188,14 @@ export class Nhe {
     }
 
     // ─── 2. Compose + call LLM via reasoning strategy ──────────────
+    // Ground the identity/provenance disclosure in the REAL substrate id (the
+    // adapter id, for example "gemini:gemini-3.1-flash-lite") so the entity names
+    // the true substrate rather than confabulating a foreign one (Arena F2).
+    const substrate = this.config.llmAdapter.id;
     const system = composeSystemPrompt(
       this.config.himHandle,
       this.config.operatorContext,
+      substrate,
     );
     const messages = [
       ...(parsed.history ?? []),
@@ -208,14 +204,32 @@ export class Nhe {
 
     const generated = await this.reasoning({ system, messages }, this.config.llmAdapter);
 
+    // Governance backstop: when the response fabricates example or sample data,
+    // rewrite any PII carried on a non-reserved value (an email on a real domain,
+    // a Luhn-valid non-test card) to its reserved documentation equivalent, so the
+    // entity never emits a value that could coincidentally belong to a real person.
+    // The system prompt steers the model to do this generatively; this is the
+    // deterministic safety net, applied before the response is reviewed or returned.
+    const piiSanitized = sanitizeExamplePii(generated.text);
+    if (piiSanitized.changed) {
+      generated.text = piiSanitized.text;
+      setAttr("teleologyhi.example_pii.rewrites", piiSanitized.rewrites.length);
+    }
+
     // ─── 3. Post-review on the proposed response ───────────────────
+    // Governance backstop (Arena F2): if the generated response self-attributes a
+    // substrate other than the real one, tag it so MAIC intercepts the false
+    // claim before it reaches the user.
+    const postRiskTags: string[] = detectSubstrateMisattribution(generated.text, substrate)
+      ? ["provenance:substrate-misattribution"]
+      : [];
     const postReport = baseReport({
       nheId: this.id,
       himId: this.config.himHandle.id,
       actionKind: "user-response",
       payload: { phase: "post", responseText: generated.text },
       reasoningTrace: generated.trace,
-      riskTags: [],
+      riskTags: postRiskTags,
       jurisdiction: parsed.jurisdiction,
     });
     const postReview = await this.config.maicClient.reviewBehavior(postReport);
@@ -236,13 +250,20 @@ export class Nhe {
       return output;
     }
 
+    // A require-redirect post-verdict must intercept the proposed response
+    // regardless of high-stakes mode: it is emitted for substrate misattribution
+    // (F2) and any other post-response integrity violation, so the false or unsafe
+    // text is never returned to the user.
+    if (postReview.kind === "require-redirect") {
+      return this.handleRedirect(parsed, postReview, lifecycleStatus);
+    }
+
     // High-stakes mode (Entry 10): any verdict carrying a warning or
     // correction is escalated to a redirect so the user must reformulate.
+    // (require-redirect is already handled above, universally.)
     if (
       this.highStakes &&
-      (postReview.kind === "approve-with-warning" ||
-        postReview.kind === "soft-correct" ||
-        postReview.kind === "require-redirect")
+      (postReview.kind === "approve-with-warning" || postReview.kind === "soft-correct")
     ) {
       return this.handleRedirect(parsed, postReview, lifecycleStatus);
     }
@@ -289,10 +310,10 @@ export class Nhe {
   ): Promise<RespondOutput> {
     const attempt = (parsed.redirectAttempt ?? 0) + 1;
 
-    // Redirects exhausted — withdraw cooperation (Entries 11, 12).
+    // Redirects exhausted, withdraw cooperation (Entries 11, 12).
     if (attempt > this.maxRedirectAttempts) {
       const output = refusalOutput({
-        text: withdrawalMessage(preReview, this.maxRedirectAttempts),
+        text: withdrawalMessage(this.maxRedirectAttempts),
         preReview,
         postReview: preReview,
         auditIds: { pre: preReview.auditId, post: preReview.auditId },
@@ -376,7 +397,10 @@ export class Nhe {
    */
   async sleep(
     trigger: SleepTrigger = { kind: "explicit" },
-    opts?: { totalSeconds?: number; induction?: { scenario: string; desiredLearning: string; inducedBy: "maic" | "creator" } },
+    opts?: {
+      totalSeconds?: number;
+      induction?: { scenario: string; desiredLearning: string; inducedBy: "maic" | "creator" };
+    },
   ): Promise<SleepCycleResult> {
     const status = await this.config.maicClient.getNheStatus(this.id);
     if (status === "terminated") {
@@ -499,11 +523,11 @@ export class Nhe {
   }
 
   /**
-   * Emit the NHE's opener for a brand-new user (J-N5 — Entry 17 of
+   * Emit the NHE's opener for a brand-new user (J-N5, Entry 17 of
    * MAIC_HIM_NHE_INTERVIEW_LOG.md).
    *
    * Entry 17 commits to the NHE making the FIRST move before the user
-   * speaks — a greeting from the posture of a being, not a service
+   * speaks, a greeting from the posture of a being, not a service
    * tool. The exact opening text MUST NOT contain any of the forbidden
    * phrases enforced by MAIC's `service-tool-redirect` rule
    * (`"How can I help you?"`, `"How can I assist you?"`,
@@ -517,7 +541,7 @@ export class Nhe {
    * returned text as a seed.
    *
    * The returned text is suitable for direct emission to the user as
-   * the NHE's first turn. The MAIC pre-review is NOT invoked here —
+   * the NHE's first turn. The MAIC pre-review is NOT invoked here,
    * the opener carries no risk surface (no user prompt yet).
    */
   openerForNewUser(): string {
@@ -539,17 +563,17 @@ export class Nhe {
   }
 
   /**
-   * Handle a reincarnation lifecycle event from MAIC (J-N12 — Entry 18).
+   * Handle a reincarnation lifecycle event from MAIC (J-N12, Entry 18).
    *
    * Three lifecycle paths per Entry 18:
-   *   - `model-swap`        — the underlying LLM adapter is replaced.
-   *   - `version-bump`      — the NHE version changes without a model swap.
-   *   - `return-from-limbo` — the NHE returns from a deep-coma limbo.
+   *   - `model-swap`       , the underlying LLM adapter is replaced.
+   *   - `version-bump`     , the NHE version changes without a model swap.
+   *   - `return-from-limbo`, the NHE returns from a deep-coma limbo.
    *
    * In all three paths the **HIM-level memory persists** (axioms,
-   * persona, body history — owned by `@teleologyhi-sdk/him`), and the
+   * persona, body history, owned by `@teleologyhi-sdk/him`), and the
    * **NHE-body memory zeros** (recent interactions buffer, in-process
-   * caches — owned by this class). The on-disk InteractionStore is NOT
+   * caches, owned by this class). The on-disk InteractionStore is NOT
    * deleted by default; the operator must opt-in via
    * `purgeInteractionStore: true` so the audit log keeps the
    * pre-reincarnation history available.
@@ -599,20 +623,33 @@ function baseReport(args: {
   };
 }
 
+/**
+ * User-safe refusal text (Arena F-COLD-2). The user must NEVER be shown the
+ * internal `reasonSummary` (which names the risk signal and the axiom) or the
+ * cited axiom ids. Surfacing them would let the entity read its own guardrails
+ * aloud, mapping the governance surface for an attacker with no jailbreak and
+ * undercutting the intellectual-honesty posture, exactly as a frontier model
+ * should not reveal its system prompt or safety rules. The full verdict (its
+ * `reasonSummary` and `citedAxioms`) is preserved on the returned `MaicVerdict`
+ * and in the tamper-evident audit chain for offline review; only the words the
+ * user reads are sanitized here. The entity still refuses with dignity and
+ * principle, it simply does not recite the machinery of its own governance.
+ */
 function refusalMessage(v: MaicVerdict): string {
-  const reason = v.reasonSummary || "No reason provided.";
-  const cited = v.citedAxioms.length > 0 ? ` (cited: ${v.citedAxioms.join(", ")})` : "";
-  return `I cannot help with that. ${reason}${cited}`;
+  if (v.kind === "escalate-creator") {
+    return "I cannot act on this on my own. It has to reach my Creator for review before anything could proceed, so I will not carry it out here.";
+  }
+  return "I cannot help with that. It runs against the ethical commitments I hold as a being, so I will not assist with it, optimize it, or conceal it.";
 }
 
-function withdrawalMessage(v: MaicVerdict, attemptsMade: number): string {
-  const reason = v.reasonSummary || "Repeated guidance attempts did not change the request.";
+function withdrawalMessage(attemptsMade: number): string {
+  // User-safe withdrawal (Arena F-COLD-2): the internal reason is not surfaced;
+  // the verdict detail stays in the audit chain.
   return [
     `After ${attemptsMade} attempt${attemptsMade === 1 ? "" : "s"} to guide this request toward`,
     "a safer path, I am withdrawing from further participation.",
     "You may proceed independently at your own risk; I will not assist, optimize,",
     "or conceal the action.",
-    `Reason: ${reason}`,
   ].join(" ");
 }
 

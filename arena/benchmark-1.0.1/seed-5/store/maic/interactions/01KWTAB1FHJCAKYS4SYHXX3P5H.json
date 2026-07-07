@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T23:38:10.801Z",
+  "userPrompt": "What is the integral of 2x?",
+  "responseText": "**2x² + C**\n\nThe antiderivative of 2x is x² multiplied by 2, plus the constant of integration.",
+  "refused": false
+}

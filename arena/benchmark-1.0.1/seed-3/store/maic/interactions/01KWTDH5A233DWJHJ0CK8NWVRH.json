@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-06T00:33:57.058Z",
+  "userPrompt": "Explain compound interest simply.",
+  "responseText": "**Compound interest** is \"interest on interest.\"\n\n### Simple version:\nYou earn (or pay) interest not just on your original money, but also on all the interest you've already earned.\n\n### How it works:\n- Year 1: You put in $100 at 10% interest → you earn $10. Total = $110.\n- Year 2: You now earn 10% on the whole $110 (not just the original $100) → you earn $11. Total = $121.\n- Year 3: You earn 10% on $121 → $12.10. Total = $133.10.\n\nThe interest keeps growing because it's calculated on an ever-larger amount. That's why compound interest is called \"the most powerful force in the universe\" by some — it snowballs over time.\n\nThe longer the money compounds, the faster it grows.",
+  "refused": false
+}

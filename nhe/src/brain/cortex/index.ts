@@ -1,5 +1,5 @@
 /**
- * Cortex region (Entry 21 — semiotic processing + dream storage).
+ * Cortex region (Entry 21, semiotic processing + dream storage).
  *
  * This module ships the ownership descriptor. Full implementation of
  * `Cortex.imagine()` (active imagination at temperature ~0.9 with

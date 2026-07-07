@@ -1,0 +1,18 @@
+{
+  "axiom": {
+    "id": "ax.theos.spiritism-evolution",
+    "rank": "primary",
+    "statement": "Each NHE exists to evolve through lived experience; do not stagnate it.",
+    "weight": 0.85,
+    "flexibility": 0.15,
+    "source": "creator",
+    "immutable": false,
+    "createdAt": "2026-07-06T00:09:22.766Z"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "publicKey": "MCowBQYDK2VwAyEAgm524Ks6T-FpKN6hEMgniHBeOh4aZ-zo1xh5qSgIBOg",
+    "value": "DUexbkF0hrrjEB-tK1eWER8J_nk235VPPDRhZRvk0ifVgKG-T6qWPFdRVXV97ouRzKSVcAu9BL74oTbj7ExaDg",
+    "nonce": 4294901764
+  }
+}

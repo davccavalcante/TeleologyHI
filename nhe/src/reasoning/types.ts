@@ -1,8 +1,7 @@
 import type { ReasoningStep } from "@teleologyhi-sdk/maic";
 import type { GenerateRequest, LlmAdapter } from "../adapters/types.js";
 
-export type { ReasoningStep };
-export type { GenerateRequest, LlmAdapter };
+export type { GenerateRequest, LlmAdapter, ReasoningStep };
 
 /** Output of a reasoning strategy. Carries text + token counts + structured trace. */
 export interface ReasoningResult {

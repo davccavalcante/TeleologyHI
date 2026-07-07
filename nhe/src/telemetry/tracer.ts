@@ -1,20 +1,21 @@
 import { type Span, SpanStatusCode, trace } from "@opentelemetry/api";
+import { NHE_VERSION } from "../version.js";
 
 /**
  * OpenTelemetry tracer for the NHE pipeline (TASK.md H2).
  *
  * `@opentelemetry/api` is a thin contract. When no SDK / tracer provider is
  * registered by the consumer, every span call becomes a no-op (microseconds
- * of overhead at worst). When the consumer registers a provider — for
+ * of overhead at worst). When the consumer registers a provider, for
  * example by installing `@opentelemetry/sdk-node` and wiring it in their
- * app's startup — spans flow through to the configured exporter (OTLP,
+ * app's startup, spans flow through to the configured exporter (OTLP,
  * Jaeger, console, etc.) with zero changes on the NHE side.
  *
- * Tracer name: `@teleologyhi-sdk/nhe`. Version pinned to the package version at
- * build time so spans from different NHE versions can be told apart.
+ * Tracer name: `@teleologyhi-sdk/nhe`. Version comes from the single-source
+ * `NHE_VERSION` constant so spans from different NHE versions can be told apart.
  */
 const TRACER_NAME = "@teleologyhi-sdk/nhe";
-const TRACER_VERSION = "1.0.0-trinity";
+const TRACER_VERSION = NHE_VERSION;
 
 export function getTracer() {
   return trace.getTracer(TRACER_NAME, TRACER_VERSION);

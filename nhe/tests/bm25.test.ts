@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { bm25, tokenise } from "../src/memory/bm25";
 
 const DOCS = [
@@ -27,7 +27,7 @@ describe("bm25 (D-N3)", () => {
     const short = { id: "s", text: "purpose" };
     const long = {
       id: "l",
-      text: "purpose " + "filler ".repeat(100),
+      text: `purpose ${"filler ".repeat(100)}`,
     };
     const r = bm25("purpose", [short, long]);
     expect(r[0]?.doc.id).toBe("s");
@@ -49,18 +49,14 @@ describe("bm25 (D-N3)", () => {
     // The tokeniser preserves any unicode word-character including
     // diacritics, so the same regex covers EN (loanwords), FR, DE, ES, IT,
     // PT, and any language whose lexicon survives Unicode normalisation.
-    // Single-letter tokens are dropped intentionally — that's the filter.
+    // Single-letter tokens are dropped intentionally, that's the filter.
     expect(tokenise("café résumé naïve coöperate")).toEqual([
       "café",
       "résumé",
       "naïve",
       "coöperate",
     ]);
-    expect(tokenise("Häuser über München")).toEqual([
-      "häuser",
-      "über",
-      "münchen",
-    ]);
+    expect(tokenise("Häuser über München")).toEqual(["häuser", "über", "münchen"]);
     expect(tokenise("teleología filosofía cosmología")).toEqual([
       "teleología",
       "filosofía",

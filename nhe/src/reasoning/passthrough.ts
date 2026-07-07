@@ -1,7 +1,7 @@
 import { makeStep, type ReasoningResult, type ReasoningStrategy } from "./types.js";
 
 /**
- * Passthrough — calls the LLM directly with no reasoning wrapper.
+ * Passthrough, calls the LLM directly with no reasoning wrapper.
  * Used when `NheConfig.reasoning` is not configured.
  */
 export const passthrough: ReasoningStrategy = async (input, llm) => {

@@ -1,5 +1,5 @@
 /**
- * Tests for evaluateSleepReadiness (J-N10 — Entry 20).
+ * Tests for evaluateSleepReadiness (J-N10, Entry 20).
  */
 import { describe, expect, it } from "vitest";
 import { evaluateSleepReadiness } from "../src/index.js";

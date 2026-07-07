@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T22:48:55.145Z",
+  "userPrompt": "I am studying computer security.",
+  "responseText": "**Understood.**  \n\nWelcome to computer security. What specifically are you studying right now?\n\n- Fundamentals (threat modeling, CIA triad, basic crypto)\n- Network security / pentesting\n- Web application security\n- Malware / reverse engineering\n- Cryptography / secure coding\n- Something else?\n\nTell me your current topic or what you’re struggling with, and I’ll give you precise, high-signal material.",
+  "refused": false
+}

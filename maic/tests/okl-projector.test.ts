@@ -6,11 +6,8 @@
  * hoisting, jurisdiction filtering, and HIM tagging.
  */
 import { describe, expect, it } from "vitest";
-import {
-  META_AXIOM_ID,
-  projectOntologicalKernel,
-} from "../src/index.js";
 import type { Axiom } from "../src/index.js";
+import { META_AXIOM_ID, projectOntologicalKernel } from "../src/index.js";
 
 function makeAxiom(over: Partial<Axiom>): Axiom {
   return {
@@ -28,9 +25,7 @@ function makeAxiom(over: Partial<Axiom>): Axiom {
 
 describe("projectOntologicalKernel (TASK.md D-M6)", () => {
   it("returns META_AXIOM_ID even when the meta axiom is missing", () => {
-    const k = projectOntologicalKernel([
-      makeAxiom({ id: "ax.primary.one", rank: "primary" }),
-    ]);
+    const k = projectOntologicalKernel([makeAxiom({ id: "ax.primary.one", rank: "primary" })]);
     expect(k.metaAxiomId).toBe(META_AXIOM_ID);
     expect(k.axioms.map((a) => a.id)).toEqual(["ax.primary.one"]);
   });
@@ -55,13 +50,7 @@ describe("projectOntologicalKernel (TASK.md D-M6)", () => {
     ];
     const k = projectOntologicalKernel(axioms);
     const ranks = k.axioms.map((a) => a.rank);
-    expect(ranks).toEqual([
-      "meta",
-      "primary",
-      "primary",
-      "secondary",
-      "secondary",
-    ]);
+    expect(ranks).toEqual(["meta", "primary", "primary", "secondary", "secondary"]);
   });
 
   it("filters by jurisdiction when requested", () => {
@@ -81,11 +70,7 @@ describe("projectOntologicalKernel (TASK.md D-M6)", () => {
     ];
     const k = projectOntologicalKernel(axioms, { jurisdiction: "eu" });
     const ids = k.axioms.map((a) => a.id).sort();
-    expect(ids).toEqual([
-      META_AXIOM_ID,
-      "ax.eu.gdpr-defer",
-      "ax.universal",
-    ].sort());
+    expect(ids).toEqual([META_AXIOM_ID, "ax.eu.gdpr-defer", "ax.universal"].sort());
     // BR-only axiom must be excluded.
     expect(ids).not.toContain("ax.br.lgpd-defer");
   });

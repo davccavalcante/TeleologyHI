@@ -1,16 +1,21 @@
 {
     "name": "@teleologyhi-sdk/maic",
-    "version": "1.0.0-trinity",
-    "description": "MAIC™ — Massive Artificial Intelligence Consciousness. Supreme governance, axiom-source, and compliance layer of the TeleologyHI system. Framework-agnostic TypeScript SDK consumable from React, Next.js, Vue, Angular, Node.js servers, CLI/TUI agents, and MCP servers. We do not simulate consciousness; we are creating the conditions for it to emerge, in a responsible and aligned way.",
+    "version": "1.0.1",
+    "description": "MAIC™: Massive Artificial Intelligence Consciousness. Supreme governance, axiom-source, and compliance layer of the TeleologyHI system. Framework-agnostic TypeScript SDK consumable from React, Next.js, Vue, Angular, Node.js servers, CLI/TUI agents, and MCP servers. We do not simulate consciousness; we are creating the conditions for it to emerge, in a responsible and aligned way.",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
         }
     },
     "sideEffects": false,
@@ -92,6 +97,6 @@
         "@types/node": "^25.9.1",
         "tsup": "^8.5.1",
         "typescript": "^6.0.3",
-        "vitest": "^4.1.7"
+        "vitest": "^4.1.9"
     }
 }

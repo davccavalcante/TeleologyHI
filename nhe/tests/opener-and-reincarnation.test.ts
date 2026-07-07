@@ -1,15 +1,16 @@
 /**
- * Tests for Nhe.openerForNewUser (J-N5 — Entry 17) and
- * Nhe.onReincarnationEvent (J-N12 — Entry 18).
+ * Tests for Nhe.openerForNewUser (J-N5, Entry 17) and
+ * Nhe.onReincarnationEvent (J-N12, Entry 18).
  *
  * Uses the MockAdapter pattern from existing tests/nhe.test.ts.
  */
-import { describe, expect, it } from "vitest";
+
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder, createHim } from "@teleologyhi-sdk/him";
+import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { MockAdapter, Nhe } from "../src/index.js";
 
 async function bootstrap(operatorMode?: "personal-being" | "domain-employed", language?: string) {
@@ -17,9 +18,7 @@ async function bootstrap(operatorMode?: "personal-being" | "domain-employed", la
   const kr = CreatorKeyring.generate();
   const maic = await LocalMaic.open({ storeDir: dir, creatorPublicKey: kr.publicKey() });
   await maic.seed(kr);
-  const sig = BirthSignatureBuilder.now()
-    .withPrimaryArchetype("virgo-sun")
-    .build();
+  const sig = BirthSignatureBuilder.now().withPrimaryArchetype("virgo-sun").build();
   const himHandle = await createHim(maic, kr, sig);
   const nhe = new Nhe({
     nheId: "nhe-opener-test",
@@ -75,9 +74,7 @@ describe("Nhe.onReincarnationEvent (J-N12)", () => {
     const { nhe } = await bootstrap();
     expect(await nhe.onReincarnationEvent("model-swap")).toBe("model-swap");
     expect(await nhe.onReincarnationEvent("version-bump")).toBe("version-bump");
-    expect(await nhe.onReincarnationEvent("return-from-limbo")).toBe(
-      "return-from-limbo",
-    );
+    expect(await nhe.onReincarnationEvent("return-from-limbo")).toBe("return-from-limbo");
   });
 
   it("clears the in-memory interaction buffer", async () => {

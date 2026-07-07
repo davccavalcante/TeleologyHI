@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { mkdtemp, readFile, readdir } from "node:fs/promises";
+import { mkdtemp, readdir, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { runSleepCycle } from "../src/sleep/cycle";
-import { consolidateAll, classifyDream } from "../src/sleep/consolidator";
-import { recallFromTemporalLobe } from "../src/memory/recall";
+import { beforeEach, describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { recallFromTemporalLobe } from "../src/memory/recall";
+import { classifyDream, consolidateAll } from "../src/sleep/consolidator";
+import { runSleepCycle } from "../src/sleep/cycle";
 import { dreamRecordFromYaml } from "../src/sleep/yaml";
 
 describe("runSleepCycle", () => {
@@ -24,9 +24,7 @@ describe("runSleepCycle", () => {
       storeDir: dir,
       llm: adapter,
       trigger: { kind: "explicit", reason: "test" },
-      interactions: [
-        { at: "t", userPrompt: "hi", responseText: "hello", refused: false },
-      ],
+      interactions: [{ at: "t", userPrompt: "hi", responseText: "hello", refused: false }],
     });
 
     expect(result.record.phases).toHaveLength(5);
@@ -85,13 +83,31 @@ describe("runSleepCycle", () => {
 describe("classifyDream + consolidateAll", () => {
   it("thresholds map teleologicalValue to memory classes", () => {
     expect(
-      classifyDream({ id: "d", induced: false, inducedBy: null, narrative: "x", teleologicalValue: 0.9 }),
+      classifyDream({
+        id: "d",
+        induced: false,
+        inducedBy: null,
+        narrative: "x",
+        teleologicalValue: 0.9,
+      }),
     ).toBe("lasting-identity");
     expect(
-      classifyDream({ id: "d", induced: false, inducedBy: null, narrative: "x", teleologicalValue: 0.45 }),
+      classifyDream({
+        id: "d",
+        induced: false,
+        inducedBy: null,
+        narrative: "x",
+        teleologicalValue: 0.45,
+      }),
     ).toBe("temporary-emotion");
     expect(
-      classifyDream({ id: "d", induced: false, inducedBy: null, narrative: "x", teleologicalValue: 0.1 }),
+      classifyDream({
+        id: "d",
+        induced: false,
+        inducedBy: null,
+        narrative: "x",
+        teleologicalValue: 0.1,
+      }),
     ).toBe("noise-distortion");
   });
 

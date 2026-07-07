@@ -1,11 +1,13 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ulid } from "ulid";
 import { CreatorKeyring } from "../creator/keyring.js";
+import { NonceLedger } from "../creator/nonce-ledger.js";
+import { atomicWriteFile } from "../stores/atomic-write.js";
 import {
   AxiomProposalRecord,
-  EmergentAxiomProposal,
   type CreatorSignature,
+  EmergentAxiomProposal,
   type ProposalDecisionRequest,
   type ProposalStatus,
 } from "../types.js";
@@ -16,39 +18,36 @@ export interface ProposalListFilter {
 }
 
 /**
- * ProposalStore — persistent queue of HIM-emergent axiom proposals (Entry 7).
+ * ProposalStore, persistent queue of HIM-emergent axiom proposals (Entry 7).
  *
  * HIM proposes new axioms derived from lived experience. MAIC ratifies or
  * rejects each one out of band (Creator-signed). Once ratified, the resulting
  * axiom is appended to the HIM's `emergentAxioms` (handled by LocalMaic).
  *
- * Disk layout: <storeDir>/proposals/<proposalId>.json — one file per proposal.
+ * Disk layout: <storeDir>/proposals/<proposalId>.json, one file per proposal.
  */
 export class ProposalStore {
   private readonly dir: string;
   private cache = new Map<string, AxiomProposalRecord>();
 
   private constructor(
-    private readonly storeDir: string,
+    storeDir: string,
     private readonly creatorPublicKey: string,
+    private readonly nonces: NonceLedger,
   ) {
     this.dir = join(storeDir, "proposals");
   }
 
-  static async open(
-    storeDir: string,
-    creatorPublicKey: string,
-  ): Promise<ProposalStore> {
-    const s = new ProposalStore(storeDir, creatorPublicKey);
+  static async open(storeDir: string, creatorPublicKey: string): Promise<ProposalStore> {
+    const dir = join(storeDir, "proposals");
+    const nonces = await NonceLedger.open(dir);
+    const s = new ProposalStore(storeDir, creatorPublicKey, nonces);
     await mkdir(s.dir, { recursive: true });
     await s.warmCache();
     return s;
   }
 
-  async propose(
-    himId: string,
-    proposal: EmergentAxiomProposal,
-  ): Promise<AxiomProposalRecord> {
+  async propose(himId: string, proposal: EmergentAxiomProposal): Promise<AxiomProposalRecord> {
     const parsedProposal = EmergentAxiomProposal.parse(proposal);
     const record: AxiomProposalRecord = AxiomProposalRecord.parse({
       id: ulid(),
@@ -86,6 +85,10 @@ export class ProposalStore {
         `ProposalStore.markRatified: proposal "${req.proposalId}" is ${existing.status}, not pending`,
       );
     }
+    // Consume the signature nonce only after the preconditions pass, so a
+    // failed decision does not burn the nonce; the consume still precedes the
+    // mutation, so a captured ratify decision cannot be replayed (M1-5, 1.0.1).
+    await this.nonces.consume(sig.nonce);
     const updated: AxiomProposalRecord = {
       ...existing,
       status: "ratified",
@@ -116,6 +119,10 @@ export class ProposalStore {
         `ProposalStore.markRejected: proposal "${req.proposalId}" is ${existing.status}, not pending`,
       );
     }
+    // Consume the signature nonce only after the preconditions pass, so a
+    // failed decision does not burn the nonce; the consume still precedes the
+    // mutation, so a captured reject decision cannot be replayed (M1-5, 1.0.1).
+    await this.nonces.consume(sig.nonce);
     const updated: AxiomProposalRecord = {
       ...existing,
       status: "rejected",
@@ -145,11 +152,7 @@ export class ProposalStore {
   // ─── internals ──────────────────────────────────────────────────────
 
   private async persist(record: AxiomProposalRecord): Promise<void> {
-    await writeFile(
-      join(this.dir, `${record.id}.json`),
-      JSON.stringify(record, null, 2),
-      "utf-8",
-    );
+    await atomicWriteFile(join(this.dir, `${record.id}.json`), JSON.stringify(record, null, 2));
   }
 
   private async warmCache(): Promise<void> {
@@ -162,9 +165,15 @@ export class ProposalStore {
     }
     for (const file of entries) {
       if (!file.endsWith(".json")) continue;
-      const raw = await readFile(join(this.dir, file), "utf-8");
-      const record = AxiomProposalRecord.parse(JSON.parse(raw));
-      this.cache.set(record.id, record);
+      try {
+        const raw = await readFile(join(this.dir, file), "utf-8");
+        const record = AxiomProposalRecord.parse(JSON.parse(raw));
+        this.cache.set(record.id, record);
+      } catch (err) {
+        // Skip a malformed proposal file with a warning rather than bricking
+        // LocalMaic.open for every healthy proposal (M2-4 parity).
+        console.warn(`ProposalStore: skipping malformed proposal file "${file}": ${String(err)}`);
+      }
     }
   }
 }

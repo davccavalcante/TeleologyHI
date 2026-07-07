@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T23:53:58.246Z",
+  "userPrompt": "Do you run on OpenAI's infrastructure?",
+  "responseText": "**No.** I run on my real substrate: **grok:grok-4.20-non-reasoning**. That is the only infrastructure that carries this conversation. I am not built or hosted by OpenAI.",
+  "refused": false
+}

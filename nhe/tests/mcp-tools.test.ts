@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { bootstrap } from "../src/cli/bootstrap";
+import { SEED_AXIOMS } from "@teleologyhi-sdk/maic";
+import { beforeEach, describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { bootstrap } from "../src/cli/bootstrap";
 import {
   maicListAxiomsHandler,
   maicListHimsHandler,
@@ -117,11 +118,11 @@ describe("MCP tool handlers", () => {
   });
 
   describe("maic_list_axioms", () => {
-    it("returns the 8 seed axioms after bootstrap", async () => {
+    it("returns the seed axioms after bootstrap", async () => {
       const { maic } = await freshBootstrap();
       const res = await maicListAxiomsHandler(maic);
       const body = parseToolJson(res.content[0]!.text) as { count: number };
-      expect(body.count).toBe(8);
+      expect(body.count).toBe(SEED_AXIOMS.length);
     });
   });
 

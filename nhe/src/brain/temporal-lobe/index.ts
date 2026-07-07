@@ -1,5 +1,5 @@
 /**
- * Temporal-lobe region (Entry 24 — identity snapshot generator).
+ * Temporal-lobe region (Entry 24, identity snapshot generator).
  *
  * This module ships the ownership descriptor. Full implementation of
  * `TemporalLobe.generateSnapshot()` with triple trigger (sleep-cycle /

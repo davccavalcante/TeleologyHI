@@ -1,15 +1,15 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
 import {
-  passthrough,
   chainOfThought,
   parseCotOutput,
-  selfConsistency,
-  reflexion,
-  parseVerdict,
-  selfRefine,
-  reAct,
   parseReActTurn,
+  parseVerdict,
+  passthrough,
+  reAct,
+  reflexion,
+  selfConsistency,
+  selfRefine,
 } from "../src/reasoning";
 
 const baseInput = {
@@ -93,10 +93,7 @@ describe("selfConsistency", () => {
         return r;
       },
     });
-    const r = await selfConsistency(passthrough, { k: 3, voter: "longest" })(
-      baseInput,
-      llm,
-    );
+    const r = await selfConsistency(passthrough, { k: 3, voter: "longest" })(baseInput, llm);
     expect(r.text).toBe("this is the longest reply by far");
   });
 
@@ -143,8 +140,8 @@ describe("reflexion", () => {
 describe("selfRefine", () => {
   it("produces draft → critique → refined trace", async () => {
     const responses = [
-      "draft",            // inner passthrough → draft
-      "- weak intro",     // critique
+      "draft", // inner passthrough → draft
+      "- weak intro", // critique
       "polished version", // refine
     ];
     let i = 0;
@@ -188,10 +185,7 @@ describe("reAct", () => {
   });
 
   it("reports an error observation for unknown tools", async () => {
-    const responses = [
-      "Thought: try.\nAction: nonexistent[x]",
-      "Thought: bail.\nAnswer: failed",
-    ];
+    const responses = ["Thought: try.\nAction: nonexistent[x]", "Thought: bail.\nAnswer: failed"];
     let i = 0;
     const llm = new MockAdapter({ reply: () => responses[i++]! });
     const r = await reAct({ tools: {}, maxSteps: 3 })(baseInput, llm);

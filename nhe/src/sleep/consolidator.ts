@@ -1,13 +1,8 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ulid } from "ulid";
+import type { Dream, DreamRecord, MemoryClass, MemoryEntry } from "./types.js";
 import { dreamRecordFromYaml } from "./yaml.js";
-import type {
-  Dream,
-  DreamRecord,
-  MemoryClass,
-  MemoryEntry,
-} from "./types.js";
 
 export interface ConsolidationResult {
   processedSleepFiles: string[];
@@ -50,20 +45,17 @@ export const TRAUMATIC_PATTERNS =
 
 /**
  * Classify a single dream. Four classes:
- *   - `traumatic-knowledge` — fires when the narrative matches
+ *   - `traumatic-knowledge`, fires when the narrative matches
  *     `TRAUMATIC_PATTERNS` AND `teleologicalValue >= traumaticMin`. Default
  *     can be disabled via `detectTraumatic: false`.
- *   - `lasting-identity`  — teleologicalValue >= lastingIdentity threshold.
- *   - `temporary-emotion` — teleologicalValue >= temporaryEmotion threshold.
- *   - `noise-distortion`  — below both.
+ *   - `lasting-identity` , teleologicalValue >= lastingIdentity threshold.
+ *   - `temporary-emotion`, teleologicalValue >= temporaryEmotion threshold.
+ *   - `noise-distortion` , below both.
  *
  * Traumatic-knowledge is checked BEFORE the value thresholds so a
  * high-value dream about loss doesn't get filed as lasting-identity.
  */
-export function classifyDream(
-  dream: Dream,
-  th: ClassificationThresholds = {},
-): MemoryClass {
+export function classifyDream(dream: Dream, th: ClassificationThresholds = {}): MemoryClass {
   const hi = th.lastingIdentity ?? 0.6;
   const lo = th.temporaryEmotion ?? 0.3;
   const detectTraumatic = th.detectTraumatic ?? true;
@@ -107,9 +99,7 @@ export async function consolidateAll(
     throw err;
   }
 
-  const yamlFiles = entries.filter(
-    (f) => f.endsWith(".yaml") && !entries.includes(`${f}.done`),
-  );
+  const yamlFiles = entries.filter((f) => f.endsWith(".yaml") && !entries.includes(`${f}.done`));
 
   const processedSleepFiles: string[] = [];
   const memoriesWritten: MemoryEntry[] = [];
@@ -169,7 +159,7 @@ async function writeTemporalLobe(
     `inducedBy: ${dream.inducedBy ?? "null"}`,
     "---",
     "",
-    `# Temporal Lobe Memory — ${consolidatedAt.slice(0, 10)}`,
+    `# Temporal Lobe Memory, ${consolidatedAt.slice(0, 10)}`,
     "",
     "## Insight",
     "",

@@ -1,16 +1,17 @@
 /**
- * Smoke tests for `buildMcpServer` (TASK.md J3) — the MCP server wiring that
+ * Smoke tests for `buildMcpServer` (TASK.md J3), the MCP server wiring that
  * exposes NHE + MAIC capabilities as MCP tools (Claude Desktop, Cursor,
- * any MCP-aware client). We do NOT start a transport here — that would
+ * any MCP-aware client). We do NOT start a transport here, that would
  * require a live stdio/tcp peer; instead we exercise the wiring function
  * and inspect the registered tool catalogue via the `McpServer` instance.
  */
-import { describe, expect, it } from "vitest";
+
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { bootstrap } from "../src/cli/bootstrap";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { bootstrap } from "../src/cli/bootstrap";
 import { buildMcpServer } from "../src/cli/mcp";
 
 const EXPECTED_TOOLS = [
@@ -30,7 +31,7 @@ async function freshBootstrap() {
   });
 }
 
-describe("buildMcpServer — wiring smoke", () => {
+describe("buildMcpServer, wiring smoke", () => {
   it("constructs an McpServer instance without throwing", async () => {
     const { nhe, maic } = await freshBootstrap();
     const server = buildMcpServer(nhe, maic);

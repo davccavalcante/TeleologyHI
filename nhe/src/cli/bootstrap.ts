@@ -1,9 +1,9 @@
 import { mkdir, stat } from "node:fs/promises";
 import { join } from "node:path";
+import { BirthSignatureBuilder, createHim, HimHandle } from "@teleologyhi-sdk/him";
 import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
-import { BirthSignatureBuilder, HimHandle, createHim } from "@teleologyhi-sdk/him";
-import { Nhe } from "../nhe.js";
 import type { LlmAdapter } from "../adapters/types.js";
+import { Nhe } from "../nhe.js";
 
 export interface BootstrapOptions {
   /** Directory where MAIC + HIM + NHE state lives. Default `./teleologyhi-store`. */
@@ -30,7 +30,7 @@ export interface BootstrapResult {
  *
  * On first run:
  *   - generates a Creator Ed25519 keyring (saved to `<storeDir>/creator.pem`),
- *   - seeds MAIC with the eight foundational axioms,
+ *   - seeds MAIC with the foundational axiom corpus,
  *   - births a HIM with the configured id + archetype,
  *   - constructs an NHE wired to all of the above.
  *

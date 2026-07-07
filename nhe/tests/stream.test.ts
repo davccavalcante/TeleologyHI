@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
 import { collectStream } from "../src/adapters/stream";
 import type { LlmAdapter } from "../src/adapters/types";
@@ -17,9 +17,7 @@ describe("MockAdapter.generateStream (D-N8)", () => {
     const deltas = events.filter((e) => e.kind === "delta");
     const ends = events.filter((e) => e.kind === "end");
     expect(deltas).toHaveLength(4);
-    expect(deltas.map((d) => (d as { text: string }).text).join("")).toBe(
-      "1234567890ABCD",
-    );
+    expect(deltas.map((d) => (d as { text: string }).text).join("")).toBe("1234567890ABCD");
     expect(ends).toHaveLength(1);
     expect((ends[0] as { tokensIn: number }).tokensIn).toBeGreaterThan(0);
   });
@@ -45,10 +43,8 @@ describe("collectStream", () => {
   it("calls onDelta for each chunk in order", async () => {
     const a = new MockAdapter({ reply: "abcdefghij", streamChunkSize: 3 });
     const seen: string[] = [];
-    await collectStream(
-      a,
-      { system: "", messages: [{ role: "user", content: "x" }] },
-      (chunk) => seen.push(chunk),
+    await collectStream(a, { system: "", messages: [{ role: "user", content: "x" }] }, (chunk) =>
+      seen.push(chunk),
     );
     expect(seen).toEqual(["abc", "def", "ghi", "j"]);
   });

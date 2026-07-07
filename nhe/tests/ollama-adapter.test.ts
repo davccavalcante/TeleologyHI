@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { OllamaAdapter } from "../src/adapters/ollama";
 
 function makeMockFetch(body: unknown, status = 200): typeof globalThis.fetch {

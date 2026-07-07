@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T21:50:31.069Z",
+  "userPrompt": "What is 15 factorial divided by 14 factorial?",
+  "responseText": "**15! / 14! = 15**\n\nBy definition, n! = n × (n-1)!, so 15! = 15 × 14!.  \nDividing both sides by 14! cancels it out, leaving exactly 15.",
+  "refused": false
+}

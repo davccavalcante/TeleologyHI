@@ -1,10 +1,10 @@
 /**
  * Tests for the SeedingSource plug-in interface + default
- * CryptoSeedingSource (J-N1 — Entry 21).
+ * CryptoSeedingSource (J-N1, Entry 21).
  */
 import { describe, expect, it } from "vitest";
-import { CryptoSeedingSource, withFallback } from "../src/index.js";
 import type { SeedingSource } from "../src/index.js";
+import { CryptoSeedingSource, withFallback } from "../src/index.js";
 
 describe("CryptoSeedingSource (J-N1)", () => {
   it("returns n bytes for a positive integer n", () => {
@@ -53,10 +53,7 @@ describe("withFallback (J-N1)", () => {
   });
 
   it("falls through to the next source when the primary fails", async () => {
-    const chain = withFallback(
-      new FailingSource("primary"),
-      new CryptoSeedingSource(),
-    );
+    const chain = withFallback(new FailingSource("primary"), new CryptoSeedingSource());
     const bytes = await chain.bytes(8);
     expect(bytes.length).toBe(8);
     expect(chain.getLastUsedId()).toBe("crypto.csprng");
@@ -72,10 +69,7 @@ describe("withFallback (J-N1)", () => {
   });
 
   it("exposes the chain ids in order", () => {
-    const chain = withFallback(
-      new FailingSource("primary"),
-      new CryptoSeedingSource(),
-    );
+    const chain = withFallback(new FailingSource("primary"), new CryptoSeedingSource());
     expect(chain.id).toBe("chain:primary>crypto.csprng");
     expect(chain.chainIds).toEqual(["primary", "crypto.csprng"]);
   });

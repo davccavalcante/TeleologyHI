@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { monotonicFactory } from "ulid";
 import type { InteractionRecord } from "../sleep/types.js";
@@ -9,13 +9,13 @@ import type { InteractionRecord } from "../sleep/types.js";
 const nextUlid = monotonicFactory();
 
 /**
- * InteractionStore — append-only persistent log of NHE ↔ user exchanges.
+ * InteractionStore, append-only persistent log of NHE ↔ user exchanges.
  *
  * Without this, the NHE's `recentInteractions` buffer is RAM-only and is lost
  * on process restart. That breaks the cosmology: HIM (the spirit) persists in
  * MAIC, but its lived experience evaporates every crash.
  *
- * Disk layout: `<storeDir>/interactions/<ulid>.json` — one file per exchange.
+ * Disk layout: `<storeDir>/interactions/<ulid>.json`, one file per exchange.
  * ULID ordering matches chronology, so `loadMostRecent` is a lexicographic
  * tail-slice without any extra index.
  *
@@ -34,11 +34,7 @@ export class InteractionStore {
 
   async append(record: InteractionRecord): Promise<void> {
     const id = nextUlid();
-    await writeFile(
-      join(this.dir, `${id}.json`),
-      JSON.stringify(record, null, 2),
-      "utf-8",
-    );
+    await writeFile(join(this.dir, `${id}.json`), JSON.stringify(record, null, 2), "utf-8");
   }
 
   async loadMostRecent(limit: number): Promise<InteractionRecord[]> {
@@ -60,7 +56,7 @@ export class InteractionStore {
         const raw = await readFile(join(this.dir, file), "utf-8");
         out.push(JSON.parse(raw) as InteractionRecord);
       } catch {
-        // Skip malformed entries silently — consistent with HimStore.warmCache.
+        // Skip malformed entries silently, consistent with HimStore.warmCache.
       }
     }
     return out;

@@ -1,10 +1,10 @@
-import { z } from "zod";
 import type { HimHandle } from "@teleologyhi-sdk/him";
 import type { MaicClient, MaicVerdict, NheStatus } from "@teleologyhi-sdk/maic";
+import { z } from "zod";
 import type { LlmAdapter } from "./adapters/types.js";
-import type { PersuasionTechnique } from "./refusal/library.js";
 import type { OperatorContext } from "./prompt/compose.js";
 import type { ReasoningStrategy } from "./reasoning/types.js";
+import type { PersuasionTechnique } from "./refusal/library.js";
 
 export const ChatMessageRole = z.enum(["user", "assistant", "system"]);
 export type ChatMessageRole = z.infer<typeof ChatMessageRole>;
@@ -93,7 +93,7 @@ export interface NheConfig {
   /**
    * MAIC client. Either `LocalMaic` (in-process, full surface) or
    * `RemoteMaic` (HTTP, read + behavior-review subset for serverless/edge
-   * deployments) — any value satisfying the `MaicClient` interface works.
+   * deployments), any value satisfying the `MaicClient` interface works.
    */
   maicClient: MaicClient;
   /** The LLM adapter used to generate the final response. */
@@ -153,7 +153,7 @@ export interface NheConfig {
    * Optional **dual-LLM cross-check verifier**: when `highStakesVerifier`
    * is set, every post-review-approved response is run past a second
    * adapter that decides (`AGREE` / `DISAGREE` + one-line reason). On
-   * disagreement, the response is escalated to a redirect — the user gets
+   * disagreement, the response is escalated to a redirect, the user gets
    * a second-source reasoned refusal rather than a one-LLM ok.
    *
    * Default `false`.

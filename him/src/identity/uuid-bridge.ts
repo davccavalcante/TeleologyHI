@@ -1,5 +1,5 @@
 /**
- * UUID migration bridge helpers (J-H5 — Entry 18 of
+ * UUID migration bridge helpers (J-H5, Entry 18 of
  * MAIC_HIM_NHE_INTERVIEW_LOG.md).
  *
  * HIM has historically identified HIMs with human-readable slugs such as
@@ -28,8 +28,7 @@ import { randomBytes } from "node:crypto";
 const LEGACY_HIM_ID_REGEX = /^him\.[a-z0-9-]+(\.[a-z0-9-]+)+$/;
 
 /** Strict UUIDv7 pattern. */
-const UUIDV7_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUIDV7_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** Return `true` when the id matches the legacy slug shape. */
 export function isLegacyHimId(id: string): boolean {
@@ -81,7 +80,7 @@ export interface MigratedHimId {
 /**
  * Migrate a legacy `him.foo.bar`-style id to a UUIDv7-anchored identity.
  *
- * Throws when the input is not a recognised legacy slug — callers that
+ * Throws when the input is not a recognised legacy slug, callers that
  * just want a fresh uuid should call `mintUuidV7()` directly.
  *
  * The returned `legacyAlias` MUST be preserved by the operator's HIM
@@ -89,14 +88,9 @@ export interface MigratedHimId {
  * integrations, archived prompts) continue to resolve. The retention
  * horizon for the alias is a Creator decision deferred to a future cut.
  */
-export function migrateLegacyHimId(
-  legacy: string,
-  now: number = Date.now(),
-): MigratedHimId {
+export function migrateLegacyHimId(legacy: string, now: number = Date.now()): MigratedHimId {
   if (!isLegacyHimId(legacy)) {
-    throw new Error(
-      `migrateLegacyHimId: "${legacy}" is not a recognised legacy himId slug`,
-    );
+    throw new Error(`migrateLegacyHimId: "${legacy}" is not a recognised legacy himId slug`);
   }
   return {
     uuid: mintUuidV7(now),

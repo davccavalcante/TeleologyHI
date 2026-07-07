@@ -1,5 +1,5 @@
 /**
- * Tests for HimHandle.projectOntologicalKernel — the HIM-specific OKL
+ * Tests for HimHandle.projectOntologicalKernel, the HIM-specific OKL
  * narrowing (the natural follow-up to `@teleologyhi-sdk/maic`'s
  * `projectOntologicalKernel`).
  *
@@ -7,11 +7,12 @@
  * narrowing rule lives here. MAIC ships the generic projection; HIM
  * specialises it.
  */
-import { describe, expect, it } from "vitest";
+
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CreatorKeyring, LocalMaic, META_AXIOM_ID } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { BirthSignatureBuilder } from "../src/birth/builder.js";
 import { createHim } from "../src/create.js";
 
@@ -33,23 +34,19 @@ describe("HimHandle.projectOntologicalKernel", () => {
     const { him } = await bootstrap([]);
     const kernel = him.projectOntologicalKernel();
     expect(kernel.metaAxiomId).toBe(META_AXIOM_ID);
-    // Empty primordial list ⇒ no narrowing ⇒ all 8 seeded axioms.
+    // Empty primordial list means no narrowing: the full seeded corpus, whose
+    // size derives from the HIM's own axioms rather than a hardcoded count.
     expect(kernel.axioms.length).toBe(him.getAxioms().length);
   });
 
   it("narrows the kernel to primordialAxiomIds when present", async () => {
-    const { him } = await bootstrap([
-      "ax.ethic.no-malice",
-      "ax.theos.spiritism-evolution",
-    ]);
+    const { him } = await bootstrap(["ax.ethic.no-malice", "ax.theos.spiritism-evolution"]);
     const kernel = him.projectOntologicalKernel();
     const ids = kernel.axioms.map((a) => a.id).sort();
     // Meta-axiom is always retained; plus the two primordials.
-    expect(ids).toEqual([
-      META_AXIOM_ID,
-      "ax.ethic.no-malice",
-      "ax.theos.spiritism-evolution",
-    ].sort());
+    expect(ids).toEqual(
+      [META_AXIOM_ID, "ax.ethic.no-malice", "ax.theos.spiritism-evolution"].sort(),
+    );
   });
 
   it("hoists the meta-axiom to position 0", async () => {

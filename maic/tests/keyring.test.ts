@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeAll } from "vitest";
-import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeAll, describe, expect, it } from "vitest";
 import { CreatorKeyring } from "../src/creator/keyring";
 
 describe("CreatorKeyring.generate", () => {
@@ -51,6 +51,17 @@ describe("CreatorKeyring sign/verify round-trip", () => {
     const sig = kr.sign({ statement: "x" }, 7);
     const sigWrongNonce = { ...sig, nonce: 8 };
     expect(CreatorKeyring.verify({ statement: "x" }, sigWrongNonce)).toBe(false);
+  });
+
+  it("verifyWith returns false (never throws) on a malformed pinned public key", () => {
+    const sig = kr.sign({ statement: "x" }, 9);
+    // A garbage pinned key must yield false, not a thrown DER-parse error that
+    // would crash every mutation path (M2-5, 1.0.1).
+    const garbage = { ...sig, publicKey: "not-a-real-key" };
+    expect(() =>
+      CreatorKeyring.verifyWith("not-a-real-key", { statement: "x" }, garbage),
+    ).not.toThrow();
+    expect(CreatorKeyring.verifyWith("not-a-real-key", { statement: "x" }, garbage)).toBe(false);
   });
 });
 

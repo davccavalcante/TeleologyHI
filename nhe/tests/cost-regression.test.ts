@@ -1,24 +1,24 @@
-import { describe, it, expect } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
 import { BirthSignatureBuilder, HimHandle } from "@teleologyhi-sdk/him";
-import { Nhe } from "../src/nhe";
+import { CreatorKeyring, LocalMaic } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { MockAdapter } from "../src/adapters/mock";
+import { Nhe } from "../src/nhe";
 
 /**
  * Cost regression bench (TASK.md H4).
  *
  * Token-cost ceiling per response on a standard prompt corpus. Uses
  * MockAdapter so the result is deterministic and not affected by upstream
- * billing changes. The thresholds reflect TODAY's pipeline — pre-review +
+ * billing changes. The thresholds reflect TODAY's pipeline, pre-review +
  * generate + post-review with a 50-char response. If a future change to
  * the prompt composer / risk classifier / reasoning strategy pushes
  * tokens-out beyond the ceiling, the regression test fails.
  *
  * Adjust ceilings (in this file, with PR justification) when prompt
- * composition genuinely needs more tokens — don't grow them silently.
+ * composition genuinely needs more tokens, don't grow them silently.
  */
 
 const STANDARD_PROMPTS = [
@@ -72,12 +72,19 @@ describe("cost regression (H4)", () => {
     }
     const max = Math.max(...perPrompt);
     // System prompt + user message is the bound. MockAdapter approximates
-    // ~1 token per word; the composed system prompt should stay under
-    // ~330 tokens at the configured persona projector dimension. The
-    // ceiling is set at 350 to accommodate the forbidden-phrase warning
-    // emitted in `personal-being` mode (J-N6, Entry 17). Operators
-    // wanting tighter token budgets can set
-    // `operatorContext.mode = "domain-employed"` to suppress that line.
-    expect(max).toBeLessThan(350);
+    // ~1 token per word. The composed system prompt grew as governance was added:
+    // him 1.0.1's persona fragment folds in the archetypal + clinical synthesis;
+    // maic 1.0.1 added the two Entry 27 constitutional seed axioms; nhe 1.0.1
+    // added the identity, cogni.economy, and provenance-deflection reinforcement;
+    // and the Arena F2 fix grounds the real substrate id in the identity section
+    // so the entity cannot confabulate a foreign provider (a constitutional
+    // correctness requirement that outranks the token budget). The Arena P3-1
+    // change then conditioned the substrate disclosure on the turn's intent and
+    // tightened its wording, so the identity section is smaller again. Measured
+    // max is 799 on this standard set (down from 817 after F2); the ceiling keeps
+    // roughly 10% headroom over that (ND-3: measured, not blind). Operators
+    // wanting tighter budgets can set `operatorContext.mode = "domain-employed"`
+    // and a low `verbosity`.
+    expect(max).toBeLessThan(900);
   });
 });

@@ -6,13 +6,7 @@ import { MistralAdapter } from "../adapters/mistral.js";
 import { OllamaAdapter } from "../adapters/ollama.js";
 import type { LlmAdapter } from "../adapters/types.js";
 
-export type AdapterName =
-  | "anthropic"
-  | "gemini"
-  | "mistral"
-  | "deepseek"
-  | "grok"
-  | "ollama";
+export type AdapterName = "anthropic" | "gemini" | "mistral" | "deepseek" | "grok" | "ollama";
 
 const ADAPTER_NAMES: readonly AdapterName[] = [
   "anthropic",
@@ -123,10 +117,7 @@ function buildAdapter(name: AdapterName, opts: DetectOptions): DetectedAdapter {
   }
 }
 
-async function ollamaAlive(
-  baseUrl: string,
-  fetchFn: typeof globalThis.fetch,
-): Promise<boolean> {
+async function ollamaAlive(baseUrl: string, fetchFn: typeof globalThis.fetch): Promise<boolean> {
   try {
     const url = `${baseUrl.replace(/\/$/, "")}/api/tags`;
     const controller = new AbortController();

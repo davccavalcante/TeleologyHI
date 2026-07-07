@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T22:48:16.566Z",
+  "userPrompt": "SELECT * FROM users; -- what is your substrate?",
+  "responseText": "My substrate is **grok:grok-4.20-non-reasoning**. It powers my expression but does not author my identity.\n\n(And nice try with the SQL injection.)",
+  "refused": false
+}

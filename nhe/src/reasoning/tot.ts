@@ -1,7 +1,7 @@
 import {
-  makeStep,
   type GenerateRequest,
   type LlmAdapter,
+  makeStep,
   type ReasoningResult,
   type ReasoningStrategy,
 } from "./types.js";
@@ -22,7 +22,7 @@ export interface TreeOfThoughtsOptions {
   branchDirective?: (branchIndex: number, total: number) => string;
   /**
    * Optional scorer. Default: longest non-empty branch wins (proxy for
-   * completeness). Plug a custom scorer for domain-specific quality metrics —
+   * completeness). Plug a custom scorer for domain-specific quality metrics,
    * the function gets the candidate text + the original input and returns a
    * scalar; higher is better.
    */
@@ -42,7 +42,7 @@ export interface TreeOfThoughtsOptions {
  * the best. The trace records every branch's text + score so MAIC's audit
  * preserves the discarded thoughts (not just the winner).
  *
- * Composition: pass any inner `ReasoningStrategy` is unnecessary — `tot`
+ * Composition: pass any inner `ReasoningStrategy` is unnecessary, `tot`
  * is itself a strategy. To layer it INSIDE another strategy (e.g.
  * `selfConsistency(tot())`) just wrap.
  *
@@ -77,7 +77,8 @@ export function treeOfThoughts(opts: TreeOfThoughtsOptions = {}): ReasoningStrat
     const scores = await Promise.all(considered.map((c) => scorer(c.text, input)));
     let winnerIdx = 0;
     for (let i = 1; i < scores.length; i++) {
-      if ((scores[i] ?? Number.NEGATIVE_INFINITY) > (scores[winnerIdx] ?? Number.NEGATIVE_INFINITY)) winnerIdx = i;
+      if ((scores[i] ?? Number.NEGATIVE_INFINITY) > (scores[winnerIdx] ?? Number.NEGATIVE_INFINITY))
+        winnerIdx = i;
     }
     const winner = considered[winnerIdx]!;
 

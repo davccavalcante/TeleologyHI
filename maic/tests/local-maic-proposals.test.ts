@@ -1,14 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LocalMaic } from "../src/client/local";
 import { CreatorKeyring } from "../src/creator/keyring";
-import type {
-  BirthSignature,
-  EmergentAxiomProposal,
-  ProposalDecisionRequest,
-} from "../src/types";
+import type { BirthSignature, EmergentAxiomProposal, ProposalDecisionRequest } from "../src/types";
 
 async function collect<T>(it: AsyncIterable<T>): Promise<T[]> {
   const out: T[] = [];
@@ -69,9 +65,9 @@ describe("LocalMaic.proposeAxiomEvolution + ratify/reject", () => {
   });
 
   it("propose throws for an unknown himId", async () => {
-    await expect(
-      maic.proposeAxiomEvolution("him.does-not-exist", proposalOf()),
-    ).rejects.toThrow(/not registered/i);
+    await expect(maic.proposeAxiomEvolution("him.does-not-exist", proposalOf())).rejects.toThrow(
+      /not registered/i,
+    );
   });
 
   it("ratify creates a him-emergent axiom + appends to HIM record + emits audit", async () => {
@@ -119,9 +115,9 @@ describe("LocalMaic.proposeAxiomEvolution + ratify/reject", () => {
     const r = await maic.proposeAxiomEvolution("him.evolve", proposalOf());
     const req: ProposalDecisionRequest = { op: "ratify", proposalId: r.proposalId! };
     await maic.ratifyAxiomProposal(r.proposalId!, kr.sign(req, 9));
-    await expect(
-      maic.ratifyAxiomProposal(r.proposalId!, kr.sign(req, 10)),
-    ).rejects.toThrow(/not pending|ratified/i);
+    await expect(maic.ratifyAxiomProposal(r.proposalId!, kr.sign(req, 10))).rejects.toThrow(
+      /not pending|ratified/i,
+    );
   });
 
   it("reject on already-rejected proposal throws", async () => {
@@ -137,9 +133,9 @@ describe("LocalMaic.proposeAxiomEvolution + ratify/reject", () => {
     const r = await maic.proposeAxiomEvolution("him.evolve", proposalOf());
     const impostor = CreatorKeyring.generate();
     const req: ProposalDecisionRequest = { op: "ratify", proposalId: r.proposalId! };
-    await expect(
-      maic.ratifyAxiomProposal(r.proposalId!, impostor.sign(req, 9)),
-    ).rejects.toThrow(/signature/i);
+    await expect(maic.ratifyAxiomProposal(r.proposalId!, impostor.sign(req, 9))).rejects.toThrow(
+      /signature/i,
+    );
   });
 
   it("listAxiomProposals filters by himId and status", async () => {
@@ -181,7 +177,7 @@ describe("LocalMaic.proposeAxiomEvolution + ratify/reject", () => {
   });
 });
 
-describe("Compliance — proposal events surface in projections", () => {
+describe("Compliance, proposal events surface in projections", () => {
   it("ISO 42001 and EU AI Act each cover the 3 proposal kinds", async () => {
     const dir = await mkdtemp(join(tmpdir(), "maic-compliance-prop-"));
     const kr = CreatorKeyring.generate();

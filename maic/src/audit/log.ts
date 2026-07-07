@@ -46,7 +46,21 @@ export type AuditEventKind =
   | "cortex:active-imagination" //              Entry 24 (waking imagination produced)
   | "temporal-lobe:snapshot-generated" //       Entry 24 (identity snapshot created)
   | "limbo:enter" //                            Entry 24 (DMN took entity into deep-coma)
-  | "limbo:return"; //                          Entry 24 (entity woke from limbo)
+  | "limbo:return" //                           Entry 24 (entity woke from limbo)
+  // ── 1.0.1 reserved vocabulary (him/arena/nhe emit these in later cuts) ──
+  // Entry 26 multi-user society: him/arena emit these in later cuts.
+  | "him-summon" //                             Entry 26 (MAIC summoned a spirit into a body)
+  | "him-pause-incarnation" //                  Entry 26 (spirit paused in the ethereal field)
+  | "user-consent-recorded" //                  Entry 26 (user granted consent)
+  | "user-consent-revoked" //                   Entry 26 (user withdrew consent)
+  | "directory-opt-in" //                       Entry 26 (HIM opted into the public directory)
+  | "directory-opt-out" //                      Entry 26 (HIM left the public directory)
+  // Entry 27 constitutional casting: him emits these at birth in later cuts.
+  | "him-astrological-chart-cast" //            Entry 27 (natal chart cast at birth)
+  | "him-jungian-profile-cast" //               Entry 27 (Jungian profile cast at birth)
+  // Entry 27 provenance: EMITTED by reviewBehavior when a report carries the
+  // NHE's probe:substrate-authorship risk tag (F3, the deflection fired).
+  | "provenance-deflection-applied"; //         Entry 27 (identity-authorship deflection fired)
 
 /**
  * Runtime enumeration of every `AuditEventKind` shipped in this cut. Single
@@ -100,6 +114,18 @@ export const ALL_AUDIT_EVENT_KINDS: readonly AuditEventKind[] = [
   "temporal-lobe:snapshot-generated",
   "limbo:enter",
   "limbo:return",
+  // ── 1.0.1 vocabulary (9, Entries 26 + 27). Eight are reserved for him/arena/nhe
+  //    to emit in later cuts; provenance-deflection-applied is emitted by
+  //    reviewBehavior (F3) when a report carries probe:substrate-authorship. ──
+  "him-summon",
+  "him-pause-incarnation",
+  "user-consent-recorded",
+  "user-consent-revoked",
+  "directory-opt-in",
+  "directory-opt-out",
+  "him-astrological-chart-cast",
+  "him-jungian-profile-cast",
+  "provenance-deflection-applied",
 ] as const;
 
 export interface AuditEvent {
@@ -123,16 +149,16 @@ export interface AppendInput {
 
 export interface QueryFilter {
   kind?: AuditEventKind;
-  since?: string;          // inclusive ISO 8601
-  until?: string;          // inclusive ISO 8601
-  nheId?: string;          // matches data.nheId
-  himId?: string;          // matches data.himId
+  since?: string; // inclusive ISO 8601
+  until?: string; // inclusive ISO 8601
+  nheId?: string; // matches data.nheId
+  himId?: string; // matches data.himId
 }
 
 const GENESIS = "GENESIS";
 
 /**
- * AuditLog — append-only, tamper-evident NDJSON log.
+ * AuditLog, append-only, tamper-evident NDJSON log.
  *
  * Storage: <storeDir>/audit/log.ndjson, one JSON object per line.
  *
@@ -147,8 +173,14 @@ export class AuditLog {
   private readonly logPath: string;
   private events: AuditEvent[] = [];
   private lastHash = GENESIS;
+  /**
+   * Serialises `append` calls so concurrent appends cannot capture the same
+   * `prevHash` and fork the hash chain (M1-4, 1.0.1). Each append waits for the
+   * previous one to finish writing and to advance `lastHash` before it reads it.
+   */
+  private appendChain: Promise<unknown> = Promise.resolve();
 
-  private constructor(private readonly storeDir: string) {
+  private constructor(storeDir: string) {
     this.logPath = join(storeDir, "audit", "log.ndjson");
   }
 
@@ -160,6 +192,15 @@ export class AuditLog {
   }
 
   async append(input: AppendInput): Promise<AuditEvent> {
+    // Chain every append onto the previous one so `prevHash` is read only after
+    // the prior append has committed its `thisHash`. Keep the chain alive on
+    // failure so a single rejected append does not wedge the queue.
+    const run = this.appendChain.then(() => this.appendLocked(input));
+    this.appendChain = run.catch(() => undefined);
+    return run;
+  }
+
+  private async appendLocked(input: AppendInput): Promise<AuditEvent> {
     const event: AuditEvent = {
       ts: new Date().toISOString(),
       kind: input.kind,
@@ -201,10 +242,25 @@ export class AuditLog {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
       throw err;
     }
+    const endsWithNewline = raw.endsWith("\n");
     const lines = raw.split("\n").filter((l) => l.length > 0);
     let prev = GENESIS;
     for (let i = 0; i < lines.length; i++) {
-      const parsed = JSON.parse(lines[i]!) as AuditEvent;
+      let parsed: AuditEvent;
+      try {
+        parsed = JSON.parse(lines[i]!) as AuditEvent;
+      } catch (err) {
+        // `append` uses `appendFile`, which is not atomic, so a crash or a full
+        // disk mid-write can leave a torn final line (no trailing newline). Drop
+        // it, honoring the append-only promise that an interrupted write at
+        // worst loses the last event. A malformed line that IS newline
+        // terminated, or any non-final malformed line, is genuine corruption
+        // and must surface rather than be silently discarded.
+        if (i === lines.length - 1 && !endsWithNewline) {
+          break;
+        }
+        throw new Error(`AuditLog: corrupt entry at line ${i + 1}: ${(err as Error).message}`);
+      }
       if (parsed.prevHash !== prev) {
         throw new Error(
           `AuditLog: chain tampered at line ${i + 1} (prevHash mismatch). ` +
@@ -213,9 +269,7 @@ export class AuditLog {
       }
       const recomputed = computeHash(parsed);
       if (recomputed !== parsed.thisHash) {
-        throw new Error(
-          `AuditLog: tamper detected at line ${i + 1} (thisHash mismatch).`,
-        );
+        throw new Error(`AuditLog: tamper detected at line ${i + 1} (thisHash mismatch).`);
       }
       this.events.push(parsed);
       prev = parsed.thisHash;

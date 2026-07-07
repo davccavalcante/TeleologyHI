@@ -1,11 +1,12 @@
 /**
- * Tests for the reincarnation lifecycle parameter (J-H3 — Entry 18).
+ * Tests for the reincarnation lifecycle parameter (J-H3, Entry 18).
  */
-import { describe, expect, it } from "vitest";
+
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CreatorKeyring, LocalMaic, type NheBodyRef } from "@teleologyhi-sdk/maic";
+import { describe, expect, it } from "vitest";
 import { BirthSignatureBuilder } from "../src/birth/builder.js";
 import { createHim } from "../src/create.js";
 import { reincarnate } from "../src/reincarnate.js";
@@ -21,14 +22,12 @@ async function bootstrap() {
   const kr = CreatorKeyring.generate();
   const maic = await LocalMaic.open({ storeDir: dir, creatorPublicKey: kr.publicKey() });
   await maic.seed(kr);
-  const sig = BirthSignatureBuilder.now()
-    .withPrimaryArchetype("virgo-sun")
-    .build();
+  const sig = BirthSignatureBuilder.now().withPrimaryArchetype("virgo-sun").build();
   const him = await createHim(maic, kr, sig);
   return { maic, kr, him };
 }
 
-describe("reincarnate — lifecycle parameter (J-H3)", () => {
+describe("reincarnate, lifecycle parameter (J-H3)", () => {
   it("defaults lifecycle to `model-swap` when the option is omitted", async () => {
     const { maic, kr, him } = await bootstrap();
     const result = await reincarnate(maic, kr, {

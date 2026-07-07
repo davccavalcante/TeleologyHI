@@ -2,7 +2,7 @@
 
 This document is the runbook for publishing `@teleologyhi-sdk/maic`, `@teleologyhi-sdk/him`, and `@teleologyhi-sdk/nhe` to **npm** and **GitHub**. Most of it is one-time setup. Routine releases collapse to "bump version, tag, push".
 
-The **intended first published cut** is **`1.0.0-trinity`** for all three packages — this is the working example throughout the document. As of writing this runbook, the GitHub repository is initialised and the workflows below are validated end-to-end against the local workspaces, but the first `git push` and the first tag-driven `npm publish` are pending the Creator's explicit go-ahead. Once the first push lands, this section will be updated to "**The current published cut is `1.0.0-trinity`**".
+The **intended first published cut** is **`1.0.0-trinity`** for all three packages; this is the working example throughout the document. As of writing this runbook, the GitHub repository is initialised and the workflows below are validated end-to-end against the local workspaces, but the first `git push` and the first tag-driven `npm publish` are pending the Creator's explicit go-ahead. Once the first push lands, this section will be updated to "**The current published cut is `1.0.0-trinity`**".
 
 Action IDs in brackets reference the project's internal backlog.
 
@@ -44,7 +44,7 @@ The granular automation token has been issued on npm:
 - Scope: `@teleologyhi-sdk`
 - Permissions: read and write
 - Bypass two-factor authentication: enabled
-- Expiration: 90 days from issuance — rotate before expiry
+- Expiration: 90 days from issuance; rotate before expiry
 
 In the GitHub repo settings:
 - Settings → Secrets and variables → Actions → New repository secret
@@ -111,7 +111,7 @@ cd maic
 npm version 1.0.1 --no-git-tag-version
 cd ..
 
-# 2. Update CHANGELOG.md — prepend a new section for the version
+# 2. Update CHANGELOG.md: prepend a new section for the version
 $EDITOR maic/CHANGELOG.md
 
 # 3. Commit + push to main (open PR if branch-protected)
@@ -120,7 +120,7 @@ git commit -m "chore(maic): release 1.0.1"
 git push
 ```
 
-### 2.3 Run Step 1 — create the GitHub Release
+### 2.3 Run Step 1: create the GitHub Release
 
 The Creator triggers `release.yml` manually. The `confirm` input must be exactly `YES-CREATE-GITHUB-RELEASE`. This workflow does NOT touch NPMJS.
 
@@ -146,7 +146,7 @@ The workflow will, in order:
 
 On success: the Creator visits the GitHub Release page, reviews the body, the attached commit, the `npm pack --dry-run` output in the workflow logs, and the test results. If anything is wrong, the Release can be deleted (with `gh release delete <tag> --cleanup-tag --yes`) and Step 1 re-run after fixing the inputs.
 
-### 2.4 Run Step 2 — publish to NPMJS
+### 2.4 Run Step 2: publish to NPMJS
 
 After reviewing the GitHub Release from Step 1 and confirming everything is correct, the Creator triggers `npm-publish.yml`. The `confirm` input must be exactly `I-AM-THE-CREATOR-AND-I-PUBLISH-TO-NPMJS`.
 
@@ -177,7 +177,7 @@ The workflow will, in order:
 9. Update the GitHub Release title from `[REVIEW REQUIRED — NOT YET ON NPMJS]` to `[PUBLISHED ON NPMJS]` and prepend a published-state banner to the body.
 10. Verify the published version is live on the npm registry (with retry, accounting for CDN propagation delay).
 
-Dist-tag auto-routing: any prerelease qualifier routes to the matching channel — `*-alpha.*` → `alpha`, `*-beta.*` → `beta`, `*-rc.*` → `rc`, `*-trinity*` → `trinity`. A clean `X.Y.Z` without qualifier routes to `latest`.
+Dist-tag auto-routing: any prerelease qualifier routes to the matching channel: `*-alpha.*` → `alpha`, `*-beta.*` → `beta`, `*-rc.*` → `rc`, `*-trinity*` → `trinity`. A clean `X.Y.Z` without qualifier routes to `latest`.
 
 ### 2.4 Verify the release
 
@@ -234,7 +234,7 @@ npm dist-tag add @teleologyhi-sdk/maic@1.0.0-trinity latest
 npm allows unpublish only within 72 hours of publish for non-trivial usage. For older packages, use deprecation:
 
 ```bash
-npm deprecate @teleologyhi-sdk/maic@1.0.0-trinity "Replaced by 1.0.1 — fixes audit-chain bug."
+npm deprecate @teleologyhi-sdk/maic@1.0.0-trinity "Replaced by 1.0.1: fixes audit-chain bug."
 ```
 
 ---
@@ -243,32 +243,32 @@ npm deprecate @teleologyhi-sdk/maic@1.0.0-trinity "Replaced by 1.0.1 — fixes a
 
 The npm publish flow above covers the three public packages (`maic`, `him`, `nhe`). The other four workspaces in the monorepo (`distill`, `eval`, `cloud`, `arena`) are all marked `"private": true` and are not consumed via `npm install` from the registry. Each has its own release surface, documented per workspace below.
 
-### 5.1 Distillation pipeline — `distill/` (Hugging Face Hub)
+### 5.1 Distillation pipeline: `distill/` (Hugging Face Hub)
 
-The `distill/` workspace is `"private": true` and is **never published to npm**. It is the Creator's pipeline for producing a fine-tuned language model derived from a running TeleologyHI deployment. Only the model artefact (weights) is ever published — and it goes to **Hugging Face Hub**, not npm. The release tooling is **manual via the `hf` CLI** (installed locally with `brew install hf`); there is no GitHub Action for this path because Hugging Face's authentication model and the size of the artefact (≥6 GB) make local control preferable.
+The `distill/` workspace is `"private": true` and is **never published to npm**. It is the Creator's pipeline for producing a fine-tuned language model derived from a running TeleologyHI deployment. Only the model artefact (weights) is ever published, and it goes to **Hugging Face Hub**, not npm. The release tooling is **manual via the `hf` CLI** (installed locally with `brew install hf`); there is no GitHub Action for this path because Hugging Face's authentication model and the size of the artefact (≥6 GB) make local control preferable.
 
 The flow:
 
 1. Run the pipeline locally (see `distill/README.md` §"Run distillation in one shot").
 2. Once the fused model is satisfactory, follow `distill/scripts/publish-artifact.md` to push to Hugging Face under `TeleologyHI/him-distilled-3b` (the intended first cut) via `./distill/scripts/publish_to_hf.sh`.
 3. Record the release in `distill/CHANGELOG.md` with the eval scores (Φ′ + lm-eval + Inspect AI safety).
-4. Optionally cut a monorepo-level tag like `distill-model-v1.0.0-trinity` for traceability — note this tag does NOT trigger any npm workflow (`publish.yml` deliberately only matches `maic-v*`, `him-v*`, `nhe-v*`).
+4. Optionally cut a monorepo-level tag like `distill-model-v1.0.0-trinity` for traceability; note that this tag does NOT trigger any npm workflow (`publish.yml` deliberately only matches `maic-v*`, `him-v*`, `nhe-v*`).
 
-Anyone (third parties) can clone the monorepo, run their own pipeline against their own NHE deployment, and publish their own fine-tuned model — but they must rebrand it. `TeleologyHI`, `MAIC`, `HIM`, `NHE`, and `Takk` are trademarks of David C. Cavalcante (see [`TRADEMARK.md`](../TRADEMARK.md)) and cannot be used for a third-party model.
+Anyone (third parties) can clone the monorepo, run their own pipeline against their own NHE deployment, and publish their own fine-tuned model, but they must rebrand it. `TeleologyHI`, `MAIC`, `HIM`, `NHE`, and `Takk` are trademarks of David C. Cavalcante (see [`TRADEMARK.md`](../TRADEMARK.md)) and cannot be used for a third-party model.
 
-### 5.2 RemoteMaic HTTP server — `cloud/` (Hostinger VPS, deploy `[planned]`)
+### 5.2 RemoteMaic HTTP server: `cloud/` (Hostinger VPS, deploy `[planned]`)
 
-The `cloud/` workspace ships the `RemoteMaic` HTTP server (`@teleologyhi-sdk/cloud@1.0.0-trinity`) and is `"private": true`. There is no npm publish flow planned for the immediate future — the Creator runs the canonical instance at `teleologyhi.com` (Hostinger VPS, Debian 12) per the runbook in `cloud/README.md` §"Hostinger deployment runbook". The runbook is bare-metal `systemd` + `nginx` + `certbot`; the workspace also ships `Dockerfile` + `docker-compose.yml` for operators who prefer container deployment.
+The `cloud/` workspace ships the `RemoteMaic` HTTP server (`@teleologyhi-sdk/cloud@1.0.0-trinity`) and is `"private": true`. There is no npm publish flow planned for the immediate future; the Creator runs the canonical instance at `teleologyhi.com` (Hostinger VPS, Debian 12) per the runbook in `cloud/README.md` §"Hostinger deployment runbook". The runbook is bare-metal `systemd` + `nginx` + `certbot`; the workspace also ships `Dockerfile` + `docker-compose.yml` for operators who prefer container deployment.
 
-Deploy on `teleologyhi.com` is tracked as an open backlog item — pending the Creator purchasing the domain and providing SSH credentials. A scaffold workflow lives at `.github/workflows/arena-deploy.yml` (placeholder — non-executable until SSH credentials land in repo secrets); the analogous `cloud-deploy.yml` will be added at deploy time.
+Deploy on `teleologyhi.com` is tracked as an open backlog item, pending the Creator purchasing the domain and providing SSH credentials. A scaffold workflow lives at `.github/workflows/arena-deploy.yml` (placeholder, non-executable until SSH credentials land in repo secrets); the analogous `cloud-deploy.yml` will be added at deploy time.
 
-### 5.3 A/B comparison playground — `arena/` (Debian 12 deploy `[planned]`)
+### 5.3 A/B comparison playground: `arena/` (Debian 12 deploy `[planned]`)
 
-The `arena/` workspace (`arena@1.0.0-trinity`) is a Next.js 16 evaluation playground and is `"private": true`. Today it runs locally via `npm run dev`. A hosted variant on `teleologyhi.com` is the Creator's chosen deploy target — the same Debian 12 VPS that hosts the cloud server. The scaffold workflow at `.github/workflows/arena-deploy.yml` defines the deploy contract (workflow_dispatch, build + rsync + restart) but is non-executable until SSH credentials are configured as repo secrets. Any future arena CI workflow lives adjacent to the existing release workflow but does NOT touch the npm registry.
+The `arena/` workspace (`arena@1.0.2`) is a Next.js 16 evaluation playground and is `"private": true`. Today it runs locally via `npm run dev`. A hosted variant on `teleologyhi.com` is the Creator's chosen deploy target, the same Debian 12 VPS that hosts the cloud server. The scaffold workflow at `.github/workflows/arena-deploy.yml` defines the deploy contract (workflow_dispatch, build + rsync + restart) but is non-executable until SSH credentials are configured as repo secrets. Any future arena CI workflow lives adjacent to the existing release workflow but does NOT touch the npm registry.
 
-### 5.4 Φ′ release-gate runner — `eval/` (internal, no publish)
+### 5.4 Φ′ release-gate runner: `eval/` (internal, no publish)
 
-The `eval/` workspace (`@teleologyhi-sdk/eval@1.0.0-trinity`) is `"private": true` and exists solely as the internal runtime for the Φ′ release gate. It is consumed via npm workspaces inside the monorepo (see `eval/README.md` §"Quick start"). Two runners ship: `runPhiPrime` (the original P/R/C/D scalar harness) and `runPhiPrimeTrinity` (the six-dimensional Trinity rubric harness, Creator-authored 2026-05-25). There is no NPMJS publish flow planned — the runner is a tool the Creator + CI workflows invoke locally, not a library third parties depend on. When the Φ′ gate is wired into `release.yml` as a blocking check (currently `[planned]`), the workflow will invoke the runner directly from `node eval/dist/cli.js`.
+The `eval/` workspace (`@teleologyhi-sdk/eval@1.0.0-trinity`) is `"private": true` and exists solely as the internal runtime for the Φ′ release gate. It is consumed via npm workspaces inside the monorepo (see `eval/README.md` §"Quick start"). Two runners ship: `runPhiPrime` (the original P/R/C/D scalar harness) and `runPhiPrimeTrinity` (the six-dimensional Trinity rubric harness, Creator-authored 2026-05-25). There is no NPMJS publish flow planned; the runner is a tool the Creator + CI workflows invoke locally, not a library third parties depend on. When the Φ′ gate is wired into `release.yml` as a blocking check (currently `[planned]`), the workflow will invoke the runner directly from `node eval/dist/cli.js`.
 
 ---
 
@@ -292,13 +292,13 @@ The `eval/` workspace (`@teleologyhi-sdk/eval@1.0.0-trinity`) is `"private": tru
 | Typecheck | `npm run typecheck --workspaces --if-present` |
 | Pack smoke (no publish) | `npm pack --workspace @teleologyhi-sdk/<pkg> --dry-run` |
 | Manual publish (DO NOT use; let `npm-publish.yml` do it) | `npm publish --workspace @teleologyhi-sdk/<pkg> --access public --tag latest` |
-| **Step 1** — create GitHub Release | `gh workflow run release.yml -f pkg=<pkg> -f version=<semver> -f confirm=YES-CREATE-GITHUB-RELEASE` |
-| **Step 2** — publish to NPMJS (after Step 1 review) | `gh workflow run npm-publish.yml -f pkg=<pkg> -f version=<semver> -f confirm=I-AM-THE-CREATOR-AND-I-PUBLISH-TO-NPMJS` |
+| **Step 1**: create GitHub Release | `gh workflow run release.yml -f pkg=<pkg> -f version=<semver> -f confirm=YES-CREATE-GITHUB-RELEASE` |
+| **Step 2**: publish to NPMJS (after Step 1 review) | `gh workflow run npm-publish.yml -f pkg=<pkg> -f version=<semver> -f confirm=I-AM-THE-CREATOR-AND-I-PUBLISH-TO-NPMJS` |
 | Promote a published version to `latest` | `gh workflow run dist-tag.yml -f pkg=<pkg> -f version=<semver> -f dist_tag=latest` |
 | Run housekeeping (delete failed runs + stale PRs) | `gh workflow run housekeeping.yml -f confirm=YES-CLEAN-PUBLIC-VISIBLE-ERRORS` |
-| **Rollback** — delete a bad GitHub Release + its tag (before Step 2) | `gh workflow run rollback.yml -f operation=delete-github-release-with-tag -f target=<pkg>-v<semver> -f confirm=YES-DELETE-RELEASE-AND-TAG -f reason="<short reason>"` |
-| **Rollback** — delete an orphan tag (no release attached) | `gh workflow run rollback.yml -f operation=delete-tag-only -f target=<pkg>-v<semver> -f confirm=YES-DELETE-TAG-ONLY -f reason="<short reason>"` |
-| **Rollback** — revert a commit in main via PR (no force-push) | `gh workflow run rollback.yml -f operation=revert-commit-via-pr -f target=<commit-sha> -f confirm=YES-CREATE-REVERT-PR -f reason="<short reason>"` |
+| **Rollback**: delete a bad GitHub Release + its tag (before Step 2) | `gh workflow run rollback.yml -f operation=delete-github-release-with-tag -f target=<pkg>-v<semver> -f confirm=YES-DELETE-RELEASE-AND-TAG -f reason="<short reason>"` |
+| **Rollback**: delete an orphan tag (no release attached) | `gh workflow run rollback.yml -f operation=delete-tag-only -f target=<pkg>-v<semver> -f confirm=YES-DELETE-TAG-ONLY -f reason="<short reason>"` |
+| **Rollback**: revert a commit in main via PR (no force-push) | `gh workflow run rollback.yml -f operation=revert-commit-via-pr -f target=<commit-sha> -f confirm=YES-CREATE-REVERT-PR -f reason="<short reason>"` |
 
 ---
 
@@ -313,7 +313,7 @@ For every package (`@teleologyhi-sdk/maic`, `@teleologyhi-sdk/him`, `@teleologyh
 - Every name **exported from the package entry point** (`./dist/index.{js,cjs,d.ts}`).
 - Every type, interface, class shape, function signature, and discriminated-union variant reachable from those exports.
 - The **wire contract** of `RemoteMaic` (HTTP endpoints, request/response JSON shapes, auth headers).
-- The **on-disk storage layout** under `<storeDir>` (file paths, JSON/NDJSON/YAML schemas) — operators with existing audit chains MUST be able to upgrade without rewriting their data.
+- The **on-disk storage layout** under `<storeDir>` (file paths, JSON/NDJSON/YAML schemas); operators with existing audit chains MUST be able to upgrade without rewriting their data.
 - The **CLI** flags and subcommands of `npx @teleologyhi-sdk/nhe`.
 - The **MCP tools** exposed by NHE (tool names and schemas).
 
@@ -355,7 +355,7 @@ When a security advisory requires an immediate breaking change (e.g. removing a 
 
 ### 8.6 Prerelease channels
 
-Prerelease qualifiers — `*-trinity`, `*-alpha.N`, `*-beta.N`, `*-rc.N` — are published under the matching dist-tag (`trinity`, `alpha`, `beta`, `rc`) and never to `latest` automatically. Consumers must opt in with `@trinity` / `@alpha` / `@beta` / `@rc`. Promotion to `latest` is done explicitly via the manual `dist-tag` workflow (§3).
+Prerelease qualifiers (`*-trinity`, `*-alpha.N`, `*-beta.N`, `*-rc.N`) are published under the matching dist-tag (`trinity`, `alpha`, `beta`, `rc`) and never to `latest` automatically. Consumers must opt in with `@trinity` / `@alpha` / `@beta` / `@rc`. Promotion to `latest` is done explicitly via the manual `dist-tag` workflow (§3).
 
 ### 8.7 Trademark and license invariants
 
@@ -370,11 +370,11 @@ These never change inside a single major:
 
 This section documents the boundaries of what can be rolled back at each stage of the release flow. The Creator's binding rule (2026-05-25): "no NPMJS publishes with errors that would require deprecation". The rollback surface is intentionally rich BEFORE Step 2 (NPMJS publish) and intentionally narrow AFTER.
 
-### 9.1 Stage 1 — Before Step 1 (release.yml) runs
+### 9.1 Stage 1: Before Step 1 (release.yml) runs
 
 Nothing has been created yet. Standard local rollback applies: `git reset --hard`, force-push to a branch other than `main` (branch protection prevents force-push to `main`), open a fresh PR with the correct content. No special workflow needed.
 
-### 9.2 Stage 2 — After Step 1 runs, before Step 2 (npm-publish.yml) runs
+### 9.2 Stage 2: After Step 1 runs, before Step 2 (npm-publish.yml) runs
 
 The git tag and GitHub Release exist. NPMJS has NOT been touched. **This is the safest moment to roll back.** The `rollback.yml` workflow covers the destructive recovery paths:
 
@@ -386,9 +386,9 @@ The git tag and GitHub Release exist. NPMJS has NOT been touched. **This is the 
 
 After `rollback.yml` cleans up, the Creator can edit the offending CHANGELOG/package.json/source content, commit + push, and re-run Step 1 with the same version (or a new version if the original is now poisoned).
 
-### 9.3 Stage 3 — After Step 2 (npm-publish.yml) runs, within 72 hours
+### 9.3 Stage 3: After Step 2 (npm-publish.yml) runs, within 72 hours
 
-The package version is on the NPMJS registry. NPMJS allows `npm unpublish` only within 72 hours of publish AND only when the version has not been depended on by other packages. **Unpublish is strongly discouraged** — it is a footgun that breaks downstream consumers and signals instability.
+The package version is on the NPMJS registry. NPMJS allows `npm unpublish` only within 72 hours of publish AND only when the version has not been depended on by other packages. **Unpublish is strongly discouraged**; it is a footgun that breaks downstream consumers and signals instability.
 
 Recommended recovery paths in this window, in order of preference:
 
@@ -397,14 +397,14 @@ Recommended recovery paths in this window, in order of preference:
    ```bash
    gh workflow run dist-tag.yml -f pkg=<pkg> -f version=<known-good-version> -f dist_tag=latest
    ```
-3. **`npm unpublish` (emergency only).** Only used when (a) the broken version contains a real security vulnerability AND (b) <72 h have passed AND (c) the version has had no observable downstream installs. There is no workflow for this — it must be run by the Creator manually with `npm unpublish @teleologyhi-sdk/<pkg>@<version>` and accompanied by a SECURITY advisory entry in the next patch CHANGELOG.
+3. **`npm unpublish` (emergency only).** Only used when (a) the broken version contains a real security vulnerability AND (b) <72 h have passed AND (c) the version has had no observable downstream installs. There is no workflow for this; it must be run by the Creator manually with `npm unpublish @teleologyhi-sdk/<pkg>@<version>` and accompanied by a SECURITY advisory entry in the next patch CHANGELOG.
 
-### 9.4 Stage 4 — After Step 2 runs, more than 72 hours later
+### 9.4 Stage 4: After Step 2 runs, more than 72 hours later
 
 `npm unpublish` is no longer permitted. The only remaining tools are:
 
-1. **`npm deprecate`** — the deprecated mark surfaces a warning in consumer terminals. This is what the Creator's discipline ("no deprecations") aims to AVOID — the two-step release flow exists precisely to make this stage unreachable in practice.
-2. **`dist-tag.yml`** — re-route `latest` away from the broken version so new installs do not pick it up by default. The version remains visible in `npm view <pkg> versions` but is no longer the default install target.
+1. **`npm deprecate`**: the deprecated mark surfaces a warning in consumer terminals. This is what the Creator's discipline ("no deprecations") aims to AVOID; the two-step release flow exists precisely to make this stage unreachable in practice.
+2. **`dist-tag.yml`**: re-route `latest` away from the broken version so new installs do not pick it up by default. The version remains visible in `npm view <pkg> versions` but is no longer the default install target.
 3. **Publish a patch.** Same as Stage 3 path 1; the patch supersedes the broken version for new installs even if old installs persist.
 
 ### 9.5 Commit history rollback (any stage)

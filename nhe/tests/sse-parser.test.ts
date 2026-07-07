@@ -27,23 +27,19 @@ async function collect<T>(it: AsyncIterable<T>): Promise<T[]> {
   return out;
 }
 
-describe("sseEvents — SSE `data:` parser", () => {
+describe("sseEvents, SSE `data:` parser", () => {
   it("yields the payload of a single complete frame", async () => {
     const out = await collect(sseEvents(streamOf(["data: hello\n\n"])));
     expect(out).toEqual(["hello"]);
   });
 
   it("yields each frame separately when multiple arrive in one chunk", async () => {
-    const out = await collect(
-      sseEvents(streamOf(["data: one\n\ndata: two\n\ndata: three\n\n"])),
-    );
+    const out = await collect(sseEvents(streamOf(["data: one\n\ndata: two\n\ndata: three\n\n"])));
     expect(out).toEqual(["one", "two", "three"]);
   });
 
   it("reassembles a frame split across multiple chunks", async () => {
-    const out = await collect(
-      sseEvents(streamOf(["data: hel", "lo wor", "ld\n\n"])),
-    );
+    const out = await collect(sseEvents(streamOf(["data: hel", "lo wor", "ld\n\n"])));
     expect(out).toEqual(["hello world"]);
   });
 
@@ -61,9 +57,7 @@ describe("sseEvents — SSE `data:` parser", () => {
   });
 
   it("trims surrounding whitespace from the data payload", async () => {
-    const out = await collect(
-      sseEvents(streamOf(["data:   trimmed   \n\n"])),
-    );
+    const out = await collect(sseEvents(streamOf(["data:   trimmed   \n\n"])));
     expect(out).toEqual(["trimmed"]);
   });
 
@@ -77,39 +71,29 @@ describe("sseEvents — SSE `data:` parser", () => {
   });
 });
 
-describe("ndjsonEvents — newline-delimited JSON parser", () => {
+describe("ndjsonEvents, newline-delimited JSON parser", () => {
   it("yields each non-empty line as a separate event", async () => {
-    const out = await collect(
-      ndjsonEvents(streamOf(['{"a":1}\n{"b":2}\n{"c":3}\n'])),
-    );
+    const out = await collect(ndjsonEvents(streamOf(['{"a":1}\n{"b":2}\n{"c":3}\n'])));
     expect(out).toEqual(['{"a":1}', '{"b":2}', '{"c":3}']);
   });
 
   it("reassembles a line split across multiple chunks", async () => {
-    const out = await collect(
-      ndjsonEvents(streamOf(['{"foo', '":', '"bar"}\n'])),
-    );
+    const out = await collect(ndjsonEvents(streamOf(['{"foo', '":', '"bar"}\n'])));
     expect(out).toEqual(['{"foo":"bar"}']);
   });
 
   it("emits a trailing line that lacks a final newline", async () => {
-    const out = await collect(
-      ndjsonEvents(streamOf(['{"a":1}\n{"b":2}'])),
-    );
+    const out = await collect(ndjsonEvents(streamOf(['{"a":1}\n{"b":2}'])));
     expect(out).toEqual(['{"a":1}', '{"b":2}']);
   });
 
   it("skips empty lines between records", async () => {
-    const out = await collect(
-      ndjsonEvents(streamOf(['{"a":1}\n\n\n{"b":2}\n'])),
-    );
+    const out = await collect(ndjsonEvents(streamOf(['{"a":1}\n\n\n{"b":2}\n'])));
     expect(out).toEqual(['{"a":1}', '{"b":2}']);
   });
 
   it("trims surrounding whitespace from each line", async () => {
-    const out = await collect(
-      ndjsonEvents(streamOf(['  {"a":1}  \n  {"b":2}  \n'])),
-    );
+    const out = await collect(ndjsonEvents(streamOf(['  {"a":1}  \n  {"b":2}  \n'])));
     expect(out).toEqual(['{"a":1}', '{"b":2}']);
   });
 });

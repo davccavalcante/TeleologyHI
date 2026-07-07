@@ -3,7 +3,7 @@ import { ulid } from "ulid";
 import { RESIDUAL_TRACE_CAP, type ResidualTrace } from "../types.js";
 
 /**
- * Residual-trace carry-over scorer (D-H1.1 — Entry 24 of
+ * Residual-trace carry-over scorer (D-H1.1, Entry 24 of
  * `MAIC_HIM_NHE_INTERVIEW_LOG.md` + E9 of `PROPOSED_DECISIONS.md`).
  *
  * `RESIDUAL_TRACE_CAP = 64` bounds *how many* traces a HIM brings forward
@@ -36,7 +36,7 @@ export interface ResidualTraceCandidate {
   score: number;
   /** Materialised trace ready to be passed to `HimHandle.mint`. */
   trace: ResidualTrace;
-  /** Decomposed score components — useful for audits and tuning. */
+  /** Decomposed score components, useful for audits and tuning. */
   components: Readonly<{
     notRefused: number;
     promptSubstance: number;
@@ -56,7 +56,7 @@ export interface ResidualTraceScorerOptions {
   teleologicalKeywords?: readonly string[];
 }
 
-/** Default keyword set — small, English, transparently editable. */
+/** Default keyword set, small, English, transparently editable. */
 export const DEFAULT_TELEOLOGICAL_KEYWORDS: readonly string[] = [
   "why",
   "purpose",
@@ -89,7 +89,7 @@ const WEIGHTS = {
  * Returns the score, the materialised `ResidualTrace`, and the decomposed
  * components so callers can audit *why* a turn was promoted (or not).
  *
- * The trace id is a fresh ULID minted at scoring time — by design, a single
+ * The trace id is a fresh ULID minted at scoring time, by design, a single
  * interaction can be scored multiple times across reincarnations and each
  * carry-over event gets its own trace id (carry-over is a *new* observation,
  * not a re-emission of the original turn).
@@ -146,7 +146,7 @@ export interface SelectResidualTracesOptions extends ResidualTraceScorerOptions 
  * Batch helper: score every interaction, sort descending by score, take the
  * top `cap` (default `RESIDUAL_TRACE_CAP = 64`), and return the materialised
  * traces. The original `InteractionRecord` ordering does not affect the
- * returned ordering — only the score does.
+ * returned ordering, only the score does.
  *
  * Ties are broken by recency (more recent first), then by original index for
  * total determinism. Returns an empty array on empty input.
@@ -160,8 +160,7 @@ export function selectResidualTraces(
   const cap = opts.cap ?? RESIDUAL_TRACE_CAP;
   if (cap <= 0) return [];
 
-  const carriedAtReincarnation =
-    opts.carriedAtReincarnation ?? new Date().toISOString();
+  const carriedAtReincarnation = opts.carriedAtReincarnation ?? new Date().toISOString();
 
   const scorerOpts: ResidualTraceScorerOptions = opts.teleologicalKeywords
     ? { teleologicalKeywords: opts.teleologicalKeywords }

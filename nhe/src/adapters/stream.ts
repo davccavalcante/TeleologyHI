@@ -9,7 +9,7 @@ import type {
 /**
  * Drain a streaming generation into a `GenerateResponse` that's
  * compatible with the non-streaming pipeline. Optional `onDelta` callback
- * fires for every delta event — useful for piping tokens to a UI while
+ * fires for every delta event, useful for piping tokens to a UI while
  * the orchestrator collects the full text.
  *
  * If the adapter does not implement `generateStream`, falls back to

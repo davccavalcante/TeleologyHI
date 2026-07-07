@@ -1,8 +1,4 @@
-import {
-  makeStep,
-  type ReasoningResult,
-  type ReasoningStrategy,
-} from "./types.js";
+import { makeStep, type ReasoningResult, type ReasoningStrategy } from "./types.js";
 
 export interface SelfConsistencyOptions {
   /** Number of independent samples. Default 3. Must be ≥ 2. */
@@ -16,7 +12,7 @@ export interface SelfConsistencyOptions {
 }
 
 /**
- * Self-Consistency — runs the inner strategy K times in parallel and votes.
+ * Self-Consistency, runs the inner strategy K times in parallel and votes.
  *
  * Voting: case-insensitive whitespace-normalized exact-match majority by default;
  * "longest" as an alternative for free-form text where exact matches are rare.
@@ -30,9 +26,7 @@ export function selfConsistency(
   const k = Math.max(2, opts.k ?? 3);
   const voter = opts.voter ?? "majority-normalized";
   return async (input, llm) => {
-    const samples = await Promise.all(
-      Array.from({ length: k }, () => inner(input, llm)),
-    );
+    const samples = await Promise.all(Array.from({ length: k }, () => inner(input, llm)));
     const winnerIdx = voter === "longest" ? pickLongest(samples) : pickMajority(samples);
     const winner = samples[winnerIdx]!;
     const tokensIn = samples.reduce((s, x) => s + x.tokensIn, 0);

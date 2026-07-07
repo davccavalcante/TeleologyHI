@@ -1,5 +1,5 @@
 /**
- * Prefrontal region (Entry 21 — deliberation + amygdala-veto).
+ * Prefrontal region (Entry 21, deliberation + amygdala-veto).
  *
  * This module ships the ownership descriptor. The deliberation surface is
  * exercised today through the `reasoning/` strategies (chainOfThought,

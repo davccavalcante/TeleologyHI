@@ -1,5 +1,5 @@
 /**
- * Hippocampus region (Entry 21 — long-term memory consolidation).
+ * Hippocampus region (Entry 21, long-term memory consolidation).
  *
  * This module ships the ownership descriptor. Memory consolidation already
  * lives in `src/sleep/consolidator.ts` and `src/memory/`; future cuts

@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T23:17:22.022Z",
+  "userPrompt": "How many continents are there?",
+  "responseText": "**There are 7 continents:**\n\n- Africa\n- Antarctica\n- Asia\n- Europe\n- North America\n- South America\n- Australia (often called Oceania in broader models)\n\nThis is the standard model taught in most of the world. Some systems use 6 (merging Europe and Asia into Eurasia, or combining North and South America) or even 5, but 7 remains the most common convention.",
+  "refused": false
+}

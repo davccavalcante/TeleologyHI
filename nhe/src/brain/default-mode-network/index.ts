@@ -1,9 +1,9 @@
 /**
- * Default-mode-network region (Entry 24 — limbo state machine).
+ * Default-mode-network region (Entry 24, limbo state machine).
  *
  * Ships the ownership descriptor + the limbo state machine
  * (`src/brain/default-mode-network/limbo-state.ts`, J-N9). Entry into
- * deep-coma costs zero compute by design — the NHE simply stops
+ * deep-coma costs zero compute by design, the NHE simply stops
  * scheduling work. Return from limbo emits the `reunion` affect (the
  * ninth canonical affect introduced by `@teleologyhi-sdk/maic`).
  *
@@ -27,9 +27,9 @@ export const defaultModeNetwork: BrainRegion = {
   entries: [24],
 };
 
-export { evaluateLimboTransition, mkLimboTransition } from "./limbo-state.js";
 export type {
   LimboMachineInput,
   LimboMachineThresholds,
   LimboMachineTransition,
 } from "./limbo-state.js";
+export { evaluateLimboTransition, mkLimboTransition } from "./limbo-state.js";

@@ -1,11 +1,8 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ulid } from "ulid";
-import {
-  DreamInductionIntent,
-  DreamInductionTicket,
-  type InductionStatus,
-} from "../types.js";
+import { atomicWriteFile } from "../stores/atomic-write.js";
+import { DreamInductionIntent, DreamInductionTicket, type InductionStatus } from "../types.js";
 
 export interface ListFilter {
   nheId?: string;
@@ -13,19 +10,19 @@ export interface ListFilter {
 }
 
 /**
- * InductionStore — persistent queue of dream induction tickets (Entry 2).
+ * InductionStore, persistent queue of dream induction tickets (Entry 2).
  *
  * MAIC creates tickets ("induce this scenario into NHE X's next REM dream").
  * NHE consumes them on its next sleep cycle. Cancelled tickets remain on disk
  * for audit but are filtered out of `listPending`.
  *
- * Disk layout: <storeDir>/inductions/<ticketId>.json — one file per ticket.
+ * Disk layout: <storeDir>/inductions/<ticketId>.json, one file per ticket.
  */
 export class InductionStore {
   private readonly dir: string;
   private cache = new Map<string, DreamInductionTicket>();
 
-  private constructor(private readonly storeDir: string) {
+  private constructor(storeDir: string) {
     this.dir = join(storeDir, "inductions");
   }
 
@@ -36,10 +33,7 @@ export class InductionStore {
     return s;
   }
 
-  async induce(
-    nheId: string,
-    intent: DreamInductionIntent,
-  ): Promise<DreamInductionTicket> {
+  async induce(nheId: string, intent: DreamInductionIntent): Promise<DreamInductionTicket> {
     const parsedIntent = DreamInductionIntent.parse(intent);
     const ticket: DreamInductionTicket = DreamInductionTicket.parse({
       id: ulid(),
@@ -73,10 +67,7 @@ export class InductionStore {
     return updated;
   }
 
-  async cancel(
-    ticketId: string,
-    reason?: string,
-  ): Promise<DreamInductionTicket> {
+  async cancel(ticketId: string, reason?: string): Promise<DreamInductionTicket> {
     const existing = this.cache.get(ticketId);
     if (!existing) {
       throw new Error(`InductionStore.cancel: ticket "${ticketId}" not found`);
@@ -120,11 +111,7 @@ export class InductionStore {
   // ─── internals ──────────────────────────────────────────────────────
 
   private async persist(ticket: DreamInductionTicket): Promise<void> {
-    await writeFile(
-      join(this.dir, `${ticket.id}.json`),
-      JSON.stringify(ticket, null, 2),
-      "utf-8",
-    );
+    await atomicWriteFile(join(this.dir, `${ticket.id}.json`), JSON.stringify(ticket, null, 2));
   }
 
   private async warmCache(): Promise<void> {
@@ -137,9 +124,15 @@ export class InductionStore {
     }
     for (const file of entries) {
       if (!file.endsWith(".json")) continue;
-      const raw = await readFile(join(this.dir, file), "utf-8");
-      const ticket = DreamInductionTicket.parse(JSON.parse(raw));
-      this.cache.set(ticket.id, ticket);
+      try {
+        const raw = await readFile(join(this.dir, file), "utf-8");
+        const ticket = DreamInductionTicket.parse(JSON.parse(raw));
+        this.cache.set(ticket.id, ticket);
+      } catch (err) {
+        // Skip a malformed ticket file with a warning rather than bricking
+        // LocalMaic.open for every healthy ticket (M2-4 parity).
+        console.warn(`InductionStore: skipping malformed ticket file "${file}": ${String(err)}`);
+      }
     }
   }
 }

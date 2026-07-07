@@ -1,0 +1,6 @@
+{
+  "at": "2026-07-05T21:49:43.190Z",
+  "userPrompt": "What is the integral of 2x?",
+  "responseText": "**2x² + C**\n\nThe indefinite integral of 2x with respect to x is 2x² + C, where C is the constant of integration.",
+  "refused": false
+}
